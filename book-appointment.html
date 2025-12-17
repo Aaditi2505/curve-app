@@ -459,6 +459,15 @@
               <span class="form-label">Booking ID:</span>
               <span class="booking-id-display" id="bookingId">0001</span>
             </div>
+
+            <!-- Admin Branch Selection -->
+            <div class="form-group" id="adminBranchSelect" style="display: none;">
+              <span class="form-label">Target Branch</span>
+              <select class="form-select" id="targetBranch" name="targetBranch">
+                <option value="KPHB">KPHB</option>
+                <option value="Jubilee Hills">Jubilee Hills</option>
+              </select>
+            </div>
           </div>
 
           <div class="form-row">
@@ -656,6 +665,24 @@
       currentBranch = localStorage.getItem('branch') || 'BRANCH';
       document.getElementById('branch-display').textContent = currentBranch;
 
+      // Admin Branch Logic
+      const role = localStorage.getItem('role');
+      const targetBranchSelect = document.getElementById('targetBranch');
+
+      if (role === 'ADMINISTRATOR') {
+        document.getElementById('adminBranchSelect').style.display = 'block';
+        targetBranchSelect.value = currentBranch; // Default to current
+      } else {
+        // Ensure the select has the current branch even if hidden
+        targetBranchSelect.value = currentBranch;
+      }
+
+      // Update ID when branch changes (if admin changes it)
+      targetBranchSelect.addEventListener('change', function () {
+        currentBranch = this.value;
+        updateBookingId();
+      });
+
       // Generate booking ID
       updateBookingId();
 
@@ -753,7 +780,7 @@
         whatsapp: isWhatsappEnabled ? '+91' + whatsappVal : '',
         address: form.address.value,
         bookingId: bookingId,
-        branch: currentBranch
+        branch: document.getElementById('targetBranch').value || currentBranch // Use selected branch
       };
 
       appointments.push(data);
