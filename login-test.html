@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Login Test</title>
+</head>
+
+<body>
+    <h1>Login Test</h1>
+    <select id="username">
+        <option value="admin">Administrator</option>
+        <option value="user">User</option>
+    </select>
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="testLogin()">LOGIN</button>
+    <p id="result"></p>
+
+    <script>
+        // Set branch for testing
+        localStorage.setItem('branch', 'CHENNAI');
+
+        function testLogin() {
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value.trim();
+            const result = document.getElementById('result');
+
+            result.textContent = `Testing: user=${user}, pass=${pass}`;
+
+            const selectedBranch = localStorage.getItem('branch');
+
+            if (selectedBranch === 'CHENNAI') {
+                if (user.toLowerCase() === 'admin' && pass === 'curve123') {
+                    result.textContent = 'SUCCESS! Would redirect to dashboard';
+                    result.style.color = 'green';
+                } else {
+                    result.textContent = 'FAILED! Invalid credentials';
+                    result.style.color = 'red';
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

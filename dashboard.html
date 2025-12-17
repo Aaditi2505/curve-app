@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | CURVE</title>
+  <!-- Fonts -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    /* Core Reset & Setup */
+    * {
+      box-sizing: border-box;
+      outline: none;
+    }
+
+    body,
+    html {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      font-family: 'Outfit', sans-serif;
+      background: #f4f7f6;
+      color: #2c3e50;
+      overflow-x: hidden;
+    }
+
+    /* Animated Background */
+    .page-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 10% 20%, rgb(239, 246, 249) 0%, rgb(215, 240, 252) 90%);
+      z-index: -1;
+    }
+
+    /* Header Navigation */
+    .dashboard-header {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      height: 80px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      z-index: 100;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+    }
+
+    .logo-img {
+      height: 45px;
+      mix-blend-mode: multiply;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .nav-item {
+      text-decoration: none;
+      color: #546e7a;
+      font-weight: 500;
+      font-size: 0.95rem;
+      padding: 10px 18px;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .nav-item:hover,
+    .nav-item.active {
+      background: rgba(20, 191, 206, 0.1);
+      color: #14bfce;
+      font-weight: 600;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    /* User Profile (OTT Style) */
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      padding: 5px;
+      border-radius: 50px;
+      transition: background 0.3s;
+    }
+
+    .user-profile:hover {
+      background: rgba(0, 0, 0, 0.03);
+    }
+
+    .user-avatar {
+      width: 45px;
+      height: 45px;
+      background: linear-gradient(135deg, #14bfce, #2c3e50);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(20, 191, 206, 0.2);
+      position: relative;
+    }
+
+    .user-avatar span {
+      color: white;
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+
+    .user-role {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #7f8c8d;
+      font-weight: 600;
+    }
+
+    .user-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #2c3e50;
+    }
+
+    /* Main Content Area */
+    .dashboard-container {
+      margin-top: 120px;
+      padding: 0 40px 40px;
+      max-width: 1400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 40px;
+    }
+
+    .welcome-section h1 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 2.5rem;
+      color: #2c3e50;
+      margin: 0;
+      font-weight: 700;
+    }
+
+    .welcome-section h1 span {
+      color: #14bfce;
+      font-weight: 300;
+    }
+
+    .branch-badge {
+      background: rgba(44, 62, 80, 0.05);
+      padding: 10px 25px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #2c3e50;
+      border: 1px solid rgba(44, 62, 80, 0.1);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* Grid Layout */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 30px;
+      grid-template-rows: auto auto;
+      /* Flexible rows */
+    }
+
+    /* Cards */
+    .stat-card {
+      background: white;
+      border-radius: 24px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+      text-align: center;
+      border: 1px solid rgba(0, 0, 0, 0.03);
+      transition: transform 0.3s;
+    }
+
+    .stat-card {
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(20, 191, 206, 0.1), transparent);
+      transition: left 0.5s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+    }
+
+    .stat-card:hover::before {
+      left: 100%;
+    }
+
+    .stat-num {
+      display: block;
+      font-size: 3rem;
+      font-weight: 700;
+      color: #2c3e50;
+      font-family: 'Montserrat', sans-serif;
+      margin-bottom: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .stat-card:hover .stat-num {
+      transform: scale(1.1);
+      color: #14bfce;
+    }
+
+    .stat-label {
+      font-size: 1rem;
+      color: #7f8c8d;
+      font-weight: 500;
+    }
+
+    /* Positioning Elements */
+    .card-total {
+      grid-column: span 3;
+    }
+
+    .card-today {
+      grid-column: span 3;
+    }
+
+    .card-time {
+      grid-column: span 6;
+      background: linear-gradient(135deg, #2c3e50, #34495e);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      padding-left: 50px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .time-display {
+      font-family: 'Montserrat', monospace;
+      font-size: 3.5rem;
+      font-weight: 300;
+      letter-spacing: 2px;
+      margin-bottom: 5px;
+      z-index: 2;
+    }
+
+    .date-display {
+      font-size: 1.1rem;
+      opacity: 0.8;
+      font-weight: 400;
+      z-index: 2;
+    }
+
+    .time-icon {
+      position: absolute;
+      right: 40px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0.1;
+      font-size: 8rem;
+    }
+
+    /* Middle Row */
+    .card-about {
+      grid-column: span 8;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(5px);
+      padding: 40px;
+      border-radius: 24px;
+    }
+
+    .about-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.8rem;
+      margin-top: 0;
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+
+    .about-text {
+      line-height: 1.8;
+      color: #546e7a;
+      font-size: 1.05rem;
+    }
+
+    .card-calendar {
+      grid-column: span 4;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(12px);
+      border-radius: 24px;
+      padding: 25px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      grid-row: span 2;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      color: #2c3e50;
+      font-size: 1.2rem;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      text-align: center;
+      flex: 1;
+    }
+
+    .cal-day-name {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #14bfce;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    .cal-day {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      color: #2c3e50;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+
+    .cal-day:hover {
+      background: rgba(20, 191, 206, 0.1);
+      color: #14bfce;
+      transform: scale(1.1);
+    }
+
+    .cal-day.empty {
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .cal-day.today {
+      background: linear-gradient(135deg, #14bfce, #0e9aa7);
+      color: white;
+      font-weight: 700;
+      box-shadow: 0 4px 15px rgba(20, 191, 206, 0.4);
+      transform: scale(1.1);
+    }
+
+    /* Bottom Row - Video */
+    .card-video {
+      grid-column: span 8;
+      border-radius: 24px;
+      overflow: hidden;
+      position: relative;
+      height: 300px;
+      background: #000;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .video-player {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.8;
+    }
+
+    .video-overlay {
+      position: absolute;
+      bottom: 30px;
+      left: 30px;
+      color: white;
+      z-index: 10;
+    }
+
+    .video-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.5rem;
+      margin: 0;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page-background"></div>
+
+  <!-- Header -->
+  <header class="dashboard-header">
+    <div class="header-left">
+      <img src="assets/logo curve.jpg" alt="Curve" class="logo-img">
+      <nav class="nav-links">
+        <a href="#" class="nav-item active">Dashboard</a>
+        <a href="check-appointment.html" class="nav-item">Check Appointment</a>
+        <a href="patient-entry.html" class="nav-item">Entry</a>
+        <a href="patient-planning-list.html" class="nav-item">Planning</a>
+        <a href="patient-interaction-list.html" class="nav-item">Interaction</a>
+      </nav>
+    </div>
+
+    <div class="header-right">
+      <!-- User Profile OTT Style -->
+      <div class="user-profile">
+        <div class="user-info">
+          <span class="user-name" id="user-name-display">User</span>
+          <span class="user-role" id="user-role-display">Role</span>
+        </div>
+        <div class="user-avatar">
+          <span id="user-initial">U</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="dashboard-container">
+
+    <!-- Welcome & Branch -->
+    <div class="top-row">
+      <div class="welcome-section">
+        <h1>Welcome <span>to Curve</span></h1>
+      </div>
+      <div class="branch-badge" id="branch-display">
+        Branch Name
+      </div>
+    </div>
+
+    <!-- Grid Content -->
+    <div class="dashboard-grid">
+
+      <!-- Stats -->
+      <div class="stat-card card-total">
+        <span class="stat-num">12</span>
+        <span class="stat-label">Total Appointments</span>
+      </div>
+
+      <div class="stat-card card-today">
+        <span class="stat-num" style="color: #14bfce;">5</span>
+        <span class="stat-label">Today's Appointment</span>
+      </div>
+
+      <div class="stat-card card-time">
+        <div class="time-display" id="clock">13:14:50</div>
+        <div class="date-display" id="date">Thursday, December 11, 2025</div>
+        <div class="time-icon">🕒</div>
+      </div>
+
+      <!-- Middle Row -->
+      <div class="card-about">
+        <h3 class="about-title">About Curve</h3>
+        <p class="about-text">
+          Experience the future of dental care with our advanced clear aligner technology.
+          We combine precision engineering with personalized treatment plans to give you the smile you deserve.
+          Our seamless digital workflow ensures checking appointments, tracking progress, and managing treatments is
+          effortless.
+        </p>
+      </div>
+
+      <!-- Calendar (Spans 2 rows visually on right) -->
+      <!-- Calendar (Dynamic) -->
+      <div class="card-calendar">
+        <div class="calendar-header">
+          <span id="calMonthYear">Loading...</span>
+          <span>📅</span>
+        </div>
+        <div class="calendar-grid" id="calendarGrid">
+          <!-- JS Generation -->
+        </div>
+      </div>
+
+      <!-- Bottom Row: AI Video -->
+      <div class="card-video">
+        <video autoplay loop muted playsinline class="video-player">
+          <source src="assets/video3.mp4" type="video/mp4">
+        </video>
+        <div class="video-overlay">
+          <h3 class="video-title">AI Treatment Simulation</h3>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Set Branch
+      const branch = localStorage.getItem('branch') || 'General';
+      document.getElementById('branch-display').textContent = branch;
+
+      // 2. Set User & Role
+      const role = localStorage.getItem('role') || 'User';
+      // Simple username logic based on role for demo
+      const username = role === 'ADMINISTRATOR' ? 'Admin' : 'Guest';
+
+      document.getElementById('user-role-display').textContent = role;
+      document.getElementById('user-name-display').textContent = username;
+      document.getElementById('user-initial').textContent = username.charAt(0).toUpperCase();
+
+      // 3. Permission Gate (Hide specific nav items if needed)
+      const navItems = document.querySelectorAll('.nav-item');
+      if (role !== 'ADMINISTRATOR') {
+        navItems.forEach(item => {
+          if (item.textContent.includes('Book Appointment')) {
+            item.style.display = 'none';
+          }
+        });
+      }
+
+      // 4. Clock Logic
+      function updateClock() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('en-US', { hour12: false });
+        const dateString = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        document.getElementById('clock').textContent = timeString;
+        document.getElementById('date').textContent = dateString;
+      }
+      setInterval(updateClock, 1000);
+      updateClock();
+
+      // 5. Dynamic Calendar Logic
+      function renderCalendar() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth(); // 0-11
+        const today = now.getDate();
+
+        // Update Header
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        document.getElementById('calMonthYear').textContent = `${monthNames[month]} ${year}`;
+
+        const grid = document.getElementById('calendarGrid');
+        grid.innerHTML = '';
+
+        // Day Names
+        const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+        days.forEach(d => {
+          const div = document.createElement('div');
+          div.className = 'cal-day-name';
+          div.textContent = d;
+          grid.appendChild(div);
+        });
+
+        // First day of month (0=Sun, 1=Mon...)
+        const firstDay = new Date(year, month, 1).getDay();
+        // Days in month
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        // Empty slots
+        for (let i = 0; i < firstDay; i++) {
+          const div = document.createElement('div');
+          div.className = 'cal-day empty';
+          grid.appendChild(div);
+        }
+
+        // Day slots
+        for (let d = 1; d <= daysInMonth; d++) {
+          const div = document.createElement('div');
+          div.className = 'cal-day';
+          div.textContent = d;
+          if (d === today) {
+            div.classList.add('today');
+          }
+          grid.appendChild(div);
+        }
+      }
+      renderCalendar();
+    });
+  </script>
+</body>
+
+</html>

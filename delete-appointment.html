@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Delete Appointments</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="dashboard-header">
+        <img src="assets/logo curve.jpg" alt="Curve Logo" class="dashboard-logo">
+        <div class="branch-display">
+            <div class="branch-box" id="branch-name"></div>
+        </div>
+    </header>
+    <h2 class="appointment-title">DELETE APPOINTMENTS</h2>
+    <div style="text-align: center; margin-top: -10px; color: #666; font-family: 'Montserrat', sans-serif;">
+        Showing appointments from the last 1 week
+    </div>
+    <main class="check-main">
+        <!-- No Date Filter toolbar needed as per requirements (shows recent 1 week automatically) -->
+
+        <div class="appointments-list" id="appointmentsList" style="margin-top: 20px;"></div>
+
+        <button class="back-btn" onclick="window.location.href='book-appointment.html'">&#8592;</button>
+    </main>
+
+    <script>
+        // Define global function first
+        window.deleteAppt = function (id) {
+            if (!confirm('Are you sure you want to delete this appointment?')) return;
+
+            const branch = localStorage.getItem('branch') || 'BRANCH';
+            const key = `appointments_${branch}`;
+            let allAppointments = JSON.parse(localStorage.getItem(key) || '[]');
+
+            const initialLength = allAppointments.length;
+            // Filter using string comparison to be safe
+            allAppointments = allAppointments.filter(a => String(a.bookingId) !== String(id));
+
+            if (allAppointments.length < initialLength) {
+                localStorage.setItem(key, JSON.stringify(allAppointments));
+                // Reload or re-render
+                // Since renderRecentAppointments is inside another scope, we might need to expose it or just reload page for simplicity
+                // Or dispatch an event. 
+                // Simplest: Reload the page to reflect changes.
+                window.location.reload();
+            } else {
+                alert("Could not find appointment to delete.");
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const branch = localStorage.getItem('branch') || 'BRANCH';
+            document.getElementById('branch-name').textContent = branch;
+
+            renderRecentAppointments();
+
+            function renderRecentAppointments() {
+                const key = `appointments_${branch}`;
+                const allAppointments = JSON.parse(localStorage.getItem(key) || '[]');
+
+                // Filter Last 1 Week
+                const today = new Date();
+                const oneWeekAgo = new Date();
+                oneWeekAgo.setDate(today.getDate() - 7);
+                oneWeekAgo.setHours(0, 0, 0, 0);
+
+                const filtered = allAppointments.filter(appt => {
+                    if (!appt.date) return false;
+                    const apptDate = new Date(appt.date);
+                    apptDate.setHours(0, 0, 0, 0);
+                    return apptDate >= oneWeekAgo;
+                });
+
+                filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                const list = document.getElementById('appointmentsList');
+                list.innerHTML = '';
+
+                if (filtered.length === 0) {
+                    list.innerHTML = '<div class="no-results">No recent appointments found.</div>';
+                    return;
+                }
+
+                filtered.forEach(appt => {
+                    const div = document.createElement('div');
+                    div.className = 'appointment-row';
+                    // Use simple onclick with string ID
+                    div.innerHTML = `
+            <div class="appt-detail">${appt.name}</div>
+            <div class="appt-detail">${appt.age} / ${appt.sex}</div>
+            <div class="appt-detail">${appt.date}</div>
+            <div class="appt-detail">${appt.bookingId}</div>
+            <div class="appt-detail" style="flex: 0 0 auto;">
+              <button class="dashboard-btn" 
+                      style="width: 100px; height: 40px; background: #db9090; font-size: 0.9em; box-shadow: none; border-radius: 8px;"
+                      onclick="window.deleteAppt('${appt.bookingId}')">
+                DELETE
+              </button>
+            </div>
+          `;
+                    list.appendChild(div);
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

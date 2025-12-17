@@ -1,0 +1,2 @@
+npm install express multer
+node server.js

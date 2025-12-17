@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Patient Database</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    /* Premium Design System */
+    :root {
+      --primary-color: #14bfce;
+      --primary-dark: #0e8a95;
+      --text-dark: #2c3e50;
+      --text-light: #7f8c8d;
+      --bg-gradient: radial-gradient(circle at 10% 20%, rgb(239, 246, 249) 0%, rgb(215, 240, 252) 90%);
+      --glass-bg: rgba(255, 255, 255, 0.65);
+      --glass-border: 1px solid rgba(255, 255, 255, 0.5);
+      --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+      --card-radius: 24px;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg-gradient);
+      font-family: 'Outfit', sans-serif;
+      color: var(--text-dark);
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Animated Background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(20, 191, 206, 0.05) 0%, transparent 60%);
+      animation: rotateBg 25s linear infinite;
+      z-index: -1;
+    }
+
+    @keyframes rotateBg {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Header */
+    .dashboard-header {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      height: 80px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      z-index: 100;
+      border: var(--glass-border);
+    }
+
+    .logo-img {
+      height: 40px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .nav-item {
+      text-decoration: none;
+      color: var(--text-dark);
+      opacity: 0.7;
+      font-weight: 500;
+      font-size: 0.95rem;
+      padding: 10px 18px;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .nav-item:hover,
+    .nav-item.active {
+      opacity: 1;
+      background: rgba(20, 191, 206, 0.1);
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+
+    .branch-badge {
+      background: rgba(20, 191, 206, 0.1);
+      color: var(--primary-color);
+      padding: 8px 20px;
+      border-radius: 30px;
+      font-weight: 600;
+      border: 1px solid rgba(20, 191, 206, 0.2);
+      font-size: 0.9rem;
+      letter-spacing: 0.5px;
+    }
+
+    /* Main Content */
+    .db-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      padding-top: 80px;
+      /* Offset header */
+    }
+
+    .page-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 2.5rem;
+      color: var(--text-dark);
+      margin-bottom: 60px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      text-align: center;
+    }
+
+    .cards-wrapper {
+      display: flex;
+      gap: 40px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* Glass Cards */
+    .nav-card {
+      width: 260px;
+      height: 320px;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(10px);
+      border-radius: 30px;
+      border: var(--glass-border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+    }
+
+    .nav-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 100%);
+      z-index: 1;
+    }
+
+    .nav-card:hover {
+      transform: translateY(-15px);
+      box-shadow: 0 20px 50px rgba(20, 191, 206, 0.2);
+      background: rgba(255, 255, 255, 0.9);
+      border-color: var(--primary-color);
+    }
+
+    .card-icon {
+      font-size: 4rem;
+      margin-bottom: 30px;
+      position: relative;
+      z-index: 2;
+      transition: transform 0.3s;
+    }
+
+    .nav-card:hover .card-icon {
+      transform: scale(1.1);
+    }
+
+    .card-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      z-index: 2;
+    }
+
+    .card-desc {
+      font-size: 0.9rem;
+      color: var(--text-light);
+      margin-top: 10px;
+      text-align: center;
+      padding: 0 20px;
+      z-index: 2;
+      opacity: 0.8;
+    }
+
+    /* Back Button */
+    .back-btn-fixed {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 30px;
+      background: white;
+      border-radius: 50px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+      text-decoration: none;
+      color: var(--text-dark);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s;
+    }
+
+    .back-btn-fixed:hover {
+      transform: translateX(-50%) translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      color: var(--primary-color);
+    }
+  </style>
+</head>
+
+<body>
+  <header class="dashboard-header">
+    <div class="header-left">
+      <img src="assets/logo curve.jpg" alt="Curve Logo" class="logo-img">
+      <nav class="nav-links">
+        <a href="dashboard.html" class="nav-item">Dashboard</a>
+        <a href="book-appointment.html" class="nav-item">Book Appointment</a>
+        <a href="check-appointment.html" class="nav-item">Check Appointment</a>
+        <a href="patient-entry.html" class="nav-item">Entry</a>
+        <a href="patient-planning-list.html" class="nav-item">Planning</a>
+        <a href="patient-interaction-list.html" class="nav-item">Interaction</a>
+        <a href="dashboard.html" class="nav-item" style="color: #000; font-weight:600;">Back</a>
+      </nav>
+    </div>
+    <div class="branch-badge" id="branch-name">Branch Name</div>
+  </header>
+
+  <div class="db-container">
+    <h1 class="page-title">Patient Database</h1>
+
+    <div class="cards-wrapper">
+      <!-- Entry Card -->
+      <a href="patient-entry.html" class="nav-card">
+        <div class="card-icon">📋</div>
+        <div class="card-title">Entry</div>
+        <div class="card-desc">Register new patients and upload initial data.</div>
+      </a>
+
+      <!-- Planning Card -->
+      <a href="patient-planning-list.html" class="nav-card">
+        <div class="card-icon">📅</div>
+        <div class="card-title">Planning</div>
+        <div class="card-desc">Manage treatment plans and detailed scheduling.</div>
+      </a>
+
+      <!-- Interaction Card -->
+      <a href="patient-interaction-list.html" class="nav-card">
+        <div class="card-icon">💬</div>
+        <div class="card-title">Interaction</div>
+        <div class="card-desc">Visualizations and patient communication tools.</div>
+      </a>
+
+      <!-- Completion Card (Added for completeness if needed later) -->
+      <a href="patient-completion-list.html" class="nav-card">
+        <div class="card-icon">✅</div>
+        <div class="card-title">Completion</div>
+        <div class="card-desc">Completed 100% Final Review.</div>
+      </a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const branch = localStorage.getItem('branch') || 'General';
+      document.getElementById('branch-name').textContent = branch;
+
+      const role = localStorage.getItem('role') || 'User';
+      if (role !== 'ADMINISTRATOR') {
+        document.querySelectorAll('.nav-item').forEach(item => {
+          if (item.textContent.includes('Book Appointment')) {
+            item.style.display = 'none';
+          }
+        });
+      }
+
+      // Staggered entrance animation for cards
+      const cards = document.querySelectorAll('.nav-card');
+      cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.animation = `fadeInUp 0.6s ease forwards ${index * 0.1}s`;
+      });
+    });
+
+    // Add keyframes dynamically
+    const style = document.createElement('style');
+    style.innerHTML = `
+            @keyframes fadeInUp {
+                to { opacity: 1; transform: translateY(0); }
+            }
+        `;
+    document.head.appendChild(style);
+  </script>
+</body>
+
+</html>

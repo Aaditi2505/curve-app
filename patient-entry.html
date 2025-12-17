@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patient Entry | CURVE</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: radial-gradient(circle at 10% 20%, rgb(239, 246, 249) 0%, rgb(215, 240, 252) 90%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Header */
+    .page-header {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      height: 80px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      z-index: 100;
+    }
+
+    .logo-img {
+      height: 45px;
+      mix-blend-mode: multiply;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .nav-item {
+      text-decoration: none;
+      color: #546e7a;
+      font-weight: 500;
+      font-size: 0.95rem;
+      padding: 10px 18px;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .nav-item:hover,
+    .nav-item.active {
+      background: rgba(20, 191, 206, 0.1);
+      color: #14bfce;
+      font-weight: 600;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .back-btn-header {
+      padding: 10px 20px;
+      background: #2c3e50;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
+    }
+
+    .back-btn-header:hover {
+      background: #34495e;
+      transform: translateX(-3px);
+    }
+
+    .branch-badge {
+      background: rgba(44, 62, 80, 0.05);
+      padding: 10px 25px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #2c3e50;
+      border: 1px solid rgba(44, 62, 80, 0.1);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* Main Container */
+    .main-container {
+      margin-top: 120px;
+      padding: 20px 40px 40px;
+      max-width: 1400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .page-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 2.5rem;
+      color: #2c3e50;
+      margin-bottom: 30px;
+      font-weight: 700;
+    }
+
+    /* Search Section */
+    .search-section {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .search-grid {
+      display: grid;
+      grid-template-columns: 1fr 2fr auto;
+      gap: 20px;
+      align-items: end;
+    }
+
+    .search-group {
+      position: relative;
+    }
+
+    .search-label {
+      display: block;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 14px 20px;
+      border: 2px solid #e0e6ed;
+      border-radius: 12px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: #14bfce;
+      box-shadow: 0 0 0 4px rgba(20, 191, 206, 0.1);
+    }
+
+    .search-btn {
+      padding: 14px 30px;
+      background: linear-gradient(135deg, #14bfce, #0e9aa7);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+    }
+
+    .search-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(20, 191, 206, 0.3);
+    }
+
+    /* Autocomplete */
+    .autocomplete-results {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 2px solid #14bfce;
+      border-radius: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      margin-top: 5px;
+      display: none;
+    }
+
+    .autocomplete-item {
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .autocomplete-item:hover {
+      background: rgba(20, 191, 206, 0.1);
+    }
+
+    .autocomplete-item:last-child {
+      border-bottom: none;
+    }
+
+    /* Table */
+    .table-container {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      overflow-x: auto;
+    }
+
+    .patients-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .patients-table thead {
+      background: rgba(20, 191, 206, 0.05);
+    }
+
+    .patients-table th {
+      padding: 15px;
+      text-align: left;
+      font-weight: 600;
+      color: #2c3e50;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid #14bfce;
+    }
+
+    .patients-table td {
+      padding: 18px 15px;
+      border-bottom: 1px solid #ecf0f1;
+      color: #2c3e50;
+      font-size: 0.95rem;
+    }
+
+    .patients-table tbody tr {
+      transition: all 0.3s ease;
+    }
+
+    .patients-table tbody tr:hover {
+      background: rgba(20, 191, 206, 0.03);
+    }
+
+    .patient-id-link {
+      border: none;
+      background: none;
+      color: #14bfce;
+      cursor: pointer;
+      text-decoration: underline;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .patient-id-link:hover {
+      color: #0e9aa7;
+    }
+
+    .phase-pending {
+      color: #f39c12;
+      font-weight: 600;
+    }
+
+    .phase-completed {
+      color: #27ae60;
+      font-weight: 700;
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 80px 20px;
+      color: #95a5a6;
+      font-size: 1.3rem;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-left">
+      <img src="assets/logo curve.jpg" alt="Curve" class="logo-img">
+      <nav class="nav-links">
+        <a href="dashboard.html" class="nav-item">Dashboard</a>
+        <a href="check-appointment.html" class="nav-item">Check Appointment</a>
+        <a href="patient-entry.html" class="nav-item active">Entry</a>
+        <a href="patient-planning-list.html" class="nav-item">Planning</a>
+        <a href="patient-interaction-list.html" class="nav-item">Interaction</a>
+      </nav>
+    </div>
+    <div class="header-right">
+      <button class="back-btn-header" onclick="window.location.href='dashboard.html'">
+        <span>←</span>
+        <span>Back</span>
+      </button>
+      <div class="branch-badge" id="branch-display">Branch</div>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <h1 class="page-title">Patient Entry - Phase 1</h1>
+
+    <!-- Search Section -->
+    <div class="search-section">
+      <div class="search-grid">
+        <div class="search-group">
+          <label class="search-label">Date</label>
+          <input type="date" id="searchDate" class="search-input">
+        </div>
+
+        <div class="search-group">
+          <label class="search-label">Patient Name</label>
+          <input type="text" id="nameSearch" class="search-input" placeholder="Type patient name..." autocomplete="off">
+          <div id="nameSuggestions" class="autocomplete-results"></div>
+        </div>
+
+        <button class="search-btn" onclick="performSearch()">Search</button>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container" id="tableContainer">
+      <table class="patients-table">
+        <thead>
+          <tr>
+            <th>Unique ID</th>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Sex</th>
+            <th>Date</th>
+            <th>Phase Status</th>
+          </tr>
+        </thead>
+        <tbody id="patientTableBody"></tbody>
+      </table>
+      <div id="noResults" class="no-results" style="display:none;">
+        No patients found matching your search.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentBranch = '';
+
+    document.addEventListener('DOMContentLoaded', function () {
+      currentBranch = localStorage.getItem('branch') || 'BRANCH';
+      document.getElementById('branch-display').textContent = currentBranch;
+
+      const nameInput = document.getElementById('nameSearch');
+      const nameSuggestions = document.getElementById('nameSuggestions');
+
+      // Autocomplete for name search
+      nameInput.addEventListener('input', function () {
+        const query = nameInput.value.trim().toLowerCase();
+        if (query.length < 2) {
+          nameSuggestions.style.display = 'none';
+          nameSuggestions.innerHTML = '';
+          return;
+        }
+
+        const allPatients = getAllPatients();
+        const matches = allPatients
+          .filter(p => p.name.toLowerCase().includes(query))
+          .slice(0, 8);
+
+        if (!matches.length) {
+          nameSuggestions.style.display = 'none';
+          nameSuggestions.innerHTML = '';
+          return;
+        }
+
+        nameSuggestions.innerHTML = matches.map(p => `
+          <div class="autocomplete-item" data-name="${p.name}">
+            ${p.name} (${p.age}, ${p.sex})
+          </div>
+        `).join('');
+        nameSuggestions.style.display = 'block';
+      });
+
+      // Click on autocomplete suggestion
+      nameSuggestions.addEventListener('click', function (e) {
+        const item = e.target.closest('.autocomplete-item');
+        if (!item) return;
+        const fullName = item.getAttribute('data-name');
+        nameInput.value = fullName;
+        nameSuggestions.style.display = 'none';
+        nameSuggestions.innerHTML = '';
+        performSearch();
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function (e) {
+        if (!nameSuggestions.contains(e.target) && e.target !== nameInput) {
+          nameSuggestions.style.display = 'none';
+        }
+      });
+
+      // Initially show all patients
+      performSearch();
+    });
+
+    function getAllPatients() {
+      const key = `appointments_${currentBranch}`;
+      const appts = JSON.parse(localStorage.getItem(key) || '[]');
+      return appts.map(a => ({
+        id: a.bookingId || '',
+        name: (a.name || '').trim(),
+        age: a.age || '',
+        sex: a.sex || '',
+        date: a.date || '',
+        phase: a.currentPhase || 'Phase 1 (Data Entry)'
+      }));
+    }
+
+    function performSearch() {
+      const allPatients = getAllPatients();
+      const nameQuery = document.getElementById('nameSearch').value.trim();
+      const dateValue = document.getElementById('searchDate').value;
+
+      let filteredPatients = allPatients;
+
+      if (nameQuery) {
+        filteredPatients = filteredPatients.filter(p =>
+          p.name.toLowerCase() === nameQuery.toLowerCase()
+        );
+      }
+
+      if (dateValue) {
+        filteredPatients = filteredPatients.filter(p => p.date === dateValue);
+      }
+
+      renderTable(filteredPatients);
+    }
+
+    function renderTable(patients) {
+      const tableBody = document.getElementById('patientTableBody');
+      const noResults = document.getElementById('noResults');
+
+      if (patients.length === 0) {
+        tableBody.innerHTML = '';
+        noResults.style.display = 'block';
+        return;
+      }
+
+      noResults.style.display = 'none';
+
+      tableBody.innerHTML = patients.map(p => {
+        const isCompleted = p.phase.includes('Completed');
+        const phaseClass = isCompleted ? 'phase-completed' : 'phase-pending';
+
+        return `
+          <tr>
+            <td>
+              <button class="patient-id-link" onclick="openPatient('${p.id}')">
+                ${p.id}
+              </button>
+            </td>
+            <td>${p.name}</td>
+            <td>${p.age}</td>
+            <td>${p.sex}</td>
+            <td>${p.date}</td>
+            <td class="${phaseClass}">${p.phase}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function openPatient(id) {
+      const key = `appointments_${currentBranch}`;
+      const appts = JSON.parse(localStorage.getItem(key) || '[]');
+      const found = appts.find(a => (a.bookingId || '') === id);
+
+      if (!found) {
+        alert('Patient not found.');
+        return;
+      }
+
+      localStorage.setItem('currentPatient', JSON.stringify(found));
+      window.location.href = 'patient-entry-detail.html';
+    }
+  </script>
+</body>
+
+</html>

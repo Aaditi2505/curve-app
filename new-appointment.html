@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>New Appointment Booking</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <header class="dashboard-header">
+    <img src="assets/logo curve.jpg" alt="Curve Logo" class="dashboard-logo">
+    <div class="branch-display">
+      <div class="branch-box" id="branch-name"></div>
+    </div>
+  </header>
+
+  <h2 class="appointment-title">NEW APPOINTMENT BOOKING</h2>
+
+  <main class="form-main">
+    <form class="appointment-form" id="bookingForm">
+      <div class="row">
+        <label>Booking ID:</label>
+        <span id="bookingId" style="font-weight: bold; margin-right:30px;"></span>
+      </div>
+
+      <div class="row">
+        <label>Name</label>
+        <input type="text" name="name" required>
+        <label>Age</label>
+        <input type="number" name="age" min="0" max="120" required>
+        <label>Sex</label>
+        <select name="sex" id="sex" required
+          style="width: 200px; height: 36px; border: 2px solid #14bfce; border-radius: 6px; font-size: 1.13em; color: #282c39; background: #fcfbfb; padding-left: 8px;">
+          <option value="" disabled selected>Select</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+        </select>
+
+        <label>Date </label>
+        <input type="date" name="date" required>
+      </div>
+
+
+
+      <div class="row">
+        <label>Contact No (+91)</label>
+        <input type="tel" name="contact" pattern="\d{10}" title="Must be exactly 10 digits" maxlength="10"
+          placeholder="10 digits" required style="width: 150px;">
+
+        <label for="hasWhatsapp" style="margin-right: 0;">Whatsapp (+91)</label>
+        <input type="checkbox" id="hasWhatsapp" name="hasWhatsapp"
+          style="width:18px;height:18px;vertical-align:middle;">
+        <input type="tel" name="whatsapp" id="whatsapp" pattern="\d{10}" title="Must be exactly 10 digits"
+          maxlength="10" style="display:none; margin-left:10px; width: 150px;" placeholder="10 digits">
+      </div>
+
+      <div class="row">
+        <label>Time</label>
+        <input type="time" name="time" id="time" required>
+      </div>
+
+      <div class="actions-row">
+        <button type="button" class="circle-btn cancel-btn" onclick="window.location.href='book-appointment.html'">
+          <!-- Cancel icon -->
+          <svg width="40" height="40" viewBox="0 0 40 40">
+            <circle cx="20" cy="20" r="18" fill="#1e2e49" />
+            <line x1="13" y1="13" x2="27" y2="27" stroke="#fff" stroke-width="3" />
+            <line x1="27" y1="13" x2="13" y2="27" stroke="#fff" stroke-width="3" />
+          </svg>
+        </button>
+        <button type="submit" class="circle-btn save-btn">
+          <!-- Save icon -->
+          <svg width="40" height="40" viewBox="0 0 40 40">
+            <circle cx="20" cy="20" r="18" fill="#1e2e49" />
+            <polyline points="13,22 18,28 28,14" fill="none" stroke="#fff" stroke-width="3" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="actions-labels">
+        <span>Cancel</span>
+        <span>Save</span>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // 1) Show branch name
+      const branch = localStorage.getItem('branch') || 'BRANCH';
+      document.getElementById('branch-name').textContent = branch;
+
+      // 2) Generate booking ID from existing appointments
+      const key = `appointments_${branch}`;
+      const appointments = JSON.parse(localStorage.getItem(key) || '[]');
+      const bookingId = (appointments.length + 1).toString().padStart(4, '0');
+      document.getElementById('bookingId').textContent = bookingId;
+
+      // 3) WhatsApp show / hide
+      const hasWhatsapp = document.getElementById('hasWhatsapp');
+      const whatsappInput = document.getElementById('whatsapp');
+      hasWhatsapp.addEventListener('change', function () {
+        if (this.checked) {
+          whatsappInput.style.display = 'inline-block';
+        } else {
+          whatsappInput.style.display = 'none';
+          whatsappInput.value = '';
+        }
+      });
+
+      // 4) Single submit handler (SAVE)
+      const form = document.getElementById('bookingForm');
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // Basic fields (HTML5 'required' handles most empty checks, but logic check here doesn't hurt)
+        // Check phone numbers
+        const contactVal = this.contact.value.trim();
+        const whatsappVal = this.whatsapp.value.trim(); // only if visible/checked
+
+        // Validate Contact: Must be 10 digits
+        if (!/^\d{10}$/.test(contactVal)) {
+          alert('Contact number must be exactly 10 digits.');
+          return;
+        }
+
+        // Validate WhatsApp if enabled
+        const isWhatsappEnabled = this.hasWhatsapp.checked;
+        if (isWhatsappEnabled) {
+          if (!/^\d{10}$/.test(whatsappVal)) {
+            alert('WhatsApp number must be exactly 10 digits.');
+            return;
+          }
+        } else if (isWhatsappEnabled && !whatsappVal) {
+          // Should not happen if required logic is sound, but good to check
+          alert('Please enter WhatsApp number.');
+          return;
+        }
+
+        // Prepare data with +91 prefix
+        const finalContact = "+91" + contactVal;
+        const finalWhatsapp = isWhatsappEnabled ? ("+91" + whatsappVal) : "";
+
+        const data = {
+          name: this.name.value,
+          age: this.age.value,
+          sex: this.sex.value,
+          date: this.date.value,
+          time: this.time.value,
+          contact: finalContact,
+          whatsapp: finalWhatsapp,
+          bookingId: bookingId,
+          branch: branch
+        };
+
+        const prev = JSON.parse(localStorage.getItem(key) || '[]');
+        prev.push(data);
+        localStorage.setItem(key, JSON.stringify(prev));
+
+        alert('Appointment saved!');
+        window.location.href = 'dashboard.html';
+      });
+    });
+  </script>
+</body>
+
+</html>

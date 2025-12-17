@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cleanup Duplicates | CURVE</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+        }
+
+        button {
+            background: #14bfce;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+
+        button:hover {
+            background: #0e9aa7;
+        }
+
+        .danger {
+            background: #e74c3c;
+        }
+
+        .danger:hover {
+            background: #c0392b;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background: #ecf0f1;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔧 Cleanup Duplicate Appointments</h1>
+        <p>This tool will remove duplicate appointments with the same Booking ID, keeping only the most recent version.
+        </p>
+
+        <button onclick="checkDuplicates()">Check for Duplicates</button>
+        <button onclick="removeDuplicates()" class="danger">Remove Duplicates</button>
+        <button onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function checkDuplicates() {
+            const branch = localStorage.getItem('branch') || 'CHENNAI';
+            const key = `appointments_${branch}`;
+            const appointments = JSON.parse(localStorage.getItem(key) || '[]');
+
+            const bookingIds = {};
+            const duplicates = [];
+
+            appointments.forEach((appt, index) => {
+                if (bookingIds[appt.bookingId]) {
+                    duplicates.push({
+                        bookingId: appt.bookingId,
+                        name: appt.name,
+                        index: index
+                    });
+                } else {
+                    bookingIds[appt.bookingId] = true;
+                }
+            });
+
+            const resultDiv = document.getElementById('result');
+            if (duplicates.length === 0) {
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = '<strong>✓ No duplicates found!</strong><br>Your appointments are clean.';
+            } else {
+                resultDiv.className = 'result info';
+                resultDiv.innerHTML = `
+                    <strong>⚠ Found ${duplicates.length} duplicate(s):</strong><br>
+                    ${duplicates.map(d => `- Booking ID: ${d.bookingId}, Name: ${d.name}`).join('<br>')}
+                    <br><br>Click "Remove Duplicates" to clean them up.
+                `;
+            }
+        }
+
+        function removeDuplicates() {
+            if (!confirm('Are you sure you want to remove duplicate appointments? This cannot be undone.')) {
+                return;
+            }
+
+            const branch = localStorage.getItem('branch') || 'CHENNAI';
+            const key = `appointments_${branch}`;
+            const appointments = JSON.parse(localStorage.getItem(key) || '[]');
+
+            const uniqueAppointments = [];
+            const seenIds = new Set();
+
+            // Keep the last occurrence of each booking ID (most recent)
+            for (let i = appointments.length - 1; i >= 0; i--) {
+                const appt = appointments[i];
+                if (!seenIds.has(appt.bookingId)) {
+                    uniqueAppointments.unshift(appt);
+                    seenIds.add(appt.bookingId);
+                }
+            }
+
+            const removedCount = appointments.length - uniqueAppointments.length;
+
+            localStorage.setItem(key, JSON.stringify(uniqueAppointments));
+
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = 'result success';
+            resultDiv.innerHTML = `
+                <strong>✓ Cleanup Complete!</strong><br>
+                Removed ${removedCount} duplicate appointment(s).<br>
+                Kept ${uniqueAppointments.length} unique appointment(s).<br><br>
+                <a href="check-appointment.html">Go to Check Appointments</a>
+            `;
+        }
+    </script>
+</body>
+
+</html>

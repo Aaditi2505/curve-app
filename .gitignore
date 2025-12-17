@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Uploads and User Data
+uploads/
+*.log
+*.sqlite
+*.db
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Editor directories
+.vscode/
+.idea/
+
+# Environment variables
+.env

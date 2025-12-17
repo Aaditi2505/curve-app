@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Patient Database – Completion (Phase 5)</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .detail-main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 22px;
+        }
+
+        .detail-form {
+            background: #fff;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            min-width: 720px;
+            max-width: 92vw;
+            border: 1px solid rgba(0, 0, 0, 0.02);
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .detail-row {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .detail-row label {
+            font-size: 1.02em;
+            color: #484c51;
+            font-family: 'Montserrat', Arial, sans-serif;
+            min-width: 110px;
+        }
+
+        .detail-row input {
+            border: 2px solid #14bfce;
+            border-radius: 6px;
+            font-size: 1.05em;
+            padding: 6px 14px;
+            background: #fcfbfb;
+            color: #282c39;
+            width: 210px;
+        }
+
+        .detail-row input[readonly] {
+            background: #fdfdfd;
+        }
+
+        .detail-textarea {
+            border: 2px solid #14bfce;
+            border-radius: 6px;
+            font-size: 1.03em;
+            padding: 8px 14px;
+            background: #fcfbfb;
+            color: #282c39;
+            width: 100%;
+            min-height: 90px;
+            resize: vertical;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+
+        .detail-actions {
+            display: flex;
+            gap: 38px;
+            margin-top: 18px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        @media (max-width:900px) {
+            .detail-form {
+                min-width: 95vw;
+            }
+
+            .detail-row {
+                flex-wrap: wrap;
+            }
+
+            .detail-row label {
+                min-width: 90px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="dashboard-header">
+        <img src="assets/logo curve.jpg" alt="Curve Logo" class="dashboard-logo">
+        <div class="branch-box" id="branch-name"></div>
+    </header>
+    <h1 class="appointment-title">Patient Database – Completion (Phase 5)</h1>
+    <div class="detail-main">
+        <div id="completedBanner"
+            style="display:none; text-align:center; color:#1e7e34; font-weight:600; margin-bottom:12px;">This case is
+            permanently closed/completed.</div>
+        <form class="detail-form" id="compForm">
+            <div class="detail-row">
+                <label>Unique ID</label>
+                <input type="text" id="uniqueId" readonly>
+                <label>Name</label>
+                <input type="text" id="name" readonly>
+            </div>
+
+            <div class="detail-row">
+                <label>Final Remarks</label>
+                <textarea id="finalRemarks" class="detail-textarea"
+                    placeholder="Enter completion details..."></textarea>
+            </div>
+
+            <div class="detail-row" style="margin-top:8px;">
+                <label></label>
+                <label style="display:flex;align-items:center;gap:8px;">
+                    <input type="checkbox" id="markCompleted">
+                    Close Case (Mark as Completed)
+                </label>
+            </div>
+
+            <div class="detail-actions">
+                <div style="text-align:center;">
+                    <button type="button" class="circle-btn cancel-btn"
+                        onclick="window.location.href='patient-completion-list.html'">
+                        <svg width="40" height="40" viewBox="0 0 40 40">
+                            <circle cx="20" cy="20" r="18" fill="#1e2e49" />
+                            <polyline points="23,12 15,20 23,28" fill="none" stroke="#fff" stroke-width="3" />
+                        </svg>
+                    </button>
+                    <div class="actions-labels"><span>Back</span></div>
+                </div>
+                <div style="text-align:center;">
+                    <button type="submit" class="circle-btn save-btn">
+                        <svg width="40" height="40" viewBox="0 0 40 40">
+                            <circle cx="20" cy="20" r="18" fill="#1e2e49" />
+                            <polyline points="13,22 18,28 28,14" fill="none" stroke="#fff" stroke-width="3" />
+                        </svg>
+                    </button>
+                    <div class="actions-labels"><span>Save &amp; Finish</span></div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const branch = localStorage.getItem('branch') || 'BRANCH';
+            document.getElementById('branch-name').textContent = branch;
+            const raw = localStorage.getItem('currentPatient');
+            if (!raw) { window.location.href = 'patient-completion-list.html'; return; }
+            const p = JSON.parse(raw);
+            document.getElementById('uniqueId').value = p.bookingId || '';
+            document.getElementById('name').value = p.name || '';
+            document.getElementById('finalRemarks').value = p.completionRemarks || '';
+
+            if (p.currentPhase === 'Completed') {
+                document.getElementById('completedBanner').style.display = 'block';
+                document.getElementById('markCompleted').checked = true;
+                document.getElementById('markCompleted').disabled = true;
+            }
+
+            const form = document.getElementById('compForm');
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const markDone = document.getElementById('markCompleted').checked;
+
+                // Once closed, stay closed
+                if (p.currentPhase === 'Completed') return;
+
+                const key = `appointments_${branch}`;
+                const list = JSON.parse(localStorage.getItem(key) || '[]');
+                const updated = list.map(a => {
+                    if ((a.bookingId || '') === (p.bookingId || '')) {
+                        const updatedObj = {
+                            ...a,
+                            completionRemarks: document.getElementById('finalRemarks').value,
+                            currentPhase: markDone ? 'Completed' : 'Phase 5 (Completion)'
+                        };
+                        localStorage.setItem('currentPatient', JSON.stringify(updatedObj));
+                        return updatedObj;
+                    }
+                    return a;
+                });
+                localStorage.setItem(key, JSON.stringify(updated));
+                if (markDone) alert('Case closed successfully.');
+                else alert('Completion details saved.');
+                window.location.href = 'patient-completion-list.html';
+            });
+        });
+    </script>
+</body>
+
+</html>

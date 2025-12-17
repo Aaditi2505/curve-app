@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Patient Database - Completion Phase</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        /* Premium Design System */
+        :root {
+            --primary-color: #14bfce;
+            --primary-dark: #0e8a95;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+            --bg-gradient: radial-gradient(circle at 10% 20%, rgb(239, 246, 249) 0%, rgb(215, 240, 252) 90%);
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.5);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+            --card-radius: 24px;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg-gradient);
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-dark);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(20, 191, 206, 0.05) 0%, transparent 60%);
+            animation: rotateBg 25s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes rotateBg {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Header */
+        .dashboard-header {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            height: 80px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            z-index: 100;
+            border: var(--glass-border);
+        }
+
+        .logo-img {
+            height: 40px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-item {
+            text-decoration: none;
+            color: var(--text-dark);
+            opacity: 0.7;
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding: 10px 18px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            opacity: 1;
+            background: rgba(20, 191, 206, 0.1);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .branch-badge {
+            background: rgba(20, 191, 206, 0.1);
+            color: var(--primary-color);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            border: 1px solid rgba(20, 191, 206, 0.2);
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* Main Layout */
+        .list-main {
+            margin-top: 140px;
+            padding: 0 40px 40px;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .page-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.2rem;
+            color: var(--text-dark);
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        .list-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: var(--card-radius);
+            padding: 30px;
+            box-shadow: var(--glass-shadow);
+            border: var(--glass-border);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Table Styling */
+        .list-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+        }
+
+        .list-table th {
+            text-align: left;
+            padding: 15px 20px;
+            color: var(--text-light);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        .list-table tr {
+            background: white;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .list-table tbody tr {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+            /* Rounded row */
+        }
+
+        .list-table tbody tr td:first-child {
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
+        }
+
+        .list-table tbody tr td:last-child {
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        .list-table td {
+            padding: 20px;
+            color: var(--text-dark);
+            font-size: 1rem;
+            border: none;
+        }
+
+        .list-table tr:hover {
+            transform: translateY(-3px) scale(1.005);
+            box-shadow: 0 10px 25px rgba(20, 191, 206, 0.15);
+        }
+
+        .id-cell {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .phase-badge {
+            background: #eafbfd;
+            color: var(--primary-dark);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        /* Back Button */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 30px;
+            padding: 12px 25px;
+            background: white;
+            color: var(--text-dark);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .back-btn:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            color: var(--primary-color);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="dashboard-header">
+        <div class="header-left">
+            <img src="assets/logo curve.jpg" alt="Curve Logo" class="logo-img">
+            <nav class="nav-links">
+                <a href="dashboard.html" class="nav-item">Dashboard</a>
+                <a href="check-appointment.html" class="nav-item">Check Appointment</a>
+                <a href="patient-entry.html" class="nav-item">Entry</a>
+                <a href="patient-planning-list.html" class="nav-item">Planning</a>
+                <a href="patient-interaction-list.html" class="nav-item">Interaction</a>
+                <a href="dashboard.html" class="nav-item" style="color: #000; font-weight:600;">Back</a>
+            </nav>
+        </div>
+        <div class="branch-badge" id="branch-name">Branch Name</div>
+    </header>
+
+    <main class="list-main">
+        <h1 class="page-title">Completion Phase <span style="font-weight:300; opacity:0.7;">| Patient List</span></h1>
+
+        <div class="list-container">
+            <table class="list-table">
+                <thead>
+                    <tr>
+                        <th>Unique ID</th>
+                        <th>Name</th>
+                        <th>Age</th>
+                        <th>Sex</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="patientTableBody"></tbody>
+            </table>
+            <div id="noResults" class="no-results" style="display:none;">
+                <div style="font-size: 3rem; margin-bottom: 20px;">✅</div>
+                No patients found in Completion Phase.
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const branch = localStorage.getItem('branch') || 'General';
+            document.getElementById('branch-name').textContent = branch;
+
+            const role = localStorage.getItem('role') || 'User';
+            if (role !== 'ADMINISTRATOR') {
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    if (item.textContent.includes('Book Appointment')) {
+                        item.style.display = 'none';
+                    }
+                });
+            }
+
+            const key = `appointments_${branch}`;
+            const tableBody = document.getElementById('patientTableBody');
+            const noResults = document.getElementById('noResults');
+
+            function getCompletionPatients() {
+                const appts = JSON.parse(localStorage.getItem(key) || '[]');
+                return appts
+                    .filter(a => (a.currentPhase || '') === 'Phase 5 (Completion)' || a.currentPhase === 'Completed')
+                    .map(a => ({
+                        id: a.bookingId || '',
+                        name: (a.name || '').trim(),
+                        age: a.age || '',
+                        sex: a.sex || '',
+                        date: a.date || '',
+                        phase: a.currentPhase || 'Phase 5 (Completion)'
+                    }));
+            }
+
+            window.openCompletionPatient = function (id) {
+                const appts = JSON.parse(localStorage.getItem(key) || '[]');
+                const found = appts.find(a => (a.bookingId || '') == id);
+                if (!found) return;
+                localStorage.setItem('currentPatient', JSON.stringify(found));
+                // Smooth transition
+                document.body.style.opacity = '0';
+                document.body.style.transition = 'opacity 0.4s ease';
+                setTimeout(() => {
+                    window.location.href = 'patient-completion.html';
+                }, 400);
+            };
+
+            const list = getCompletionPatients();
+
+            if (!list.length) {
+                noResults.style.display = 'block';
+            } else {
+                tableBody.innerHTML = list.map(p => `
+                    <tr onclick="openCompletionPatient('${p.id}')">
+                        <td class="id-cell">${p.id}</td>
+                        <td style="font-weight:500;">${p.name}</td>
+                        <td>${p.age}</td>
+                        <td>${p.sex}</td>
+                        <td>${p.date}</td>
+                        <td><span class="phase-badge">${p.phase}</span></td>
+                    </tr>
+                `).join('');
+            }
+        });
+    </script>
+</body>
+
+</html>

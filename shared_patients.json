@@ -1,0 +1,62 @@
+{
+  "0003": {
+    "name": "aad",
+    "age": "24",
+    "sex": "Female",
+    "date": "2025-12-12",
+    "time": "20:20",
+    "contact": "+919500808814",
+    "whatsapp": "",
+    "bookingId": "0003",
+    "branch": "CHENNAI",
+    "procedure": "Checkup",
+    "approved": true,
+    "chiefComplaint": "",
+    "treatmentPlan": "",
+    "scanPaths": [
+      "/uploads/20251002-107-upperjaw[1]-1765260086704 (5)-1765554405668.stl"
+    ],
+    "facePaths": [
+      "/uploads/video-1765554413694.mp4"
+    ],
+    "extraPaths": [
+      "/uploads/im2-1765554419048.jpeg"
+    ],
+    "intraPaths": [
+      "/uploads/im1-1765554425932.jpeg"
+    ],
+    "extraImageCount": 1,
+    "intraImageCount": 1,
+    "currentPhase": "Phase 2 (Planning) - Completed",
+    "phase1Completed": true,
+    "planningStlPaths": [
+      "/uploads/page6-1765782332253.jpg"
+    ],
+    "planningPdfPaths2": [
+      "/uploads/mongo10-1765782336579.pdf"
+    ],
+    "planningVideoPaths2": [
+      "/uploads/video3-1765782348623.mp4"
+    ],
+    "planningFace3dPaths2": [
+      "/uploads/im1-1765782355098.jpeg"
+    ],
+    "planningCompareUpperPaths": [
+      "/uploads/page1-1765782361176.jpg"
+    ],
+    "planningCompareLowerPaths": [
+      "/uploads/page5-1765782370428.jpg"
+    ],
+    "planningPreoptPaths": [],
+    "phase2Completed": true,
+    "scanPathsPhase2": [],
+    "facePathsPhase2": [],
+    "extraPathsPhase2": [],
+    "intraPathsPhase2": [],
+    "planPdfPaths": [],
+    "planVideoPaths": [],
+    "postSimPaths": [],
+    "planningModelsUpper": 0,
+    "planningModelsLower": 0
+  }
+}

@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Appointment | CURVE</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: radial-gradient(circle at 10% 20%, rgb(239, 246, 249) 0%, rgb(215, 240, 252) 90%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Header */
+    .page-header {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      height: 80px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      z-index: 100;
+    }
+
+    .logo-img {
+      height: 45px;
+      mix-blend-mode: multiply;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .nav-item {
+      text-decoration: none;
+      color: #546e7a;
+      font-weight: 500;
+      font-size: 0.95rem;
+      padding: 10px 18px;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .nav-item:hover,
+    .nav-item.active {
+      background: rgba(20, 191, 206, 0.1);
+      color: #14bfce;
+      font-weight: 600;
+    }
+
+    .branch-badge {
+      background: rgba(44, 62, 80, 0.05);
+      padding: 10px 25px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #2c3e50;
+      border: 1px solid rgba(44, 62, 80, 0.1);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* Main Container */
+    .main-container {
+      margin-top: 120px;
+      padding: 20px 40px 40px;
+      display: flex;
+      gap: 30px;
+      max-width: 1400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Sidebar Menu */
+    .sidebar-menu {
+      width: 200px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .menu-btn {
+      background: white;
+      border: 2px solid transparent;
+      border-radius: 16px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      color: #2c3e50;
+      letter-spacing: 1px;
+    }
+
+    .menu-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      border-color: #14bfce;
+    }
+
+    .menu-btn.active {
+      background: linear-gradient(135deg, #14bfce, #0e9aa7);
+      color: white;
+      border-color: #14bfce;
+    }
+
+    /* Content Area */
+    .content-area {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+      min-height: 500px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .content-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 2rem;
+      color: #2c3e50;
+      margin-bottom: 30px;
+      font-weight: 700;
+    }
+
+    /* Form Styles */
+    .appointment-form {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .form-label {
+      font-weight: 500;
+      color: #546e7a;
+      font-size: 0.95rem;
+    }
+
+    .form-input,
+    .form-select {
+      padding: 12px 16px;
+      border: 2px solid #e0e6ed;
+      border-radius: 12px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      background: white;
+      transition: all 0.3s ease;
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+      outline: none;
+      border-color: #14bfce;
+      box-shadow: 0 0 0 4px rgba(20, 191, 206, 0.1);
+    }
+
+    .booking-id-display {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #14bfce;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    /* Action Buttons */
+    .form-actions {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin-top: 30px;
+    }
+
+    .action-btn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-cancel {
+      background: #e74c3c;
+    }
+
+    .btn-save {
+      background: #27ae60;
+    }
+
+    /* List View for Old/Delete */
+    .appointments-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .appointment-card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: transform 0.3s ease;
+    }
+
+    .appointment-card:hover {
+      transform: translateX(5px);
+    }
+
+    .appt-info {
+      display: flex;
+      gap: 30px;
+      flex: 1;
+    }
+
+    .appt-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .appt-label {
+      font-size: 0.8rem;
+      color: #7f8c8d;
+      font-weight: 500;
+    }
+
+    .appt-value {
+      font-size: 1rem;
+      color: #2c3e50;
+      font-weight: 600;
+    }
+
+    .delete-btn {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .delete-btn:hover {
+      background: #c0392b;
+      transform: scale(1.05);
+    }
+
+    .no-results {
+      text-align: center;
+      color: #95a5a6;
+      font-size: 1.2rem;
+      padding: 60px;
+    }
+
+    /* Back Button */
+    .back-button {
+      position: fixed;
+      bottom: 40px;
+      left: 40px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #2c3e50;
+      color: white;
+      border: none;
+      font-size: 2rem;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      z-index: 50;
+    }
+
+    .back-button:hover {
+      transform: scale(1.1);
+      background: #34495e;
+    }
+
+    /* Date Filter */
+    .filter-section {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 25px;
+      align-items: center;
+    }
+
+    .filter-label {
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    /* Search Section */
+    .search-section {
+      margin-bottom: 30px;
+    }
+
+    .search-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .search-btn-inline {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #14bfce, #0e9aa7);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .search-btn-inline:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(20, 191, 206, 0.3);
+    }
+
+    .autocomplete-results {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 100px;
+      background: white;
+      border: 2px solid #14bfce;
+      border-radius: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      margin-top: 5px;
+    }
+
+    .autocomplete-item {
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .autocomplete-item:hover {
+      background: rgba(20, 191, 206, 0.1);
+    }
+
+    .autocomplete-item:last-child {
+      border-bottom: none;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-left">
+      <img src="assets/logo curve.jpg" alt="Curve" class="logo-img">
+      <nav class="nav-links">
+        <a href="dashboard.html" class="nav-item">Dashboard</a>
+        <a href="book-appointment.html" class="nav-item active">Book Appointment</a>
+        <a href="check-appointment.html" class="nav-item">Check Appointment</a>
+        <a href="patient-entry.html" class="nav-item">Entry</a>
+        <a href="patient-planning-list.html" class="nav-item">Planning</a>
+        <a href="patient-interaction-list.html" class="nav-item">Interaction</a>
+      </nav>
+    </div>
+    <div class="branch-badge" id="branch-display">Branch</div>
+  </header>
+
+  <div class="main-container">
+    <!-- Sidebar Menu -->
+    <div class="sidebar-menu">
+      <button class="menu-btn active" onclick="showSection('new')">NEW</button>
+      <button class="menu-btn" onclick="showSection('old')">OLD</button>
+      <button class="menu-btn" onclick="showSection('delete')">DELETE</button>
+    </div>
+
+    <!-- Content Area -->
+    <div class="content-area">
+      <!-- NEW APPOINTMENT SECTION -->
+      <div id="section-new" class="section-content">
+        <h2 class="content-title">New Appointment Booking</h2>
+        <form class="appointment-form" id="newAppointmentForm">
+          <div class="form-row">
+            <div class="form-group">
+              <span class="form-label">Booking ID:</span>
+              <span class="booking-id-display" id="bookingId">0001</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Name *</label>
+              <input type="text" class="form-input" name="name" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Age *</label>
+              <input type="number" class="form-input" name="age" min="0" max="120" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Sex *</label>
+              <select class="form-select" name="sex" required>
+                <option value="">Select</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Date *</label>
+              <input type="date" class="form-input" name="date" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Time *</label>
+              <input type="time" class="form-input" name="time" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Contact No (+91) *</label>
+              <input type="tel" class="form-input" name="contact" pattern="\d{10}" maxlength="10"
+                placeholder="10 digits" required>
+            </div>
+            <div class="form-group">
+              <div class="checkbox-group">
+                <input type="checkbox" id="hasWhatsapp" name="hasWhatsapp">
+                <label class="form-label">WhatsApp (+91)</label>
+              </div>
+              <input type="tel" class="form-input hidden" id="whatsappInput" name="whatsapp" pattern="\d{10}"
+                maxlength="10" placeholder="10 digits">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group" style="flex: 1;">
+              <label class="form-label">Address</label>
+              <textarea class="form-input" name="address" rows="2"
+                style="resize: vertical; font-family: 'Outfit', sans-serif;"></textarea>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="action-btn btn-cancel" onclick="resetForm()">
+              <svg width="30" height="30" viewBox="0 0 30 30">
+                <line x1="8" y1="8" x2="22" y2="22" stroke="white" stroke-width="3" />
+                <line x1="22" y1="8" x2="8" y2="22" stroke="white" stroke-width="3" />
+              </svg>
+            </button>
+            <button type="submit" class="action-btn btn-save">
+              <svg width="30" height="30" viewBox="0 0 30 30">
+                <polyline points="6,16 12,22 24,8" fill="none" stroke="white" stroke-width="3" />
+              </svg>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- OLD APPOINTMENT SECTION -->
+      <div id="section-old" class="section-content hidden">
+        <h2 class="content-title">Old Appointment Booking</h2>
+
+        <!-- Search Boxes -->
+        <div class="search-section">
+          <div class="search-group" style="position: relative;">
+            <input type="text" class="form-input" id="searchName" placeholder="Type patient name..." autocomplete="off"
+              spellcheck="false">
+            <button type="button" class="search-btn-inline" onclick="searchByName()">Search</button>
+            <div id="searchResults" class="autocomplete-results"></div>
+          </div>
+
+          <div class="search-group" style="position: relative; margin-top: 15px;">
+            <input type="text" class="form-input" id="searchContact" placeholder="Type contact number..."
+              autocomplete="off" spellcheck="false">
+            <button type="button" class="search-btn-inline" onclick="searchByContact()">Search</button>
+            <div id="searchResultsContact" class="autocomplete-results"></div>
+          </div>
+        </div>
+
+        <!-- Appointment Form -->
+        <form class="appointment-form" id="oldAppointmentForm" style="margin-top: 30px;">
+          <div class="form-row">
+            <div class="form-group">
+              <span class="form-label">Booking ID:</span>
+              <span class="booking-id-display" id="oldBookingId">-</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Name *</label>
+              <input type="text" class="form-input" id="oldName" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Age *</label>
+              <input type="number" class="form-input" id="oldAge" min="0" max="120" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Sex *</label>
+              <input type="text" class="form-input" id="oldSex" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Date *</label>
+              <input type="date" class="form-input" id="oldDate" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Time *</label>
+              <input type="time" class="form-input" id="oldTime" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Contact No *</label>
+              <input type="text" class="form-input" id="oldContact" required>
+            </div>
+            <div class="form-group" id="oldWhatsappGroup" style="display: none;">
+              <label class="form-label">WhatsApp</label>
+              <input type="text" class="form-input" id="oldWhatsapp">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group" style="flex: 1;">
+              <label class="form-label">Address</label>
+              <textarea class="form-input" id="oldAddress" rows="2"
+                style="resize: vertical; font-family: 'Outfit', sans-serif;"></textarea>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Procedure *</label>
+              <select class="form-select" id="oldProcedure" required>
+                <option value="">Select Procedure</option>
+                <option value="Checkup">Checkup</option>
+                <option value="3D Scanning">3D Scanning</option>
+                <option value="3D Planning">3D Planning</option>
+                <option value="Template/Attachment">Template/Attachment</option>
+                <option value="Aligner Review">Aligner Review</option>
+                <option value="Retainer">Retainer</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="action-btn btn-cancel" onclick="resetOldForm()">
+              <svg width="30" height="30" viewBox="0 0 30 30">
+                <line x1="8" y1="8" x2="22" y2="22" stroke="white" stroke-width="3" />
+                <line x1="22" y1="8" x2="8" y2="22" stroke="white" stroke-width="3" />
+              </svg>
+            </button>
+            <button type="submit" class="action-btn btn-save">
+              <svg width="30" height="30" viewBox="0 0 30 30">
+                <polyline points="6,16 12,22 24,8" fill="none" stroke="white" stroke-width="3" />
+              </svg>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- DELETE APPOINTMENT SECTION -->
+      <div id="section-delete" class="section-content hidden">
+        <h2 class="content-title">Delete Appointments</h2>
+        <p style="color: #7f8c8d; margin-bottom: 20px;">Showing appointments from the last 1 week</p>
+        <div class="appointments-list" id="deleteAppointmentsList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Back Button -->
+  <button class="back-button" onclick="window.location.href='dashboard.html'">←</button>
+
+  <script>
+    let currentBranch = '';
+
+    document.addEventListener('DOMContentLoaded', function () {
+      currentBranch = localStorage.getItem('branch') || 'BRANCH';
+      document.getElementById('branch-display').textContent = currentBranch;
+
+      // Generate booking ID
+      updateBookingId();
+
+      // WhatsApp checkbox handler
+      document.getElementById('hasWhatsapp').addEventListener('change', function () {
+        const whatsappInput = document.getElementById('whatsappInput');
+        if (this.checked) {
+          whatsappInput.classList.remove('hidden');
+        } else {
+          whatsappInput.classList.add('hidden');
+          whatsappInput.value = '';
+        }
+      });
+
+      // Form submission
+      document.getElementById('newAppointmentForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        saveNewAppointment();
+      });
+
+      // Setup OLD appointment listeners
+      setupOldAppointmentListeners();
+    });
+
+    function showSection(section) {
+      // Update menu buttons
+      document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      // Hide all sections
+      document.querySelectorAll('.section-content').forEach(sec => sec.classList.add('hidden'));
+
+      // Show selected section
+      document.getElementById('section-' + section).classList.remove('hidden');
+
+      // Load data for the section
+      if (section === 'delete') {
+        loadDeleteAppointments();
+      }
+    }
+
+    function updateBookingId() {
+      const key = `appointments_${currentBranch}`;
+      const appointments = JSON.parse(localStorage.getItem(key) || '[]');
+
+      // Find the highest existing booking ID number
+      let maxId = 0;
+      appointments.forEach(appt => {
+        const idNum = parseInt(appt.bookingId);
+        if (!isNaN(idNum) && idNum > maxId) {
+          maxId = idNum;
+        }
+      });
+
+      // Next ID is max + 1
+      const bookingId = (maxId + 1).toString().padStart(4, '0');
+      document.getElementById('bookingId').textContent = bookingId;
+    }
+
+    function saveNewAppointment() {
+      const form = document.getElementById('newAppointmentForm');
+      const contactVal = form.contact.value.trim();
+      const whatsappVal = form.whatsapp.value.trim();
+
+      if (!/^\d{10}$/.test(contactVal)) {
+        alert('Contact number must be exactly 10 digits.');
+        return;
+      }
+
+      const isWhatsappEnabled = form.hasWhatsapp.checked;
+      if (isWhatsappEnabled && !/^\d{10}$/.test(whatsappVal)) {
+        alert('WhatsApp number must be exactly 10 digits.');
+        return;
+      }
+
+      const key = `appointments_${currentBranch}`;
+      const appointments = JSON.parse(localStorage.getItem(key) || '[]');
+      const bookingId = document.getElementById('bookingId').textContent;
+
+      // Check for duplicate booking ID
+      const existingAppointment = appointments.find(a => a.bookingId === bookingId);
+      if (existingAppointment) {
+        alert('This booking ID already exists. Please refresh the page and try again.');
+        return;
+      }
+
+      const data = {
+        name: form.name.value,
+        age: form.age.value,
+        sex: form.sex.value,
+        date: form.date.value,
+        time: form.time.value,
+        contact: '+91' + contactVal,
+        contact: '+91' + contactVal,
+        whatsapp: isWhatsappEnabled ? '+91' + whatsappVal : '',
+        address: form.address.value,
+        bookingId: bookingId,
+        branch: currentBranch
+      };
+
+      appointments.push(data);
+      localStorage.setItem(key, JSON.stringify(appointments));
+
+      alert('Appointment saved successfully!');
+      resetForm();
+      updateBookingId();
+    }
+
+    function resetForm() {
+      document.getElementById('newAppointmentForm').reset();
+      document.getElementById('whatsappInput').classList.add('hidden');
+    }
+
+    let currentOldAppointment = null;
+
+    // Setup OLD appointment section
+    function setupOldAppointmentListeners() {
+      const searchNameInput = document.getElementById('searchName');
+      const searchContactInput = document.getElementById('searchContact');
+      const resultsDiv = document.getElementById('searchResults');
+      const resultsDivContact = document.getElementById('searchResultsContact');
+
+      // Name search autocomplete
+      searchNameInput.addEventListener('input', function () {
+        const input = this.value.trim().toLowerCase();
+        const key = `appointments_${currentBranch}`;
+        const appointments = JSON.parse(localStorage.getItem(key) || '[]');
+
+        if (!input) {
+          resultsDiv.innerHTML = '';
+          return;
+        }
+
+        const matches = appointments.filter(appt =>
+          typeof appt.name === "string" && appt.name.toLowerCase().includes(input)
+        );
+
+        if (matches.length === 0) {
+          resultsDiv.innerHTML = '<div class="autocomplete-item">No matches</div>';
+          return;
+        }
+
+        resultsDiv.innerHTML = matches.map(appt =>
+          `<div class="autocomplete-item">${appt.name}</div>`
+        ).join('');
+
+        Array.from(resultsDiv.children).forEach((item, idx) => {
+          item.onclick = function () {
+            searchNameInput.value = matches[idx].name;
+            fillOldAppointmentDetails(matches[idx]);
+            resultsDiv.innerHTML = '';
+          };
+        });
+      });
+
+      // Contact search autocomplete
+      searchContactInput.addEventListener('input', function () {
+        const input = this.value.trim();
+        const key = `appointments_${currentBranch}`;
+        const appointments = JSON.parse(localStorage.getItem(key) || '[]');
+
+        if (!input) {
+          resultsDivContact.innerHTML = '';
+          return;
+        }
+
+        const matches = appointments.filter(appt =>
+          typeof appt.contact === "string" && appt.contact.includes(input)
+        );
+
+        if (matches.length === 0) {
+          resultsDivContact.innerHTML = '<div class="autocomplete-item">No matches</div>';
+          return;
+        }
+
+        resultsDivContact.innerHTML = matches.map(appt =>
+          `<div class="autocomplete-item">${appt.contact}</div>`
+        ).join('');
+
+        Array.from(resultsDivContact.children).forEach((item, idx) => {
+          item.onclick = function () {
+            searchContactInput.value = matches[idx].contact;
+            fillOldAppointmentDetails(matches[idx]);
+            resultsDivContact.innerHTML = '';
+          };
+        });
+      });
+
+      // Hide dropdowns when clicking away
+      document.addEventListener('click', function (event) {
+        if (!resultsDiv.contains(event.target) && event.target !== searchNameInput) {
+          resultsDiv.innerHTML = '';
+        }
+        if (!resultsDivContact.contains(event.target) && event.target !== searchContactInput) {
+          resultsDivContact.innerHTML = '';
+        }
+      });
+
+      // Form submission
+      document.getElementById('oldAppointmentForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        saveOldAppointment();
+      });
+    }
+
+    function searchByName() {
+      const input = document.getElementById('searchName').value.trim().toLowerCase();
+      const key = `appointments_${currentBranch}`;
+      const appointments = JSON.parse(localStorage.getItem(key) || '[]');
+
+      const found = appointments.find(appt =>
+        typeof appt.name === "string" && appt.name.toLowerCase() === input
+      );
+
+      if (found) {
+        fillOldAppointmentDetails(found);
+        document.getElementById('searchResults').innerHTML = '';
+      } else {
+        alert("No record found for this name.");
+      }
+    }
+
+    function searchByContact() {
+      const input = document.getElementById('searchContact').value.trim();
+      const key = `appointments_${currentBranch}`;
+      const appointments = JSON.parse(localStorage.getItem(key) || '[]');
+
+      const found = appointments.find(appt =>
+        typeof appt.contact === "string" && appt.contact === input
+      );
+
+      if (found) {
+        fillOldAppointmentDetails(found);
+        document.getElementById('searchResultsContact').innerHTML = '';
+      } else {
+        alert("No record found for this contact number.");
+      }
+    }
+
+    function fillOldAppointmentDetails(appointment) {
+      currentOldAppointment = appointment;
+      document.getElementById('oldBookingId').textContent = appointment.bookingId || '';
+      document.getElementById('oldName').value = appointment.name || '';
+      document.getElementById('oldAge').value = appointment.age || '';
+      document.getElementById('oldSex').value = appointment.sex || '';
+      document.getElementById('oldDate').value = appointment.date || '';
+      document.getElementById('oldTime').value = appointment.time || '';
+      document.getElementById('oldContact').value = appointment.contact || '';
+      document.getElementById('oldWhatsapp').value = appointment.whatsapp || '';
+      document.getElementById('oldAddress').value = appointment.address || '';
+      document.getElementById('oldProcedure').value = appointment.procedure || '';
+
+      // Show WhatsApp field if it has a value
+      if (appointment.whatsapp) {
+        document.getElementById('oldWhatsappGroup').style.display = 'flex';
+      } else {
+        document.getElementById('oldWhatsappGroup').style.display = 'none';
+      }
+    }
+
+    function saveOldAppointment() {
+      if (!currentOldAppointment) {
+        alert('Please search and select an appointment first.');
+        return;
+      }
+
+      const key = `appointments_${currentBranch}`;
+      const appointments = JSON.parse(localStorage.getItem(key) || '[]');
+
+      // Update the appointment
+      const updatedAppointments = appointments.map(appt => {
+        if (appt.bookingId === currentOldAppointment.bookingId) {
+          return {
+            ...appt,
+            name: document.getElementById('oldName').value,
+            age: document.getElementById('oldAge').value,
+            sex: document.getElementById('oldSex').value,
+            date: document.getElementById('oldDate').value,
+            time: document.getElementById('oldTime').value,
+            contact: document.getElementById('oldContact').value,
+            whatsapp: document.getElementById('oldWhatsapp').value,
+            address: document.getElementById('oldAddress').value,
+            procedure: document.getElementById('oldProcedure').value
+          };
+        }
+        return appt;
+      });
+
+      localStorage.setItem(key, JSON.stringify(updatedAppointments));
+      alert('Appointment updated successfully!');
+      resetOldForm();
+    }
+
+    function resetOldForm() {
+      currentOldAppointment = null;
+      document.getElementById('oldAppointmentForm').reset();
+      document.getElementById('oldBookingId').textContent = '-';
+      document.getElementById('oldWhatsappGroup').style.display = 'none';
+      document.getElementById('searchName').value = '';
+      document.getElementById('searchContact').value = '';
+    }
+
+    function loadDeleteAppointments() {
+      const key = `appointments_${currentBranch}`;
+      const allAppointments = JSON.parse(localStorage.getItem(key) || '[]');
+
+      // Filter last 1 week
+      const today = new Date();
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(today.getDate() - 7);
+
+      const filtered = allAppointments.filter(appt => {
+        if (!appt.date) return false;
+        const apptDate = new Date(appt.date);
+        return apptDate >= oneWeekAgo;
+      });
+
+      renderAppointments(filtered, 'deleteAppointmentsList', true);
+    }
+
+    function renderAppointments(appointments, containerId, showDelete) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+
+      if (appointments.length === 0) {
+        container.innerHTML = '<div class="no-results">No appointments found.</div>';
+        return;
+      }
+
+      appointments.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      appointments.forEach(appt => {
+        const card = document.createElement('div');
+        card.className = 'appointment-card';
+        card.innerHTML = `
+                    <div class="appt-info">
+                        <div class="appt-field">
+                            <span class="appt-label">Name</span>
+                            <span class="appt-value">${appt.name}</span>
+                        </div>
+                        <div class="appt-field">
+                            <span class="appt-label">Age / Sex</span>
+                            <span class="appt-value">${appt.age} / ${appt.sex}</span>
+                        </div>
+                        <div class="appt-field">
+                            <span class="appt-label">Date</span>
+                            <span class="appt-value">${appt.date}</span>
+                        </div>
+                        <div class="appt-field">
+                            <span class="appt-label">Time</span>
+                            <span class="appt-value">${appt.time}</span>
+                        </div>
+                        <div class="appt-field">
+                            <span class="appt-label">Booking ID</span>
+                            <span class="appt-value">${appt.bookingId}</span>
+                        </div>
+                    </div>
+                    ${showDelete ? `<button class="delete-btn" onclick="deleteAppointment('${appt.bookingId}')">DELETE</button>` : ''}
+                `;
+        container.appendChild(card);
+      });
+    }
+
+    function deleteAppointment(bookingId) {
+      if (!confirm('Are you sure you want to delete this appointment?')) return;
+
+      const key = `appointments_${currentBranch}`;
+      let appointments = JSON.parse(localStorage.getItem(key) || '[]');
+
+      appointments = appointments.filter(a => a.bookingId !== bookingId);
+      localStorage.setItem(key, JSON.stringify(appointments));
+
+      alert('Appointment deleted successfully!');
+      loadDeleteAppointments();
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Interaction | CURVE</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #14bfce;
+            --primary-dark: #0e9aa7;
+            --secondary-color: #2c3e50;
+            --text-dark: #2c3e50;
+            --text-light: #95a5a6;
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.5);
+            --bg-gradient: radial-gradient(circle at 10% 20%, rgb(239, 246, 249) 0%, rgb(215, 240, 252) 90%);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg-gradient);
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-dark);
+            min-height: 100vh;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        /* Premium Header */
+        .dashboard-header {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .logo-img {
+            height: 40px;
+            mix-blend-mode: multiply;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-item {
+            text-decoration: none;
+            color: var(--text-dark);
+            opacity: 0.7;
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding: 10px 18px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            opacity: 1;
+            background: rgba(20, 191, 206, 0.1);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .branch-badge {
+            background: rgba(20, 191, 206, 0.1);
+            color: var(--primary-color);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            border: 1px solid rgba(20, 191, 206, 0.2);
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* Layout Container to account for fixed header */
+        .layout-container {
+            display: flex;
+            height: 100vh;
+            padding-top: 120px;
+            /* Header height + gap */
+        }
+
+        /* Sidebar Glass Panel */
+        .sidebar {
+            width: 300px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            /* Standard visible sidebar */
+            position: sticky;
+            top: 120px;
+            /* Offset for header */
+            height: auto;
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+            /* Internal scroll if needed */
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            padding: 30px;
+            gap: 15px;
+            z-index: 90;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            margin-left: 20px;
+            /* Add margin-left to align with header */
+        }
+
+        .patient-info-card {
+            background: #f8f9fa;
+            border-radius: 18px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0, 0, 0, 0.03);
+        }
+
+        .patient-info-row {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .patient-info-row span {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        /* Modern Nav Buttons */
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 20px;
+            background: transparent;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            color: var(--text-light);
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-btn:hover {
+            background: rgba(20, 191, 206, 0.08);
+            color: var(--primary-color);
+            transform: translateX(5px);
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            box-shadow: 0 8px 20px rgba(20, 191, 206, 0.3);
+            font-weight: 600;
+        }
+
+        .nav-icon {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            /* Removed fixed margin-left since we are using flex */
+            flex: 1;
+            padding: 0 0 40px 40px;
+            /* Add left padding between sidebar and content */
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            /* Prevent flex overflow */
+        }
+
+        #viewTitle {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2rem;
+            color: var(--text-dark);
+            margin-bottom: 30px;
+            font-weight: 700;
+            position: relative;
+            display: inline-block;
+        }
+
+        #viewTitle::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -10px;
+            width: 60px;
+            height: 4px;
+            background: var(--primary-color);
+            border-radius: 2px;
+        }
+
+        .viewer-container {
+            width: 100%;
+            display: flex;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+            gap: 25px;
+            padding-bottom: 40px;
+        }
+
+        /* Media Grid */
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            width: 100%;
+        }
+
+        .media-item {
+            background: white;
+            border-radius: 20px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            transition: all 0.4s ease;
+            cursor: pointer;
+            position: relative;
+            border: 1px solid rgba(0, 0, 0, 0.02);
+            animation: fadeIn 0.6s ease forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .media-item:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .media-item img,
+        .media-item video {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 12px;
+            background: #f8f9fa;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Split View Enhancement */
+        .split-view {
+            display: flex;
+            width: 100%;
+            height: calc(100vh - 250px);
+            gap: 30px;
+        }
+
+        .split-panel {
+            flex: 1;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(0, 0, 0, 0.02);
+        }
+
+        .split-title {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            text-align: center;
+            letter-spacing: 1px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .split-content {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            scrollbar-width: thin;
+            scrollbar-color: #d1d8e0 transparent;
+        }
+
+        .empty-state {
+            width: 100%;
+            height: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #bdc3c7;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 24px;
+            border: 2px dashed #e0e0e0;
+        }
+
+        .back-btn-sidebar:hover {
+            background: #ffe5e5;
+            color: #fa5252;
+            transform: translateY(-2px);
+        }
+
+        /* Share Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .share-modal {
+            background: rgba(255, 255, 255, 0.95);
+            width: 500px;
+            max-width: 90%;
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: var(--text-dark);
+        }
+
+        .link-container {
+            display: flex;
+            gap: 10px;
+            background: #f1f3f5;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid #e0e6ed;
+        }
+
+        .link-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            outline: none;
+        }
+
+        .copy-btn-modal {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn-modal:hover {
+            background: var(--primary-dark);
+        }
+
+        .share-actions {
+            display: flex;
+            gap: 15px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .action-chip {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #eee;
+            background: white;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-dark);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .action-chip:hover {
+            background: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+    <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+
+<body>
+    <!-- Premium Header -->
+    <header class="dashboard-header">
+        <div class="header-left">
+            <img src="assets/logo curve.jpg" alt="Curve Logo" class="logo-img">
+            <nav class="nav-links">
+                <a href="dashboard.html" class="nav-item">Dashboard</a>
+                <a href="check-appointment.html" class="nav-item">Check Appointment</a>
+                <a href="patient-entry.html" class="nav-item">Entry</a>
+                <a href="patient-planning-list.html" class="nav-item">Planning</a>
+                <a href="patient-interaction-list.html" class="nav-item active">Interaction</a>
+                <a href="patient-interaction-list.html" class="nav-item" style="color: #000; font-weight:600;">Back
+                    to List</a>
+            </nav>
+        </div>
+        <div class="branch-badge" id="branch-name">Branch</div>
+    </header>
+
+    <div class="layout-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="patient-info-card">
+                <div class="patient-info-row">Patient Name : <span id="pName"></span></div>
+                <div class="patient-info-row">Age : <span id="pAge"></span> Sex : <span id="pSex"></span></div>
+            </div>
+
+            <button class="nav-btn active" onclick="showTab('images', this)">
+                <span class="nav-icon">📷</span> Images
+            </button>
+            <button class="nav-btn" onclick="showTab('pdf', this)">
+                <span class="nav-icon">📄</span> Plan Pdf
+            </button>
+            <button class="nav-btn" onclick="showTab('video', this)">
+                <span class="nav-icon">▶️</span> Video
+            </button>
+            <button class="nav-btn" onclick="showTab('face3d', this)">
+                <span class="nav-icon">👤</span> Face 3d
+            </button>
+            <button class="nav-btn" onclick="showTab('compare', this)">
+                <span class="nav-icon">🧊</span> 3d Compare
+            </button>
+
+            <div style="margin-top: 10px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 10px;">
+                <button class="nav-btn" onclick="generateLink()" style="color: var(--primary-color);">
+                    <span class="nav-icon">🔗</span> Share Link
+                </button>
+            </div>
+
+            <div style="flex:1;"></div>
+
+        </aside>
+
+        <!-- Main Viewer Area -->
+        <main class="main-content">
+            <h2 id="viewTitle">Images</h2>
+            <div id="viewer" class="viewer-container">
+                <!-- Dynamic Content -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Share Modal -->
+    <div id="shareModal" class="modal-overlay">
+        <div class="share-modal">
+            <div class="modal-header">
+                <div class="modal-title">Share Patient Record</div>
+                <button class="close-btn" onclick="closeShareModal()">&times;</button>
+            </div>
+
+            <p style="color:red; font-size:0.9rem; margin:0;">
+                Note: This link currently works on <b>Wi-Fi</b>. <br>
+                To share over the internet, request the host URL.
+            </p>
+
+            <div class="link-container">
+                <input type="text" id="shareLinkInput" class="link-input" readonly>
+                <button class="copy-btn-modal" onclick="copyFromModal()">Copy</button>
+            </div>
+
+            <div class="share-actions">
+                <button class="action-chip" onclick="shareViaApp()">
+                    <span>📱</span> Share via App
+                </button>
+                <button class="action-chip" onclick="copyMessage()">
+                    <span>💬</span> Copy w/ Msg
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let p = {}; // Current patient data
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Populate branch
+            const branch = localStorage.getItem('branch') || 'BRANCH';
+            document.getElementById('branch-name').textContent = branch;
+
+            const raw = localStorage.getItem('currentPatient');
+            if (!raw) {
+                window.location.href = 'patient-interaction-list.html';
+                return;
+            }
+            p = JSON.parse(raw);
+
+            // Populate Info
+            document.getElementById('pName').textContent = p.name || 'N/A';
+            document.getElementById('pAge').textContent = p.age || 'N/A';
+            document.getElementById('pSex').textContent = p.sex || 'N/A';
+
+            // Initial Tab
+            showTab('images', document.querySelector('.nav-btn'));
+        });
+
+        function showTab(type, btn) {
+            // Active state
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            const viewer = document.getElementById('viewer');
+            const title = document.getElementById('viewTitle');
+            viewer.innerHTML = '';
+
+            let paths = [];
+
+            if (type === 'images') {
+                title.textContent = 'Images';
+                paths = p.planningStlPaths || [];
+                renderGrid(paths, 'img');
+            } else if (type === 'pdf') {
+                title.textContent = 'Plan PDF';
+                paths = p.planningPdfPaths2 || [];
+                renderGrid(paths, 'pdf');
+            } else if (type === 'video') {
+                title.textContent = 'Plan Video';
+                paths = p.planningVideoPaths2 || [];
+                renderGrid(paths, 'video');
+            } else if (type === 'face3d') {
+                title.textContent = 'Face 3D Analysis';
+                const left = p.planningCompareUpperPaths || [];
+                const right = p.planningCompareLowerPaths || [];
+                renderSplit(left, right, 'Left / Upper', 'Right / Lower');
+            } else if (type === 'compare') {
+                title.textContent = '3D Comparison';
+                render3DCompare(p);
+            } else if (type === 'preop') {
+                title.textContent = 'Pre-Op Clinicals';
+                paths = [
+                    ...(p.planningPreoptPaths || []),
+                    ...(p.extraPaths || []),
+                    ...(p.intraPaths || []),
+                    ...(p.extraPathsPhase2 || []),
+                    ...(p.intraPathsPhase2 || [])
+                ];
+                renderGrid(paths, 'img');
+            }
+        }
+
+        function renderGrid(paths, type) {
+            const viewer = document.getElementById('viewer');
+
+            if (!paths.length) {
+                viewer.innerHTML = '<div class="empty-state">No files uploaded for this section.</div>';
+                return;
+            }
+
+            const grid = document.createElement('div');
+            grid.className = 'media-grid';
+
+            paths.forEach((path, index) => {
+                const item = document.createElement('div');
+                item.className = 'media-item';
+                item.style.animationDelay = `${index * 0.1}s`;
+
+                if (type === 'img') {
+                    const img = document.createElement('img');
+                    img.src = path;
+                    img.onclick = () => window.open(path, '_blank');
+                    item.appendChild(img);
+                } else if (type === 'pdf') {
+                    viewer.style.display = 'block';
+                    const iframe = document.createElement('iframe');
+                    iframe.src = path;
+                    iframe.style.width = '100%';
+                    iframe.style.height = 'calc(100vh - 200px)';
+                    iframe.style.border = 'none';
+                    iframe.style.borderRadius = '20px';
+                    iframe.style.boxShadow = '0 10px 40px rgba(0,0,0,0.05)';
+                    viewer.appendChild(iframe);
+                    return;
+                } else if (type === 'video') {
+                    const vid = document.createElement('video');
+                    vid.src = path;
+                    vid.controls = true;
+                    item.appendChild(vid);
+                }
+
+                if (type !== 'pdf') {
+                    grid.appendChild(item);
+                }
+            });
+
+            if (paths.length && type !== 'pdf') viewer.appendChild(grid);
+        }
+
+        function renderSplit(leftPaths, rightPaths, leftLabel, rightLabel) {
+            const viewer = document.getElementById('viewer');
+
+            if (!leftPaths.length && !rightPaths.length) {
+                viewer.innerHTML = '<div class="empty-state">No comparison data available.</div>';
+                return;
+            }
+
+            const container = document.createElement('div');
+            container.className = 'split-view';
+
+            const buildPanel = (paths, label) => {
+                const panel = document.createElement('div');
+                panel.className = 'split-panel';
+
+                panel.innerHTML = `<div class="split-title">${label}</div>`;
+
+                const content = document.createElement('div');
+                content.className = 'split-content';
+
+                if (paths.length) {
+                    paths.forEach(path => {
+                        const img = document.createElement('img');
+                        img.src = path;
+                        img.style.maxWidth = '100%';
+                        img.style.borderRadius = '12px';
+                        img.style.boxShadow = '0 4px 15px rgba(0,0,0,0.05)';
+                        img.style.marginBottom = '20px';
+                        content.appendChild(img);
+                    });
+                } else {
+                    content.innerHTML = '<div style="color:#bdc3c7; margin-top:40px;">No images</div>';
+                }
+
+                panel.appendChild(content);
+                return panel;
+            };
+
+            container.appendChild(buildPanel(leftPaths, leftLabel));
+            container.appendChild(buildPanel(rightPaths, rightLabel));
+            viewer.appendChild(container);
+        }
+
+        function generateLink() {
+            if (!p || !p.bookingId) {
+                alert('No patient data loaded.');
+                return;
+            }
+
+            const btn = document.querySelector('button[onclick="generateLink()"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="nav-icon">⏳</span> Syncing...';
+            btn.disabled = true;
+
+            // 1. Sync data to server
+            fetch('/api/share', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(p)
+            })
+                .then(res => res.json())
+                .then(async (data) => {
+                    if (data.success) {
+                        // 2. Get Server IP
+                        let linkOrigin = window.location.origin;
+                        try {
+                            const confRes = await fetch('/api/config');
+                            if (confRes.ok) {
+                                const conf = await confRes.json();
+                                if (conf.baseUrl) linkOrigin = conf.baseUrl;
+                            }
+                        } catch (e) {
+                            console.warn('Could not fetch server config, using default origin');
+                        }
+
+                        // 3. Generate Link
+                        const branch = localStorage.getItem('branch') || 'BRANCH';
+                        const link = `${linkOrigin}/patient-view.html?id=${encodeURIComponent(p.bookingId)}&branch=${encodeURIComponent(branch)}&view=preop`;
+
+                        // Open Modified Modal
+                        openShareModal(link);
+
+                        // Reset button state
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+
+                    } else {
+                        throw new Error(data.error || 'Server rejected data');
+                    }
+                })
+                .catch(err => {
+                    console.error('Share error:', err);
+                    btn.innerHTML = '<span class="nav-icon">⚠️</span> Error';
+                    alert('Failed to sync. ' + err.message);
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }, 2000);
+                });
+        }
+
+        // --- Share Modal Logic ---
+        function openShareModal(link) {
+            const modal = document.getElementById('shareModal');
+            const input = document.getElementById('shareLinkInput');
+            input.value = link;
+            modal.style.display = 'flex';
+        }
+
+        function closeShareModal() {
+            document.getElementById('shareModal').style.display = 'none';
+        }
+
+        function copyFromModal() {
+            const input = document.getElementById('shareLinkInput');
+            input.select();
+            input.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(input.value).then(() => {
+                const btn = document.querySelector('.copy-btn-modal');
+                const oldText = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.style.background = '#27ae60';
+                setTimeout(() => {
+                    btn.textContent = oldText;
+                    btn.style.background = 'var(--primary-color)';
+                }, 2000);
+            });
+        }
+
+        function shareViaApp() {
+            const link = document.getElementById('shareLinkInput').value;
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Patient Record - ' + (p.name || ''),
+                    text: 'Here is the patient record link:',
+                    url: link
+                }).catch(console.error);
+            } else {
+                alert('Share not supported on this device/browser. Please copy manually.');
+            }
+        }
+
+        function copyMessage() {
+            const link = document.getElementById('shareLinkInput').value;
+            const msg = `Patient Name: ${p.name || 'N/A'}\nLink: ${link}`;
+            navigator.clipboard.writeText(msg).then(() => {
+                alert('Message copied to clipboard!');
+            });
+        }
+
+        // Close modal on outside click
+        window.onclick = function (event) {
+            const modal = document.getElementById('shareModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function render3DCompare(patient) {
+            const viewer = document.getElementById('viewer');
+            viewer.innerHTML = '';
+
+            if (typeof THREE === 'undefined') {
+                viewer.innerHTML = '<div class="empty-state">Loading 3D Engine...</div>';
+                return;
+            }
+
+            // Grid Container
+            const grid = document.createElement('div');
+            grid.style.display = 'grid';
+            grid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(400px, 1fr))';
+            grid.style.gap = '25px';
+            grid.style.width = '100%';
+            grid.style.paddingBottom = '40px';
+            viewer.appendChild(grid);
+
+            if (window.compareReqId) cancelAnimationFrame(window.compareReqId);
+
+            const updatables = [];
+
+            // Definitions: Separate boxes
+            const views = [
+                { label: 'Pre-Op Upper', paths: patient.comparePreOpUpper, color: 0xffffff },
+                { label: 'Pre-Op Lower', paths: patient.comparePreOpLower, color: 0xffffff },
+                { label: 'Post-Op Upper', paths: patient.comparePostOpUpper, color: 0x4dd0e1 }, // Cyan/Blue
+                { label: 'Post-Op Lower', paths: patient.comparePostOpLower, color: 0x4dd0e1 }
+            ];
+
+            views.forEach((def) => {
+                const cell = document.createElement('div');
+                cell.style.background = '#ffffff';
+                cell.style.borderRadius = '20px';
+                cell.style.overflow = 'hidden';
+                cell.style.position = 'relative';
+                cell.style.height = '400px';
+                cell.style.boxShadow = '0 10px 30px rgba(0,0,0,0.05)';
+                cell.style.border = '1px solid rgba(0,0,0,0.03)';
+                grid.appendChild(cell);
+
+                // Label
+                const label = document.createElement('div');
+                label.textContent = def.label;
+                label.style.position = 'absolute';
+                label.style.top = '20px';
+                label.style.left = '20px';
+                label.style.background = 'rgba(255,255,255,0.95)';
+                label.style.padding = '8px 16px';
+                label.style.borderRadius = '30px';
+                label.style.fontWeight = '700';
+                label.style.fontSize = '0.9rem';
+                label.style.zIndex = '10';
+                label.style.color = '#2c3e50';
+                label.style.boxShadow = '0 4px 10px rgba(0,0,0,0.05)';
+                cell.appendChild(label);
+
+                if (!def.paths || !def.paths.length) {
+                    const empty = document.createElement('div');
+                    empty.textContent = 'No 3D Model';
+                    empty.style.width = '100%';
+                    empty.style.height = '100%';
+                    empty.style.display = 'flex';
+                    empty.style.alignItems = 'center';
+                    empty.style.justifyContent = 'center';
+                    empty.style.color = '#bdc3c7';
+                    empty.style.fontWeight = '500';
+                    cell.appendChild(empty);
+                    return;
+                }
+
+                // 3D Setup
+                const scene = new THREE.Scene();
+                scene.background = new THREE.Color(0xfcfcfc);
+
+                const w = cell.clientWidth || 400;
+                const h = 400;
+
+                const camera = new THREE.PerspectiveCamera(45, w / h, 1, 1000);
+                camera.position.set(0, -150, 100);
+
+                // --- Improved Lighting System ---
+                // 1. Hemisphere Light (Soft overall illumination)
+                const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.8);
+                scene.add(hemiLight);
+
+                // 2. Directional Light (Main Key Light)
+                const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                dirLight.position.set(50, 50, 100);
+                scene.add(dirLight);
+
+                // 3. Camera Light (Fill Light attached to camera)
+                const camLight = new THREE.PointLight(0xffffff, 0.5);
+                camera.add(camLight);
+                scene.add(camera);
+
+                const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+                renderer.setSize(w, h);
+                renderer.setPixelRatio(window.devicePixelRatio);
+                cell.appendChild(renderer.domElement);
+
+                const controls = new THREE.OrbitControls(camera, renderer.domElement);
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.05;
+                controls.enableZoom = true;
+                controls.autoRotate = true; // Enable Auto Rotation
+                controls.autoRotateSpeed = 2.0; // Moderate speed
+
+                // Toggle Auto-Rotate Button
+                const rotateBtn = document.createElement('button');
+                rotateBtn.innerHTML = '🔄 Auto-Rotate: ON';
+                rotateBtn.style.position = 'absolute';
+                rotateBtn.style.bottom = '10px';
+                rotateBtn.style.right = '10px';
+                rotateBtn.style.zIndex = '10';
+                rotateBtn.style.border = 'none';
+                rotateBtn.style.background = 'rgba(20, 191, 206, 0.1)';
+                rotateBtn.style.color = '#14bfce';
+                rotateBtn.style.padding = '5px 10px';
+                rotateBtn.style.borderRadius = '15px';
+                rotateBtn.style.fontSize = '0.8rem';
+                rotateBtn.style.cursor = 'pointer';
+                rotateBtn.style.fontWeight = '600';
+
+                rotateBtn.onclick = () => {
+                    controls.autoRotate = !controls.autoRotate;
+                    rotateBtn.innerHTML = controls.autoRotate ? '🔄 Auto-Rotate: ON' : '🔄 Auto-Rotate: OFF';
+                    rotateBtn.style.background = controls.autoRotate ? 'rgba(20, 191, 206, 0.1)' : '#eee';
+                    rotateBtn.style.color = controls.autoRotate ? '#14bfce' : '#7f8c8d';
+                };
+                cell.appendChild(rotateBtn);
+
+                // Load STL
+                const loader = new THREE.STLLoader();
+                def.paths.forEach(p => {
+                    loader.load(p, (geo) => {
+                        // Auto-center geometry
+                        geo.computeBoundingSphere();
+                        const center = geo.boundingSphere.center;
+                        geo.translate(-center.x, -center.y, -center.z);
+
+                        // Use MeshPhongMaterial for better tooth-like appearance
+                        const mat = new THREE.MeshPhongMaterial({
+                            color: def.color,
+                            specular: 0x111111,
+                            shininess: 30,
+                            side: THREE.DoubleSide
+                        });
+                        const mesh = new THREE.Mesh(geo, mat);
+
+                        // Fix rotation for common dental STL orientation (often needs X rotation)
+                        // mesh.rotation.x = -Math.PI / 2; 
+                        // Note: Only applying if needed, but centering usually handles position. 
+                        // Dental scans often come Z-up or Y-up. OrbitControls handles Y-up best.
+
+                        scene.add(mesh);
+                    });
+                });
+
+                updatables.push({ renderer, scene, camera, controls, cell });
+            });
+
+            // Master Loop
+            const animate = () => {
+                window.compareReqId = requestAnimationFrame(animate);
+                updatables.forEach(u => {
+                    u.controls.update();
+
+                    const w = u.cell.clientWidth;
+                    const h = u.cell.clientHeight;
+                    // Simple resize check
+                    const canvas = u.renderer.domElement;
+                    if (canvas.width !== w || canvas.height !== h) {
+                        u.renderer.setSize(w, h);
+                        u.camera.aspect = w / h;
+                        u.camera.updateProjectionMatrix();
+                    }
+
+                    u.renderer.render(u.scene, u.camera);
+                });
+            };
+            animate();
+        }
+    </script>
+</body>
+
+</html>

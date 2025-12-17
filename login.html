@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | CURVE</title>
+    <!-- Premium Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        /* Core Reset & Setup */
+        * {
+            box-sizing: border-box;
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            /* No scrolling */
+            font-family: 'Outfit', sans-serif;
+            background: #f4f7f6;
+        }
+
+        /* Animated Background */
+        /* Animated Background */
+        .page-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 10% 20%, rgb(239, 246, 249) 0%, rgb(215, 240, 252) 90%);
+            z-index: -1;
+        }
+
+        /* Top Left: Logo */
+        .logo-container {
+            position: absolute;
+            top: 30px;
+            left: 50px;
+            z-index: 20;
+        }
+
+        .logo-img {
+            height: 60px;
+            /* Multiply blends the white jpg background with the page */
+            mix-blend-mode: multiply;
+            filter: contrast(1.1);
+        }
+
+        /* Top Right: Branch Box */
+        .branch-container {
+            position: absolute;
+            top: 30px;
+            right: 50px;
+            z-index: 20;
+        }
+
+        .branch-box {
+            background: rgba(255, 255, 255, 0.35);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 10px 30px;
+            border-radius: 50px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease;
+        }
+
+        .branch-box:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.55);
+        }
+
+        .branch-display {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #2c3e50;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Main Content Grid */
+        .main-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        /* Glassmorphism Card */
+        .login-card {
+            display: flex;
+            width: 100%;
+            max-width: 1100px;
+            height: 700px;
+            max-height: 85vh;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 40px;
+            box-shadow:
+                0 20px 50px rgba(0, 0, 0, 0.1),
+                0 0 0 1px rgba(255, 255, 255, 0.5);
+            overflow: hidden;
+        }
+
+        /* Left Side: Form */
+        .form-section {
+            flex: 1;
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .welcome-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 0;
+            line-height: 1.2;
+            background: linear-gradient(45deg, #2c3e50, #14bfce);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .welcome-sub {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            margin-top: 10px;
+            margin-bottom: 50px;
+        }
+
+        .input-wrapper {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #546e7a;
+            font-size: 0.95rem;
+        }
+
+        .styled-input {
+            width: 100%;
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 2px solid #e0e6ed;
+            background: #fcfcfc;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            color: #333;
+            transition: all 0.3s ease;
+            outline: none;
+            appearance: none;
+            /* Removes default arrow for select */
+        }
+
+        .styled-input:focus {
+            border-color: #14bfce;
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(20, 191, 206, 0.15);
+        }
+
+        /* Custom arrow for select */
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-wrapper::after {
+            content: '▼';
+            font-size: 0.8rem;
+            color: #999;
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #14bfce 0%, #0e9aa7 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            box-shadow: 0 10px 20px rgba(20, 191, 206, 0.3);
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(20, 191, 206, 0.4);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.95rem;
+            text-align: center;
+            margin-top: 15px;
+            min-height: 24px;
+            font-weight: 500;
+        }
+
+        /* Right Side: Image */
+        .image-section {
+            flex: 1;
+            /* Takes up right half */
+            background-color: #ecf0f1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tooth-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Cover full area */
+            transition: transform 10s ease;
+        }
+
+        /* Subtle pan animation for the image */
+        .image-section:hover .tooth-image {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-background"></div>
+
+    <!-- Top Left: Logo -->
+    <div class="logo-container">
+        <img src="assets/logo curve.jpg" alt="Curve Logo" class="logo-img">
+    </div>
+
+    <!-- Top Right: Branch -->
+    <div class="branch-container">
+        <div class="branch-box">
+            <span class="branch-display" id="branch-display"></span>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="login-card">
+
+            <!-- Left: Form -->
+            <div class="form-section">
+                <div>
+                    <h1 class="welcome-title">Welcome Back</h1>
+                    <h1 class="welcome-title" style="font-weight: 300;">to Curve</h1>
+                    <p class="welcome-sub">Please sign in to continue</p>
+                </div>
+
+                <div class="input-wrapper select-wrapper">
+                    <label class="input-label">Username</label>
+                    <select id="username" class="styled-input">
+                        <option value="admin">Administrator</option>
+                        <option value="user">User</option>
+                    </select>
+                </div>
+
+                <div class="input-wrapper">
+                    <label class="input-label">Password</label>
+                    <input type="password" id="password" class="styled-input" placeholder="Type your password">
+                </div>
+
+                <button onclick="handleLogin()" class="login-button">LOGIN</button>
+                <div id="error-msg" class="error-message"></div>
+            </div>
+
+            <!-- Right: Image -->
+            <div class="image-section">
+                <img src="assets/login-visual.png" alt="Dental Center" class="tooth-image">
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function handleLogin() {
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value.trim();
+            const errorMsg = document.getElementById('error-msg');
+
+            errorMsg.textContent = ''; // Clear previous error
+
+            // Retrieve selected branch from previous step
+            const selectedBranch = localStorage.getItem('branch');
+
+            if (!selectedBranch) {
+                // If accessed directly without branch selection, redirect back
+                window.location.href = 'branch-select.html';
+                return;
+            }
+
+            // Credentials Logic
+            let role = '';
+            let isValid = false;
+
+            if (selectedBranch === 'CHENNAI') {
+                if (user.toLowerCase() === 'admin' && pass === 'curve123') {
+                    role = 'ADMINISTRATOR';
+                    isValid = true;
+                } else if (user.toLowerCase() === 'user' && pass === 'chennai123') {
+                    role = 'USER';
+                    isValid = true;
+                }
+            } else if (selectedBranch === 'COIMBATORE') {
+                if (user.toLowerCase() === 'admin' && pass === 'curve345') {
+                    role = 'ADMINISTRATOR';
+                    isValid = true;
+                } else if (user.toLowerCase() === 'user' && pass === 'coimbatore345') {
+                    role = 'USER';
+                    isValid = true;
+                }
+            }
+
+            if (isValid) {
+                // Success
+                localStorage.setItem('role', role);
+                localStorage.setItem('loggedIn', 'true');
+                window.location.href = 'dashboard.html';
+            } else {
+                // Invalid
+                errorMsg.textContent = `Invalid credentials for ${selectedBranch} branch.`;
+            }
+        }
+
+        // Allow Enter key to submit
+        document.getElementById('password').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                handleLogin();
+            }
+        });
+
+        // Display Branch Name on Load
+        window.addEventListener('load', () => {
+            const branch = localStorage.getItem('branch');
+            const displayEl = document.getElementById('branch-display');
+            if (branch && displayEl) {
+                displayEl.textContent = branch;
+            }
+        });
+    </script>
+</body>
+
+</html>

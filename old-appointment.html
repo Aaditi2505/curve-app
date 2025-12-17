@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Old Appointment Booking</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <header class="dashboard-header">
+    <img src="assets/logo curve.jpg" alt="Curve Logo" class="dashboard-logo">
+    <div class="branch-display">
+      <div class="branch-box" id="branch-name"></div>
+    </div>
+  </header>
+  <h2 class="appointment-title">OLD APPOINTMENT BOOKING</h2>
+  <main class="form-main">
+    <form class="appointment-form" id="oldBookingForm" autocomplete="off">
+      <!-- Search by patient name -->
+      <div class="center-row" style="position: relative;">
+        <input type="text" id="searchName" class="search-box" placeholder="Type patient name..." autocomplete="off"
+          spellcheck="false" />
+        <button type="button" class="search-btn" id="btnSearchName">Search</button>
+        <div id="searchResults" class="search-results"></div>
+      </div>
+      <div class="center-row" style="position: relative; margin-top: 12px;">
+        <input type="text" id="searchContact" class="search-box" placeholder="Type contact number..." autocomplete="off"
+          spellcheck="false" />
+        <button type="button" class="search-btn" id="btnSearchContact">Search</button>
+        <div id="searchResultsContact" class="search-results"></div>
+      </div>
+
+      <!-- Booking ID at top -->
+      <div class="row">
+        <label>Booking ID:</label>
+        <span id="bookingIdDisplay" style="font-weight: bold; margin-right:30px;"></span>
+      </div>
+      <!-- Form fields -->
+      <div class="row">
+        <label>Name</label>
+        <input type="text" name="name" id="name" required>
+        <label>Age</label>
+        <input type="number" name="age" id="age" min="0" max="120" required>
+        <label>Sex</label>
+        <input type="text" name="sex" id="sex" maxlength="10" required>
+        <label>Date </label>
+        <input type="date" name="date" id="date" required>
+      </div>
+      <div class="row">
+        <label>Contact No</label>
+        <input type="text" name="contact" id="contact" maxlength="15" required>
+        <div id="whatsappRow" style="display:none;">
+          <label>Whatsapp</label>
+          <input type="text" name="whatsapp" id="whatsapp" maxlength="15">
+        </div>
+      </div>
+      <div class="row" id="timeRow">
+        <label>Time</label>
+        <input type="time" name="time" id="viewTime" required>
+      </div>
+      <div class="row">
+        <label>Procedure</label>
+        <select name="procedure" id="procedure" required
+          style="width: 250px; height: 36px; border: 2px solid #14bfce; border-radius: 6px; font-size: 1.13em; color: #282c39; background: #fcfbfb; padding-left: 8px;">
+          <option value="" disabled selected>Select Procedure</option>
+          <option value="Checkup">Checkup</option>
+          <option value="3D Scanning">3D Scanning</option>
+          <option value="3D Planning">3D Planning</option>
+          <option value="Template/Attachment">Template/Attachment</option>
+          <option value="Aligner Review">Aligner Review</option>
+          <option value="Retainer">Retainer</option>
+        </select>
+      </div>
+      <div class="actions-row">
+        <button type="button" class="circle-btn cancel-btn" onclick="window.location.href='book-appointment.html'">
+          <svg width="40" height="40" viewBox="0 0 40 40">
+            <circle cx="20" cy="20" r="18" fill="#1e2e49" />
+            <line x1="13" y1="13" x2="27" y2="27" stroke="#fff" stroke-width="3" />
+            <line x1="27" y1="13" x2="13" y2="27" stroke="#fff" stroke-width="3" />
+          </svg>
+        </button>
+        <button type="submit" class="circle-btn save-btn">
+          <svg width="40" height="40" viewBox="0 0 40 40">
+            <circle cx="20" cy="20" r="18" fill="#1e2e49" />
+            <polyline points="13,22 18,28 28,14" fill="none" stroke="#fff" stroke-width="3" />
+          </svg>
+        </button>
+      </div>
+      <div class="actions-labels">
+        <span>Cancel</span>
+        <span>Save</span>
+      </div>
+    </form>
+  </main>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const branch = localStorage.getItem('branch') || 'BRANCH';
+      document.getElementById('branch-name').textContent = branch;
+
+      const key = `appointments_${branch}`;
+      const searchNameInput = document.getElementById('searchName');
+      const resultsDiv = document.getElementById('searchResults');
+      const btnSearchName = document.getElementById('btnSearchName');
+      const searchContactInput = document.getElementById('searchContact');
+      const resultsDivContact = document.getElementById('searchResultsContact');
+      const btnSearchContact = document.getElementById('btnSearchContact');
+
+      let currentAppointment = null; // Store current appointment for saving
+
+      function fillDetails(found) {
+        currentAppointment = found; // Store reference
+        document.getElementById('bookingIdDisplay').textContent = found.bookingId || '';
+        document.getElementById('name').value = found.name || '';
+        document.getElementById('age').value = found.age || '';
+        document.getElementById('sex').value = found.sex || '';
+        document.getElementById('date').value = found.date || '';
+        document.getElementById('contact').value = found.contact || '';
+        document.getElementById('procedure').value = found.procedure || '';
+        document.getElementById('viewTime').value = found.time || '';
+        document.getElementById('whatsapp').value = found.whatsapp || '';
+        document.getElementById('whatsappRow').style.display = found.whatsapp ? 'flex' : 'none';
+      }
+
+
+      // ** Patient Name: dynamic search and button **
+      searchNameInput.addEventListener('input', function () {
+        const input = this.value.trim().toLowerCase();
+        const appointments = JSON.parse(localStorage.getItem(key) || '[]');
+        if (!input) {
+          resultsDiv.innerHTML = '';
+          return;
+        }
+        const matches = appointments.filter(appt =>
+          typeof appt.name === "string" && appt.name.toLowerCase().includes(input)
+        );
+        if (matches.length === 0) {
+          resultsDiv.innerHTML = '<div class="search-result-item">No matches</div>';
+          return;
+        }
+        resultsDiv.innerHTML = matches.map(appt =>
+          `<div class="search-result-item">${appt.name}</div>`
+        ).join('');
+        Array.from(resultsDiv.children).forEach((item, idx) => {
+          item.onclick = function () {
+            searchNameInput.value = matches[idx].name;
+            fillDetails(matches[idx]);
+            resultsDiv.innerHTML = '';
+          };
+        });
+      });
+
+      btnSearchName.onclick = function () {
+        const input = searchNameInput.value.trim().toLowerCase();
+        const appointments = JSON.parse(localStorage.getItem(key) || '[]');
+        const found = appointments.find(appt =>
+          typeof appt.name === "string" && appt.name.toLowerCase() === input
+        );
+        if (found) {
+          fillDetails(found);
+          resultsDiv.innerHTML = '';
+        } else {
+          alert("No record found for this name.");
+        }
+      };
+
+      // ** Contact Number: dynamic search and button **
+      searchContactInput.addEventListener('input', function () {
+        const input = this.value.trim();
+        const appointments = JSON.parse(localStorage.getItem(key) || '[]');
+        if (!input) {
+          resultsDivContact.innerHTML = '';
+          return;
+        }
+        const matches = appointments.filter(appt =>
+          typeof appt.contact === "string" && appt.contact.includes(input)
+        );
+        if (matches.length === 0) {
+          resultsDivContact.innerHTML = '<div class="search-result-item">No matches</div>';
+          return;
+        }
+        resultsDivContact.innerHTML = matches.map(appt =>
+          `<div class="search-result-item">${appt.contact}</div>`
+        ).join('');
+        Array.from(resultsDivContact.children).forEach((item, idx) => {
+          item.onclick = function () {
+            searchContactInput.value = matches[idx].contact;
+            fillDetails(matches[idx]);
+            resultsDivContact.innerHTML = '';
+          };
+        });
+      });
+
+      btnSearchContact.onclick = function () {
+        const input = searchContactInput.value.trim();
+        const appointments = JSON.parse(localStorage.getItem(key) || '[]');
+        const found = appointments.find(appt =>
+          typeof appt.contact === "string" && appt.contact === input
+        );
+        if (found) {
+          fillDetails(found);
+          resultsDivContact.innerHTML = '';
+        } else {
+          alert("No record found for this contact number.");
+        }
+      };
+
+      // Hide both dropdowns when clicking away
+      document.addEventListener('click', function (event) {
+        if (!resultsDiv.contains(event.target) && event.target !== searchNameInput) {
+          resultsDiv.innerHTML = '';
+        }
+        if (!resultsDivContact.contains(event.target) && event.target !== searchContactInput) {
+          resultsDivContact.innerHTML = '';
+        }
+      });
+
+      // Save handler - inside DOMContentLoaded
+      document.getElementById('oldBookingForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        if (!currentAppointment) {
+          alert('Please search and select an appointment first.');
+          return;
+        }
+
+        const appointments = JSON.parse(localStorage.getItem(key) || '[]');
+
+        // Update the appointment with new values
+        const updatedAppointments = appointments.map(appt => {
+          if (appt.bookingId === currentAppointment.bookingId) {
+            return {
+              ...appt,
+              name: document.getElementById('name').value,
+              age: document.getElementById('age').value,
+              sex: document.getElementById('sex').value,
+              date: document.getElementById('date').value,
+              contact: document.getElementById('contact').value,
+              whatsapp: document.getElementById('whatsapp').value,
+              time: document.getElementById('viewTime').value,
+              procedure: document.getElementById('procedure').value
+            };
+          }
+          return appt;
+        });
+
+        localStorage.setItem(key, JSON.stringify(updatedAppointments));
+        alert('Appointment updated successfully!');
+        window.location.href = "dashboard.html";
+      });
+    });
+
+  </script>
+</body>
+
+</html>
+>

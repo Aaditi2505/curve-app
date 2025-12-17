@@ -1,0 +1,5 @@
+﻿To fix the logo white background issue, you have two options:
+1. Replace 'logo curve.jpg' with a PNG version that has a transparent background
+2. Use image editing software to remove the white background from the current JPG
+
+The dental image is now fixed and will display correctly.

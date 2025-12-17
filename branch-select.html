@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CURVE - Select Your Branch</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body.branch-select-body {
+      margin: 0;
+      overflow-y: auto;
+      /* Enable vertical scrolling */
+    }
+
+    .branch-select-container {
+      min-height: 100vh;
+      /* Allow it to grow */
+      height: auto;
+      display: flex;
+      align-items: flex-start;
+    }
+
+    .left-content {
+      padding-top: 20px !important;
+      /* Move even higher */
+      padding-bottom: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    .tagline-section {
+      margin-bottom: 15px !important;
+      /* Tighten gap */
+    }
+
+    .logo-section {
+      margin-bottom: 20px !important;
+    }
+
+    .branches-wrapper {
+      margin-top: 0 !important;
+    }
+
+    .main-tagline {
+      font-size: 2.5rem !important;
+      /* Smaller font to fit more */
+      line-height: 1.1 !important;
+      margin-bottom: 10px !important;
+    }
+
+    .sub-tagline {
+      margin-top: 0 !important;
+      font-size: 0.9rem !important;
+    }
+
+    .branches-heading {
+      margin-top: 0 !important;
+      margin-bottom: 15px !important;
+    }
+
+    .branch-cards-grid {
+      gap: 15px !important;
+    }
+  </style>
+</head>
+
+<body class="branch-select-body">
+  <div class="branch-select-container">
+    <!-- Left Content Section -->
+    <div class="left-content">
+      <!-- Logo -->
+      <div class="logo-section">
+        <img src="assets/logo curve.jpg" alt="Curve Logo" class="branch-page-logo">
+      </div>
+
+      <!-- Tagline Section -->
+      <div class="tagline-section">
+        <h1 class="main-tagline">Your Smile,<br>Our priority</h1>
+        <p class="sub-tagline">get personalized dental treatment crafted with care, comfort, expertise</p>
+      </div>
+
+      <!-- Branch Cards Section -->
+      <div class="branches-wrapper">
+        <h2 class="branches-heading">Our Branches</h2>
+        <div class="branch-cards-grid">
+          <!-- Coimbatore Branch -->
+          <div class="branch-card" onclick="selectBranch('COIMBATORE')">
+            <div class="branch-card-header">
+              <svg class="location-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
+                  fill="#45A5FF" />
+              </svg>
+              <h3 class="branch-name">Coimbatore</h3>
+            </div>
+            <p class="branch-address">(address)</p>
+            <div class="branch-timing">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="#212224" stroke-width="2" />
+                <path d="M12 6v6l4 4" stroke="#212224" stroke-width="2" stroke-linecap="round" />
+              </svg>
+              <span>10:00 AM - 9:00 PM</span>
+            </div>
+            <button class="select-btn">Select Branch</button>
+          </div>
+
+          <!-- Chennai Branch -->
+          <div class="branch-card" onclick="selectBranch('CHENNAI')">
+            <div class="branch-card-header">
+              <svg class="location-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
+                  fill="#45A5FF" />
+              </svg>
+              <h3 class="branch-name">Chennai</h3>
+            </div>
+            <p class="branch-address">(address)</p>
+            <div class="branch-timing">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="#212224" stroke-width="2" />
+                <path d="M12 6v6l4 4" stroke="#212224" stroke-width="2" stroke-linecap="round" />
+              </svg>
+              <span>10:00 AM - 9:00 PM</span>
+            </div>
+            <button class="select-btn">Select Branch</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Image Section -->
+    <div class="right-image">
+      <img src="assets/dental-smile.png" alt="Beautiful Smile" class="dental-showcase-image">
+    </div>
+  </div>
+
+  <script>
+    function selectBranch(branch) {
+      localStorage.setItem('branch', branch);
+      window.location.href = "login.html";
+    }
+  </script>
+</body>
+
+</html>
