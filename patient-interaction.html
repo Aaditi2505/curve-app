@@ -598,9 +598,8 @@
                 renderGrid(paths, 'video');
             } else if (type === 'face3d') {
                 title.textContent = 'Face 3D Analysis';
-                const left = p.planningCompareUpperPaths || [];
-                const right = p.planningCompareLowerPaths || [];
-                renderSplit(left, right, 'Left / Upper', 'Right / Lower');
+                paths = p.planningFace3dPaths2 || [];
+                renderGrid(paths, 'img');
             } else if (type === 'compare') {
                 title.textContent = '3D Comparison';
                 render3DCompare(p);
@@ -654,6 +653,16 @@
                     vid.src = path;
                     vid.controls = true;
                     item.appendChild(vid);
+                } else if (path.toLowerCase().endsWith('.stl') || path.toLowerCase().endsWith('.obj') || path.toLowerCase().endsWith('.ply')) {
+                    const chip = document.createElement('div');
+                    chip.className = 'file-chip';
+                    chip.style.padding = '20px';
+                    chip.style.textAlign = 'center';
+                    chip.style.background = '#f8f9fa';
+                    chip.style.borderRadius = '12px';
+                    chip.innerHTML = `📦 3D Model<br><small style="color:#7f8c8d">${path.split(/[/\\]/).pop()}</small>`;
+                    chip.onclick = () => window.open(path, '_blank');
+                    item.appendChild(chip);
                 }
 
                 if (type !== 'pdf') {
