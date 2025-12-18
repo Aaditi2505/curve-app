@@ -552,27 +552,31 @@
       const intraInput = document.getElementById('intraInput');
 
       scanInput.addEventListener('change', async function () {
-        const paths = await uploadFiles(this.files, this.previousElementSibling);
-        currentPatient.scanPaths = (currentPatient.scanPaths || []).concat(paths);
-        renderThumbs(paths, 'scanStrip', false);
+        const localPaths = Array.from(this.files).map(f => URL.createObjectURL(f));
+        renderThumbs(localPaths, 'scanStrip', false);
+        const serverPaths = await uploadFiles(this.files, this.previousElementSibling);
+        currentPatient.scanPaths = (currentPatient.scanPaths || []).concat(serverPaths);
       });
 
       faceInput.addEventListener('change', async function () {
-        const paths = await uploadFiles(this.files, this.previousElementSibling);
-        currentPatient.facePaths = (currentPatient.facePaths || []).concat(paths);
-        renderThumbs(paths, 'faceStrip', true);
+        const localPaths = Array.from(this.files).map(f => URL.createObjectURL(f));
+        renderThumbs(localPaths, 'faceStrip', true);
+        const serverPaths = await uploadFiles(this.files, this.previousElementSibling);
+        currentPatient.facePaths = (currentPatient.facePaths || []).concat(serverPaths);
       });
 
       extraInput.addEventListener('change', async function () {
-        const paths = await uploadFiles(this.files, this.previousElementSibling);
-        currentPatient.extraPaths = (currentPatient.extraPaths || []).concat(paths);
-        renderThumbs(paths, 'extraStrip', false);
+        const localPaths = Array.from(this.files).map(f => URL.createObjectURL(f));
+        renderThumbs(localPaths, 'extraStrip', false);
+        const serverPaths = await uploadFiles(this.files, this.previousElementSibling);
+        currentPatient.extraPaths = (currentPatient.extraPaths || []).concat(serverPaths);
       });
 
       intraInput.addEventListener('change', async function () {
-        const paths = await uploadFiles(this.files, this.previousElementSibling);
-        currentPatient.intraPaths = (currentPatient.intraPaths || []).concat(paths);
-        renderThumbs(paths, 'intraStrip', false);
+        const localPaths = Array.from(this.files).map(f => URL.createObjectURL(f));
+        renderThumbs(localPaths, 'intraStrip', false);
+        const serverPaths = await uploadFiles(this.files, this.previousElementSibling);
+        currentPatient.intraPaths = (currentPatient.intraPaths || []).concat(serverPaths);
       });
     }
 
