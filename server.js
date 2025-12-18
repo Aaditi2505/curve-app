@@ -132,7 +132,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`-----------------------------------\n`);
 });
 
-// Production Timeouts for large 3D files
-server.timeout = 10 * 60 * 1000; // 10 minutes
-server.keepAliveTimeout = 61 * 1000;
-server.headersTimeout = 65 * 1000;
+// Production Timeouts for large 3D files (Extended to 30 mins)
+server.timeout = 30 * 60 * 1000;
+server.keepAliveTimeout = 65000;
+server.headersTimeout = 66000;

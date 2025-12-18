@@ -688,11 +688,17 @@
     }
 
     async function handleUploadProcess(files, btn, dataProp, stripId, isVideo) {
-      const localPaths = Array.from(files).map(f => URL.createObjectURL(f));
-      renderThumbs(localPaths, stripId, isVideo);
+      const strip = document.getElementById(stripId);
+      const fileObjects = Array.from(files);
+
+      // 1. SHOW LOCAL PREVIEWS INSTANTLY WITH REAL NAMES
+      fileObjects.forEach(f => {
+        const url = URL.createObjectURL(f);
+        renderSingleThumb(url, stripId, isVideo, f.name, true);
+      });
 
       const compressedFiles = [];
-      for (let f of files) {
+      for (let f of fileObjects) {
         if (f.type.startsWith('image/')) {
           compressedFiles.push(await compressImage(f));
         } else {
@@ -700,8 +706,15 @@
         }
       }
 
+      // 2. BACKGROUND UPLOAD
       const serverPaths = await uploadFiles(compressedFiles, btn);
+
+      // 3. CLEANUP LOCAL PREVIEWS & ADD SERVER PATHS
+      const localElements = strip.querySelectorAll('.local-preview');
+      localElements.forEach(el => el.remove());
+
       currentPatient[dataProp] = (currentPatient[dataProp] || []).concat(serverPaths);
+      renderThumbs(serverPaths, stripId, isVideo);
     }
 
     function renderAllFiles() {
@@ -799,31 +812,32 @@
     }
 
     function renderThumbs(paths, stripId, isVideo) {
+      paths.forEach(path => renderSingleThumb(path, stripId, isVideo));
+    }
+
+    function renderSingleThumb(path, stripId, isVideo, customName, isLocal = false) {
       const strip = document.getElementById(stripId);
-      paths.forEach(path => {
-        const container = document.createElement('div');
-        container.className = 'media-container';
+      let fname = customName || path.split(/[/\\]/).pop();
 
-        let fname = path.split(/[/\\]/).pop();
-        if (path.startsWith('blob:')) {
-          fname = "Attaching...";
-        }
+      const ext = (fname.split('.').pop() || '').toLowerCase();
+      const is3d = ['stl', 'obj', 'ply'].includes(ext) || path.startsWith('blob:');
+      const isPdf = ext === 'pdf';
+      const treatAsVideo = isVideo || ['mp4', 'webm', 'ogg', 'mov', 'avi'].includes(ext);
 
-        const ext = (path.split('.').pop() || '').toLowerCase();
-        const is3d = ['stl', 'obj', 'ply'].includes(ext) || path.startsWith('blob:');
-        const isPdf = ext === 'pdf';
+      const container = document.createElement('div');
+      container.className = isLocal ? 'local-preview' : 'media-container';
+      container.style.display = 'inline-block';
+      if (isLocal) container.style.opacity = '0.6';
 
-        if (is3d || isPdf) {
-          const chip = document.createElement('div');
-          chip.textContent = fname;
-          chip.className = 'file-chip';
-          chip.onclick = () => window.open(path, '_blank');
-          strip.appendChild(chip);
-          return;
-        }
-
+      if (is3d || isPdf) {
+        const chip = document.createElement('div');
+        chip.textContent = isLocal ? `⏳ ${fname}` : fname;
+        chip.className = 'file-chip';
+        chip.onclick = () => window.open(path, '_blank');
+        container.appendChild(chip);
+      } else {
         let mediaEl;
-        if (isVideo) {
+        if (treatAsVideo) {
           mediaEl = document.createElement('video');
           mediaEl.src = path;
           mediaEl.muted = true;
@@ -836,11 +850,12 @@
         mediaEl.onclick = () => window.open(path, '_blank');
         container.appendChild(mediaEl);
 
-        const dlBtn = createDownloadBtn(path);
-        container.appendChild(dlBtn);
-
-        strip.appendChild(container);
-      });
+        if (!isLocal) {
+          const dlBtn = createDownloadBtn(path);
+          container.appendChild(dlBtn);
+        }
+      }
+      strip.appendChild(container);
     }
 
     async function saveAndFinish() {
