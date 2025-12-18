@@ -364,6 +364,7 @@
       <img src="assets/logo curve.jpg" alt="Curve" class="logo-img">
       <nav class="nav-links">
         <a href="dashboard.html" class="nav-item">Dashboard</a>
+        <a href="book-appointment.html" class="nav-item">Book Appointment</a>
         <a href="check-appointment.html" class="nav-item">Check Appointment</a>
         <a href="patient-entry.html" class="nav-item active">Entry</a>
         <a href="patient-planning-list.html" class="nav-item">Planning</a>
@@ -496,6 +497,15 @@
     document.addEventListener('DOMContentLoaded', function () {
       const branch = localStorage.getItem('branch') || 'BRANCH';
       document.getElementById('branch-display').textContent = branch;
+
+      // Permission Check - Hide Book Appointment for non-admin users
+      const role = localStorage.getItem('role') || 'User';
+      if (role !== 'ADMINISTRATOR') {
+        const bookAppointmentLink = document.querySelector('a[href="book-appointment.html"]');
+        if (bookAppointmentLink) {
+          bookAppointmentLink.style.display = 'none';
+        }
+      }
 
       const raw = localStorage.getItem('currentPatient');
       if (!raw) {

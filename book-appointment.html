@@ -749,11 +749,10 @@
         date: form.date.value,
         time: form.time.value,
         contact: '+91' + contactVal,
-        contact: '+91' + contactVal,
         whatsapp: isWhatsappEnabled ? '+91' + whatsappVal : '',
         address: form.address.value,
         bookingId: bookingId,
-        branch: document.getElementById('targetBranch').value || currentBranch // Use selected branch
+        branch: currentBranch
       };
 
       appointments.push(data);
