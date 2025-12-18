@@ -374,6 +374,15 @@
       currentBranch = localStorage.getItem('branch') || 'BRANCH';
       document.getElementById('branch-display').textContent = currentBranch;
 
+      // Permission Check - Hide Book Appointment for non-admin users
+      const role = localStorage.getItem('role') || 'User';
+      if (role !== 'ADMINISTRATOR') {
+        const bookAppointmentLink = document.querySelector('a[href="book-appointment.html"]');
+        if (bookAppointmentLink) {
+          bookAppointmentLink.style.display = 'none';
+        }
+      }
+
       const nameInput = document.getElementById('nameSearch');
       const nameSuggestions = document.getElementById('nameSuggestions');
 
