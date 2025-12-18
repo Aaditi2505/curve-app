@@ -613,7 +613,9 @@
       // 1. SHOW LOCAL PREVIEWS INSTANTLY
       fileObjects.forEach(f => {
         const url = URL.createObjectURL(f);
-        renderSingleThumb(url, stripId, isVideo, f.name, true);
+        const tempId = 'temp_' + Math.random().toString(36).substr(2, 9);
+        f.tempId = tempId;
+        renderSingleThumb(url, stripId, isVideo, f.name, true, tempId);
       });
 
       // 2. PROCESS SEQUENTIALLY FOR MAX SPEED/STABILITY
@@ -626,16 +628,45 @@
         // Upload one file at a time
         const serverPaths = await uploadFiles([fileToUpload], btn);
 
-        // 3. IMMEDIATE PERSISTENCE (Clean up the local for THIS specific file if possible, or just re-render)
+        // 3. IMMEDIATE PERSISTENCE
         if (serverPaths.length) {
           currentPatient[dataProp] = (currentPatient[dataProp] || []).concat(serverPaths);
-          // Optional: Remove ALL local previews and re-render only if it's the last file, 
-          // but for "2-second" feel, we keep it simple:
-          const localEl = Array.from(strip.querySelectorAll('.local-preview')).find(el => el.textContent.includes(f.name));
+
+          // CLEAN UP THE SPECIFIC LOCAL PREVIEW
+          const localEl = document.getElementById(f.tempId);
           if (localEl) localEl.remove();
+
           renderThumbs(serverPaths, stripId, isVideo);
+
+          // SYNC TO SERVER IMMEDIATELY PER FILE (Updates Counts & Database)
+          await syncPatientToServer();
         }
       }
+    }
+
+    async function syncPatientToServer() {
+      const branch = localStorage.getItem('branch') || 'BRANCH';
+      const key = `appointments_${branch}`;
+      const appointments = JSON.parse(localStorage.getItem(key) || '[]');
+
+      // Update counts before syncing
+      currentPatient.extraImageCount = (currentPatient.extraPaths || []).length;
+      currentPatient.intraImageCount = (currentPatient.intraPaths || []).length;
+
+      const updatedAppointments = appointments.map(appt => {
+        if (appt.bookingId === currentPatient.bookingId) return { ...appt, ...currentPatient };
+        return appt;
+      });
+
+      localStorage.setItem(key, JSON.stringify(updatedAppointments));
+
+      try {
+        await fetch('/api/share', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(currentPatient)
+        });
+      } catch (e) { console.error("Auto-sync failed", e); }
     }
 
     async function uploadFiles(files, btnElement) {
@@ -685,7 +716,7 @@
       paths.forEach(path => renderSingleThumb(path, stripId, isVideo));
     }
 
-    function renderSingleThumb(path, stripId, isVideo, customName, isLocal = false) {
+    function renderSingleThumb(path, stripId, isVideo, customName, isLocal = false, tempId) {
       const strip = document.getElementById(stripId);
       let fname = customName || path.split(/[/\\]/).pop();
 
@@ -696,6 +727,7 @@
 
       const container = document.createElement('div');
       container.className = isLocal ? 'local-preview' : 'media-container';
+      if (tempId) container.id = tempId;
       container.style.display = 'inline-block';
       if (isLocal) container.style.opacity = '0.6';
 
