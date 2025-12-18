@@ -635,14 +635,22 @@
     function renderThumbs(paths, stripId, isVideo) {
       const strip = document.getElementById(stripId);
       paths.forEach(path => {
+        // Handle Blob URLs vs Server Paths
+        let fname = path.split(/[/\\]/).pop();
+        if (path.startsWith('blob:')) {
+          // For blobs, we try to find the extension if possible, or use a generic name
+          // Note: Blob paths usually don't have the original filename
+          // But we can check if it's a 3D file based on the context
+          fname = "Attaching File...";
+        }
+
         const ext = (path.split('.').pop() || '').toLowerCase();
-        const is3d = ['stl', 'obj', 'ply', 'pdf'].includes(ext);
+        const is3d = ['stl', 'obj', 'ply', 'pdf'].includes(ext) || path.startsWith('blob:');
         const isVideoFile = ['mp4', 'webm', 'ogg', 'mov', 'avi'].includes(ext);
         const treatAsVideo = isVideo || isVideoFile;
 
         if (is3d) {
           const chip = document.createElement('div');
-          const fname = path.split(/[/\\]/).pop();
           chip.textContent = fname;
           chip.className = 'file-chip';
           chip.onclick = () => window.open(path, '_blank');
@@ -666,15 +674,17 @@
       });
     }
 
-    function saveAndProceed() {
+    async function saveAndProceed() {
       const branch = localStorage.getItem('branch') || 'BRANCH';
       const key = `appointments_${branch}`;
       const appointments = JSON.parse(localStorage.getItem(key) || '[]');
 
+      let updatedPatientData = null;
+
       // Update patient data
       const updatedAppointments = appointments.map(appt => {
         if (appt.bookingId === currentPatient.bookingId) {
-          const updated = {
+          updatedPatientData = {
             ...appt,
             chiefComplaint: document.getElementById('chiefComplaint').value,
             treatmentPlan: document.getElementById('treatmentPlan').value,
@@ -688,13 +698,27 @@
             phase1Completed: true // Flag to track completion
           };
           // Update currentPatient in localStorage too
-          localStorage.setItem('currentPatient', JSON.stringify(updated));
-          return updated;
+          localStorage.setItem('currentPatient', JSON.stringify(updatedPatientData));
+          return updatedPatientData;
         }
         return appt;
       });
 
       localStorage.setItem(key, JSON.stringify(updatedAppointments));
+
+      // SYNC TO SERVER
+      if (updatedPatientData) {
+        try {
+          await fetch('/api/share', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedPatientData)
+          });
+          console.log('Server synced successfully');
+        } catch (err) {
+          console.error('Server sync failed:', err);
+        }
+      }
 
       alert('Phase 1 data saved successfully!\n\nYou can now proceed to Planning phase when ready.');
       window.location.href = 'patient-entry.html';

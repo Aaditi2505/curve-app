@@ -756,13 +756,17 @@
         const container = document.createElement('div');
         container.className = 'media-container';
 
+        let fname = path.split(/[/\\]/).pop();
+        if (path.startsWith('blob:')) {
+          fname = "Attaching...";
+        }
+
         const ext = (path.split('.').pop() || '').toLowerCase();
-        const is3d = ['stl', 'obj', 'ply'].includes(ext);
+        const is3d = ['stl', 'obj', 'ply'].includes(ext) || path.startsWith('blob:');
         const isPdf = ext === 'pdf';
 
         if (is3d || isPdf) {
           const chip = document.createElement('div');
-          const fname = path.split(/[/\\]/).pop();
           chip.textContent = fname;
           chip.className = 'file-chip';
           chip.onclick = () => window.open(path, '_blank');
@@ -791,7 +795,7 @@
       });
     }
 
-    function saveAndFinish() {
+    async function saveAndFinish() {
       const branch = localStorage.getItem('branch') || 'BRANCH';
       const key = `appointments_${branch}`;
       const appointments = JSON.parse(localStorage.getItem(key) || '[]');
@@ -799,10 +803,12 @@
       const modelsUpper = parseInt(document.getElementById('modelsUpper').value || '0', 10);
       const modelsLower = parseInt(document.getElementById('modelsLower').value || '0', 10);
 
+      let updatedPatientData = null;
+
       // Update patient data
       const updatedAppointments = appointments.map(appt => {
         if (appt.bookingId === currentPatient.bookingId) {
-          const updated = {
+          updatedPatientData = {
             ...appt,
             // Entry Phase 2 updates
             scanPathsPhase2: currentPatient.scanPathsPhase2 || [],
@@ -834,13 +840,27 @@
             currentPhase: 'Phase 2 (Planning) - Completed',
             phase2Completed: true
           };
-          localStorage.setItem('currentPatient', JSON.stringify(updated));
-          return updated;
+          localStorage.setItem('currentPatient', JSON.stringify(updatedPatientData));
+          return updatedPatientData;
         }
         return appt;
       });
 
       localStorage.setItem(key, JSON.stringify(updatedAppointments));
+
+      // SYNC TO SERVER
+      if (updatedPatientData) {
+        try {
+          await fetch('/api/share', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedPatientData)
+          });
+          console.log('Server synced successfully');
+        } catch (err) {
+          console.error('Server sync failed:', err);
+        }
+      }
 
       alert('Phase 2 Planing Completed! \nProceeding to Interaction list.');
       window.location.href = 'patient-planning-list.html';
