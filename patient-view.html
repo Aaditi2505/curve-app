@@ -456,20 +456,30 @@
 
             if (type === 'images') {
                 title.textContent = 'Images';
-                paths = p.planningStlPaths || [];
-                renderGrid(paths, 'img');
+                paths = [
+                    ...(p.planningStlPaths || []),
+                    ...(p.extraPaths || []),
+                    ...(p.intraPaths || []),
+                    ...(p.extraPathsPhase2 || []),
+                    ...(p.intraPathsPhase2 || [])
+                ];
+                renderGrid(paths);
             } else if (type === 'pdf') {
                 title.textContent = 'Plan PDF';
                 paths = p.planningPdfPaths2 || [];
-                renderGrid(paths, 'pdf');
+                renderGrid(paths);
             } else if (type === 'video') {
                 title.textContent = 'Plan Video';
                 paths = p.planningVideoPaths2 || [];
-                renderGrid(paths, 'video');
+                renderGrid(paths);
             } else if (type === 'face3d') {
                 title.textContent = 'Face 3D Analysis';
-                paths = p.planningFace3dPaths2 || [];
-                renderGrid(paths, 'img');
+                paths = [
+                    ...(p.planningFace3dPaths2 || []),
+                    ...(p.facePaths || []),
+                    ...(p.facePathsPhase2 || [])
+                ];
+                renderGrid(paths);
             } else if (type === 'compare') {
                 title.textContent = '3D Comparison';
                 render3DCompare(p);
@@ -482,13 +492,12 @@
                     ...(p.extraPathsPhase2 || []),
                     ...(p.intraPathsPhase2 || [])
                 ];
-                renderGrid(paths, 'img');
+                renderGrid(paths);
             }
         }
 
-        function renderGrid(paths, type) {
+        function renderGrid(paths) {
             const viewer = document.getElementById('viewer');
-
             if (!paths.length) {
                 viewer.innerHTML = '<div class="empty-state">No files uploaded for this section.</div>';
                 return;
@@ -498,32 +507,41 @@
             grid.className = 'media-grid';
 
             paths.forEach((path, index) => {
+                if (!path) return;
                 const item = document.createElement('div');
                 item.className = 'media-item';
                 item.style.animationDelay = `${index * 0.1}s`;
 
-                if (type === 'img') {
+                const ext = path.split('.').pop().toLowerCase();
+                const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
+                const isVideo = ['mp4', 'webm', 'mov', 'avi'].includes(ext);
+                const isPdf = ext === 'pdf';
+                const is3d = ['stl', 'obj', 'ply'].includes(ext);
+
+                if (isImage) {
                     const img = document.createElement('img');
                     img.src = path;
                     img.onclick = () => window.open(path, '_blank');
                     item.appendChild(img);
-                } else if (type === 'pdf') {
-                    viewer.style.display = 'block';
-                    const iframe = document.createElement('iframe');
-                    iframe.src = path;
-                    iframe.style.width = '100%';
-                    iframe.style.height = 'calc(100vh - 200px)';
-                    iframe.style.border = 'none';
-                    iframe.style.borderRadius = '20px';
-                    iframe.style.boxShadow = '0 10px 40px rgba(0,0,0,0.05)';
-                    viewer.appendChild(iframe);
-                    return;
-                } else if (type === 'video') {
+                } else if (isVideo) {
                     const vid = document.createElement('video');
                     vid.src = path;
                     vid.controls = true;
+                    vid.style.width = '100%';
+                    vid.style.height = '200px';
+                    vid.style.borderRadius = '12px';
                     item.appendChild(vid);
-                } else if (path.toLowerCase().endsWith('.stl') || path.toLowerCase().endsWith('.obj') || path.toLowerCase().endsWith('.ply')) {
+                } else if (isPdf) {
+                    const chip = document.createElement('div');
+                    chip.className = 'file-chip';
+                    chip.style.padding = '20px';
+                    chip.style.textAlign = 'center';
+                    chip.style.background = '#f8f9fa';
+                    chip.style.borderRadius = '12px';
+                    chip.innerHTML = `📄 PDF Document<br><small style="color:#7f8c8d">Click to View</small>`;
+                    chip.onclick = () => window.open(path, '_blank');
+                    item.appendChild(chip);
+                } else if (is3d) {
                     const chip = document.createElement('div');
                     chip.className = 'file-chip';
                     chip.style.padding = '20px';
@@ -533,14 +551,16 @@
                     chip.innerHTML = `📦 3D Model<br><small style="color:#7f8c8d">${path.split(/[/\\]/).pop()}</small>`;
                     chip.onclick = () => window.open(path, '_blank');
                     item.appendChild(chip);
+                } else {
+                    const link = document.createElement('a');
+                    link.href = path;
+                    link.textContent = 'View File';
+                    link.target = '_blank';
+                    item.appendChild(link);
                 }
-
-                if (type !== 'pdf') {
-                    grid.appendChild(item);
-                }
+                grid.appendChild(item);
             });
-
-            if (paths.length && type !== 'pdf') viewer.appendChild(grid);
+            viewer.appendChild(grid);
         }
 
         function renderSplit(leftPaths, rightPaths, leftLabel, rightLabel) {

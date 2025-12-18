@@ -687,9 +687,9 @@
         files.forEach(f => formData.append('files', f));
 
         const xhr = new XMLHttpRequest();
+        xhr.timeout = 30 * 60 * 1000; // 30 mins
         xhr.open('POST', '/upload', true);
 
-        // Optimizing for large STL/Videos
         xhr.upload.onprogress = (e) => {
           if (e.lengthComputable && btnElement) {
             const percent = Math.round((e.loaded / e.total) * 100);
@@ -700,9 +700,19 @@
 
         xhr.onload = () => {
           if (btnElement) {
-            btnElement.innerText = originalText;
-            btnElement.style.background = '#14bfce';
-            btnElement.disabled = false;
+            if (xhr.status === 200) {
+              btnElement.innerText = '✅ Done';
+              btnElement.style.background = '#27ae60';
+              setTimeout(() => {
+                btnElement.innerText = originalText;
+                btnElement.style.background = '#14bfce';
+                btnElement.disabled = false;
+              }, 1500);
+            } else {
+              btnElement.innerText = 'Retry';
+              btnElement.style.background = '#e74c3c';
+              btnElement.disabled = false;
+            }
           }
           if (xhr.status === 200) {
             resolve(JSON.parse(xhr.responseText).paths || []);
@@ -712,8 +722,21 @@
         };
 
         xhr.onerror = () => {
-          if (btnElement) btnElement.innerText = 'Retry';
+          if (btnElement) {
+            btnElement.innerText = 'Retry';
+            btnElement.style.background = '#e74c3c';
+            btnElement.disabled = false;
+          }
           reject(new Error('Network error'));
+        };
+
+        xhr.ontimeout = () => {
+          if (btnElement) {
+            btnElement.innerText = 'Timeout';
+            btnElement.style.background = '#e74c3c';
+            btnElement.disabled = false;
+          }
+          reject(new Error('Upload timed out'));
         };
 
         if (btnElement) btnElement.disabled = true;
