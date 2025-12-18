@@ -579,44 +579,53 @@
     async function uploadFiles(files, btnElement) {
       if (!files || files.length === 0) return [];
 
-      // Loading State
       const originalText = btnElement ? btnElement.innerText : '+ Upload';
-      if (btnElement) {
-        btnElement.innerText = 'Uploading...';
-        btnElement.disabled = true;
-        btnElement.style.opacity = '0.7';
-      }
-
       const formData = new FormData();
       Array.from(files).forEach(f => formData.append('files', f));
 
-      try {
-        const res = await fetch('/upload', {
-          method: 'POST',
-          body: formData
-        });
-        if (!res.ok) throw new Error('Upload failed');
-        const json = await res.json();
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/upload', true);
 
-        // Restore Button
+        // REAL-TIME PROGRESS TRACKING
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable && btnElement) {
+            const percent = Math.round((e.loaded / e.total) * 100);
+            btnElement.innerText = `Uploading ${percent}%`;
+            btnElement.style.background = `linear-gradient(90deg, #27ae60 ${percent}%, #14bfce ${percent}%)`;
+          }
+        };
+
+        xhr.onload = () => {
+          if (btnElement) {
+            btnElement.innerText = originalText;
+            btnElement.style.background = '#14bfce';
+            btnElement.disabled = false;
+            btnElement.style.opacity = '1';
+          }
+          if (xhr.status === 200) {
+            const json = JSON.parse(xhr.responseText);
+            resolve(json.paths || []);
+          } else {
+            reject(new Error('Upload failed'));
+          }
+        };
+
+        xhr.onerror = () => {
+          if (btnElement) {
+            btnElement.innerText = 'Retry';
+            btnElement.disabled = false;
+            btnElement.style.opacity = '1';
+          }
+          reject(new Error('Network error'));
+        };
+
         if (btnElement) {
-          btnElement.innerText = originalText;
-          btnElement.disabled = false;
+          btnElement.disabled = true;
           btnElement.style.opacity = '1';
         }
-
-        return json.paths || [];
-      } catch (err) {
-        console.error(err);
-        alert('Error uploading files: ' + err.message);
-
-        if (btnElement) {
-          btnElement.innerText = 'Retry';
-          btnElement.disabled = false;
-          btnElement.style.opacity = '1';
-        }
-        return [];
-      }
+        xhr.send(formData);
+      });
     }
 
     function renderThumbs(paths, stripId, isVideo) {
