@@ -566,6 +566,15 @@
       intraInput.addEventListener('change', async function () {
         handleUploadProcess(this.files, this.previousElementSibling, 'intraPaths', 'intraStrip', false);
       });
+
+      // --- AUTO-SAVE DATA FIELDS ---
+      const textFields = ['chiefComplaint', 'treatmentPlan'];
+      textFields.forEach(id => {
+        document.getElementById(id).addEventListener('input', () => {
+          currentPatient[id] = document.getElementById(id).value;
+          syncPatientToServer(); // Save text data instantly
+        });
+      });
     }
 
     async function compressImage(file) {

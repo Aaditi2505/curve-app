@@ -647,6 +647,16 @@
           handleUploadProcess(this.files, this.previousElementSibling, propName, stripId, isVideo);
         });
       });
+
+      // --- AUTO-SAVE FIELDS ---
+      const fields = ['modelsUpper', 'modelsLower'];
+      fields.forEach(id => {
+        const el = document.getElementById(id);
+        el.addEventListener('input', () => {
+          currentPatient['planningModels' + id.charAt(0).toUpperCase() + id.slice(1).replace('models', '')] = el.value;
+          syncPatientToServer();
+        });
+      });
     }
 
     async function compressImage(file) {
