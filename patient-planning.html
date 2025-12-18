@@ -644,7 +644,8 @@
         const isVideo = inputId.includes('video') || inputId === 'faceInput';
 
         input.addEventListener('change', async function () {
-          const paths = await uploadFiles(this.files);
+          const btn = this.previousElementSibling;
+          const paths = await uploadFiles(this.files, btn);
           currentPatient[propName] = (currentPatient[propName] || []).concat(paths);
           renderThumbs(paths, stripId, isVideo);
         });
@@ -683,8 +684,17 @@
       load('comparePostOpLower', 'postOpLowerStrip', false);
     }
 
-    async function uploadFiles(files) {
+    async function uploadFiles(files, btnElement) {
       if (!files || files.length === 0) return [];
+
+      // Loading State
+      const originalText = btnElement ? btnElement.innerText : '+ Upload';
+      if (btnElement) {
+        btnElement.innerText = 'Uploading...';
+        btnElement.disabled = true;
+        btnElement.style.opacity = '0.7';
+      }
+
       const formData = new FormData();
       Array.from(files).forEach(f => formData.append('files', f));
 
@@ -695,10 +705,24 @@
         });
         if (!res.ok) throw new Error('Upload failed');
         const json = await res.json();
+
+        // Restore Button
+        if (btnElement) {
+          btnElement.innerText = originalText;
+          btnElement.disabled = false;
+          btnElement.style.opacity = '1';
+        }
+
         return json.paths || [];
       } catch (err) {
         console.error(err);
-        alert('Error uploading files. Ensure server is running.');
+        alert('Error uploading files: ' + err.message);
+
+        if (btnElement) {
+          btnElement.innerText = 'Retry';
+          btnElement.disabled = false;
+          btnElement.style.opacity = '1';
+        }
         return [];
       }
     }

@@ -793,6 +793,40 @@
             });
         }
 
+        function copyShareLink() {
+            const origin = window.location.origin; // Automatically gets http://x3dmanagement.com:3000
+            const branch = localStorage.getItem('branch') || 'BRANCH'; // Use existing branch logic
+            const link = `${origin}/patient-view.html?id=${encodeURIComponent(p.bookingId)}&branch=${encodeURIComponent(branch)}&view=preop`;
+
+            const input = document.getElementById('shareLinkInput');
+            input.value = link;
+            input.select();
+            document.execCommand('copy');
+
+            // Update Button Text temporarily
+            const btn = document.querySelector('.share-copy-btn'); // Assuming this button exists
+            const originalText = btn.textContent;
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = originalText, 2000);
+        }
+
+        function openShareModal(initialLink) { // Renamed parameter to avoid conflict with local 'link'
+            if (!p || !p.bookingId) { // Use 'p' for patient data
+                alert('No patient data loaded.');
+                return;
+            }
+
+            const origin = window.location.origin;
+            const branch = localStorage.getItem('branch') || 'BRANCH'; // Use existing branch logic
+            const link = `${origin}/patient-view.html?id=${encodeURIComponent(p.bookingId)}&branch=${encodeURIComponent(branch)}&view=preop`;
+
+            document.getElementById('shareLinkInput').value = link;
+            document.getElementById('shareModal').style.display = 'flex';
+
+            // Remove the Warning Text
+            const warningEl = document.querySelector('.share-warning');
+            if (warningEl) warningEl.style.display = 'none';
+        }
         function shareViaApp() {
             const link = document.getElementById('shareLinkInput').value;
             if (navigator.share) {

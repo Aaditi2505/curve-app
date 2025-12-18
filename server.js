@@ -6,7 +6,7 @@ const fs = require('fs');
 const os = require('os'); // Added for IP detection
 
 const app = express();
-const PORT = 3000;
+const PORT = 80;
 
 // Helper to find local IP
 function getLocalIp() {

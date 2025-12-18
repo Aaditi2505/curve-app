@@ -135,6 +135,21 @@ app.get('/api/files/:bookingId', (req, res) => {
     });
 });
 
-app.listen(PORT, () => {
-    console.log(`Modern API Server running on http://localhost:${PORT}`);
+// Serve Static React Build
+const clientBuildPath = path.join(__dirname, '../client/dist');
+app.use(express.static(clientBuildPath));
+
+// Handle React Routing (SPA) - Serve index.html for all non-API routes
+// Handle React Routing (SPA) - Serve index.html for all non-API routes
+app.use((req, res, next) => {
+    // Check if it's an API request first
+    if (req.path.startsWith('/api')) return res.status(404).json({ error: 'API route not found' });
+    if (req.path.startsWith('/uploads')) return res.status(404).json({ error: 'File not found' });
+
+    // Otherwise serve React
+    res.sendFile(path.join(clientBuildPath, 'index.html'));
+});
+
+app.listen(3000, '0.0.0.0', () => {
+    console.log(`Modern App running on http://localhost:3000 (and accessible via domain)`);
 });

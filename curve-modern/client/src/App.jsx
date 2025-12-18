@@ -4,7 +4,7 @@ import axios from 'axios';
 import './App.css';
 
 // --- CONFIG ---
-const API_URL = 'http://localhost:3001/api';
+const API_URL = '/api';
 
 // --- AUTH CONTEXT ---
 const AuthContext = createContext(null);

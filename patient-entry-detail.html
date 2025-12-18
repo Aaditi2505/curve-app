@@ -552,32 +552,41 @@
       const intraInput = document.getElementById('intraInput');
 
       scanInput.addEventListener('change', async function () {
-        const paths = await uploadFiles(this.files);
+        const paths = await uploadFiles(this.files, this.previousElementSibling);
         currentPatient.scanPaths = (currentPatient.scanPaths || []).concat(paths);
         renderThumbs(paths, 'scanStrip', false);
       });
 
       faceInput.addEventListener('change', async function () {
-        const paths = await uploadFiles(this.files);
+        const paths = await uploadFiles(this.files, this.previousElementSibling);
         currentPatient.facePaths = (currentPatient.facePaths || []).concat(paths);
         renderThumbs(paths, 'faceStrip', true);
       });
 
       extraInput.addEventListener('change', async function () {
-        const paths = await uploadFiles(this.files);
+        const paths = await uploadFiles(this.files, this.previousElementSibling);
         currentPatient.extraPaths = (currentPatient.extraPaths || []).concat(paths);
         renderThumbs(paths, 'extraStrip', false);
       });
 
       intraInput.addEventListener('change', async function () {
-        const paths = await uploadFiles(this.files);
+        const paths = await uploadFiles(this.files, this.previousElementSibling);
         currentPatient.intraPaths = (currentPatient.intraPaths || []).concat(paths);
         renderThumbs(paths, 'intraStrip', false);
       });
     }
 
-    async function uploadFiles(files) {
+    async function uploadFiles(files, btnElement) {
       if (!files || files.length === 0) return [];
+
+      // Loading State
+      const originalText = btnElement ? btnElement.innerText : '+ Upload';
+      if (btnElement) {
+        btnElement.innerText = 'Uploading...';
+        btnElement.disabled = true;
+        btnElement.style.opacity = '0.7';
+      }
+
       const formData = new FormData();
       Array.from(files).forEach(f => formData.append('files', f));
 
@@ -588,10 +597,24 @@
         });
         if (!res.ok) throw new Error('Upload failed');
         const json = await res.json();
+
+        // Restore Button
+        if (btnElement) {
+          btnElement.innerText = originalText;
+          btnElement.disabled = false;
+          btnElement.style.opacity = '1';
+        }
+
         return json.paths || [];
       } catch (err) {
         console.error(err);
-        alert('Error uploading files: ' + err.message + '\n\nCheck console (F12) for more details.');
+        alert('Error uploading files: ' + err.message);
+
+        if (btnElement) {
+          btnElement.innerText = 'Retry';
+          btnElement.disabled = false;
+          btnElement.style.opacity = '1';
+        }
         return [];
       }
     }
