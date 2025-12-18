@@ -656,24 +656,6 @@
       currentBranch = localStorage.getItem('branch') || 'BRANCH';
       document.getElementById('branch-display').textContent = currentBranch;
 
-      // Admin Branch Logic
-      const role = localStorage.getItem('role');
-      const targetBranchSelect = document.getElementById('targetBranch');
-
-      if (role === 'ADMINISTRATOR') {
-        document.getElementById('adminBranchSelect').style.display = 'block';
-        targetBranchSelect.value = currentBranch; // Default to current
-      } else {
-        // Ensure the select has the current branch even if hidden
-        targetBranchSelect.value = currentBranch;
-      }
-
-      // Update ID when branch changes (if admin changes it)
-      targetBranchSelect.addEventListener('change', function () {
-        currentBranch = this.value;
-        updateBookingId();
-      });
-
       // Generate booking ID
       updateBookingId();
 
