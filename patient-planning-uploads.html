@@ -552,9 +552,13 @@
 
                 input.addEventListener('change', async function () {
                     const btn = this.previousElementSibling;
-                    const paths = await uploadFiles(this.files, btn);
-                    currentPatient[propName] = (currentPatient[propName] || []).concat(paths);
-                    renderThumbs(paths, stripId, isVideo);
+                    // INSTANT PREVIEW
+                    const localPaths = Array.from(this.files).map(f => URL.createObjectURL(f));
+                    renderThumbs(localPaths, stripId, isVideo);
+
+                    // BACKGROUND UPLOAD
+                    const serverPaths = await uploadFiles(this.files, btn);
+                    currentPatient[propName] = (currentPatient[propName] || []).concat(serverPaths);
                 });
             });
         }
