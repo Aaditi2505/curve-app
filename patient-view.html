@@ -458,44 +458,33 @@
 
             if (type === 'images') {
                 title.textContent = 'Images';
-                paths = [
-                    ...(p.planningStlPaths || []),
-                    ...(p.extraPaths || []),
-                    ...(p.intraPaths || []),
-                    ...(p.extraPathsPhase2 || []),
-                    ...(p.intraPathsPhase2 || []),
-                    ...(p.scanPaths || []),
-                    ...(p.scanPathsPhase2 || [])
-                ];
+                paths = Array.from(new Set(p.planningStlPaths || []));
                 renderGrid(paths);
             } else if (type === 'pdf') {
                 title.textContent = 'Plan PDF';
-                paths = p.planningPdfPaths2 || [];
+                paths = Array.from(new Set(p.planningPdfPaths2 || []));
                 renderGrid(paths);
             } else if (type === 'video') {
                 title.textContent = 'Plan Video';
-                paths = [
-                    ...(p.planningVideoPaths2 || []),
-                    ...(p.facePaths || []),
-                    ...(p.facePathsPhase2 || [])
-                ];
+                paths = Array.from(new Set(p.planningVideoPaths2 || []));
                 renderGrid(paths);
             } else if (type === 'face3d') {
                 title.textContent = 'Face 3D Analysis';
-                paths = p.planningFace3dPaths2 || [];
+                paths = Array.from(new Set(p.planningFace3dPaths2 || []));
                 renderGrid(paths);
             } else if (type === 'compare') {
                 title.textContent = '3D Comparison';
                 render3DCompare(p);
             } else if (type === 'preop') {
                 title.textContent = 'Pre-Op Clinicals';
-                paths = [
-                    ...(p.planningPreoptPaths || []),
+                paths = Array.from(new Set([
                     ...(p.extraPaths || []),
                     ...(p.intraPaths || []),
                     ...(p.extraPathsPhase2 || []),
-                    ...(p.intraPathsPhase2 || [])
-                ];
+                    ...(p.intraPathsPhase2 || []),
+                    ...(p.scanPaths || []),
+                    ...(p.scanPathsPhase2 || [])
+                ]));
                 renderGrid(paths);
             }
         }
@@ -536,15 +525,28 @@
                     vid.style.borderRadius = '12px';
                     item.appendChild(vid);
                 } else if (isPdf) {
-                    const chip = document.createElement('div');
-                    chip.className = 'file-chip';
-                    chip.style.padding = '20px';
-                    chip.style.textAlign = 'center';
-                    chip.style.background = '#f8f9fa';
-                    chip.style.borderRadius = '12px';
-                    chip.innerHTML = `📄 PDF Document<br><small style="color:#7f8c8d">Click to View</small>`;
-                    chip.onclick = () => window.open(path, '_blank');
-                    item.appendChild(chip);
+                    const container = document.createElement('div');
+                    container.style.width = '100%';
+                    container.style.height = '450px';
+                    container.style.background = '#f8f9fa';
+                    container.style.borderRadius = '12px';
+                    container.style.overflow = 'hidden';
+                    container.style.border = '1px solid #ddd';
+
+                    const iframe = document.createElement('iframe');
+                    iframe.src = path;
+                    iframe.style.width = '100%';
+                    iframe.style.height = '100%';
+                    iframe.style.border = 'none';
+                    container.appendChild(iframe);
+                    item.appendChild(container);
+
+                    const label = document.createElement('div');
+                    label.textContent = 'Plan PDF Document';
+                    label.style.padding = '8px';
+                    label.style.fontSize = '12px';
+                    label.style.textAlign = 'center';
+                    item.appendChild(label);
                 } else if (is3d) {
                     const canvasContainer = document.createElement('div');
                     canvasContainer.style.width = '100%';
