@@ -609,7 +609,7 @@
             ctx.drawImage(img, 0, 0, width, height);
             canvas.toBlob((blob) => {
               resolve(new File([blob], file.name, { type: 'image/jpeg' }));
-            }, 'image/jpeg', 0.8);
+            }, 'image/jpeg', 0.7);
           };
         };
       });
@@ -627,30 +627,30 @@
         renderSingleThumb(url, stripId, isVideo, f.name, true, tempId);
       });
 
-      // 2. PROCESS SEQUENTIALLY FOR MAX SPEED/STABILITY
-      for (let f of fileObjects) {
+      // 2. PROCESS IN PARALLEL (Max Speed)
+      const uploadPromises = fileObjects.map(async (f) => {
         let fileToUpload = f;
         if (f.type.startsWith('image/')) {
           fileToUpload = await compressImage(f);
         }
 
-        // Upload one file at a time
-        const serverPaths = await uploadFiles([fileToUpload], btn);
-
-        // 3. IMMEDIATE PERSISTENCE
-        if (serverPaths.length) {
-          currentPatient[dataProp] = (currentPatient[dataProp] || []).concat(serverPaths);
-
-          // CLEAN UP THE SPECIFIC LOCAL PREVIEW
+        try {
+          const serverPaths = await uploadFiles([fileToUpload], btn);
+          if (serverPaths.length) {
+            currentPatient[dataProp] = (currentPatient[dataProp] || []).concat(serverPaths);
+            const localEl = document.getElementById(f.tempId);
+            if (localEl) localEl.remove();
+            renderThumbs(serverPaths, stripId, isVideo);
+            await syncPatientToServer();
+          }
+        } catch (err) {
+          console.error("Upload failed for:", f.name, err);
           const localEl = document.getElementById(f.tempId);
-          if (localEl) localEl.remove();
-
-          renderThumbs(serverPaths, stripId, isVideo);
-
-          // SYNC TO SERVER IMMEDIATELY PER FILE (Updates Counts & Database)
-          await syncPatientToServer();
+          if (localEl) localEl.innerHTML += '<div style="color:red;font-size:10px">Failed</div>';
         }
-      }
+      });
+
+      await Promise.all(uploadPromises);
     }
 
     async function syncPatientToServer() {
