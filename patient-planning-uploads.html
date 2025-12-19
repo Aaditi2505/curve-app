@@ -333,6 +333,48 @@
         input[type="file"] {
             display: none;
         }
+
+        .media-container,
+        .local-preview {
+            position: relative;
+            display: inline-block;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 22px;
+            height: 22px;
+            background: #ff5252;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+            transition: all 0.2s ease;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .remove-btn:hover {
+            background: #d32f2f;
+            transform: scale(1.1);
+        }
+
+        .progress-indicator {
+            font-size: 0.75rem;
+            color: #27ae60;
+            margin-top: 5px;
+            display: block;
+        }
     </style>
 </head>
 
@@ -484,18 +526,17 @@
 
     <script>
         let currentPatient = null;
+        let activeUploads = {}; // tempId -> { xhr, btn, prop, originalText }
+        let buttonActiveCounts = new Map(); // buttonElement -> count
 
         document.addEventListener('DOMContentLoaded', function () {
             const branch = localStorage.getItem('branch') || 'BRANCH';
             document.getElementById('branch-display').textContent = branch;
 
-            // Permission Check - Hide Book Appointment for non-admin users
             const role = localStorage.getItem('role') || 'User';
             if (role !== 'ADMINISTRATOR') {
                 const bookAppointmentLink = document.querySelector('a[href="book-appointment.html"]');
-                if (bookAppointmentLink) {
-                    bookAppointmentLink.style.display = 'none';
-                }
+                if (bookAppointmentLink) bookAppointmentLink.style.display = 'none';
             }
 
             const raw = localStorage.getItem('currentPatient');
@@ -507,26 +548,22 @@
 
             currentPatient = JSON.parse(raw);
 
-            // Fill patient info
             document.getElementById('uniqueId').textContent = currentPatient.bookingId || '-';
             document.getElementById('name').textContent = currentPatient.name || '-';
             document.getElementById('age').textContent = currentPatient.age || '-';
             document.getElementById('sex').textContent = currentPatient.sex || '-';
             document.getElementById('date').textContent = currentPatient.date || '-';
 
-            // Setup file uploads
             setupFileUploads();
 
-            // Render existing files
-            if (currentPatient.planningStlPaths) renderThumbs(currentPatient.planningStlPaths, 'stlStrip', false);
-            if (currentPatient.planningPdfPaths2) renderThumbs(currentPatient.planningPdfPaths2, 'pdfStrip', false);
-            if (currentPatient.planningVideoPaths2) renderThumbs(currentPatient.planningVideoPaths2, 'videoStrip', true);
-            if (currentPatient.planningFace3dPaths2) renderThumbs(currentPatient.planningFace3dPaths2, 'face3dStrip', false);
-            if (currentPatient.planningCompareUpperPaths) renderThumbs(currentPatient.planningCompareUpperPaths, 'upperStrip', false);
-            if (currentPatient.planningCompareLowerPaths) renderThumbs(currentPatient.planningCompareLowerPaths, 'lowerStrip', false);
-            if (currentPatient.planningPreoptPaths) renderThumbs(currentPatient.planningPreoptPaths, 'preoptStrip', false);
+            if (currentPatient.planningStlPaths) renderThumbs(currentPatient.planningStlPaths, 'stlStrip', false, 'planningStlPaths');
+            if (currentPatient.planningPdfPaths2) renderThumbs(currentPatient.planningPdfPaths2, 'pdfStrip', false, 'planningPdfPaths2');
+            if (currentPatient.planningVideoPaths2) renderThumbs(currentPatient.planningVideoPaths2, 'videoStrip', true, 'planningVideoPaths2');
+            if (currentPatient.planningFace3dPaths2) renderThumbs(currentPatient.planningFace3dPaths2, 'face3dStrip', false, 'planningFace3dPaths2');
+            if (currentPatient.planningCompareUpperPaths) renderThumbs(currentPatient.planningCompareUpperPaths, 'upperStrip', false, 'planningCompareUpperPaths');
+            if (currentPatient.planningCompareLowerPaths) renderThumbs(currentPatient.planningCompareLowerPaths, 'lowerStrip', false, 'planningCompareLowerPaths');
+            if (currentPatient.planningPreoptPaths) renderThumbs(currentPatient.planningPreoptPaths, 'preoptStrip', false, 'planningPreoptPaths');
 
-            // Form submission
             document.getElementById('planningForm').addEventListener('submit', function (e) {
                 e.preventDefault();
                 saveAndProceed();
@@ -534,168 +571,317 @@
         });
 
         function setupFileUploads() {
-            const inputs = {
-                stlInput: 'planningStlPaths',
-                pdfInput: 'planningPdfPaths2',
-                videoInput: 'planningVideoPaths2',
-                face3dInput: 'planningFace3dPaths2',
-                upperInput: 'planningCompareUpperPaths',
-                lowerInput: 'planningCompareLowerPaths',
-                preoptInput: 'planningPreoptPaths'
+            const config = {
+                stlInput: { prop: 'planningStlPaths', isVideo: false },
+                pdfInput: { prop: 'planningPdfPaths2', isVideo: false },
+                videoInput: { prop: 'planningVideoPaths2', isVideo: true },
+                face3dInput: { prop: 'planningFace3dPaths2', isVideo: false },
+                upperInput: { prop: 'planningCompareUpperPaths', isVideo: false },
+                lowerInput: { prop: 'planningCompareLowerPaths', isVideo: false },
+                preoptInput: { prop: 'planningPreoptPaths', isVideo: false }
             };
 
-            Object.keys(inputs).forEach(inputId => {
-                const input = document.getElementById(inputId);
-                const propName = inputs[inputId];
-                const stripId = inputId.replace('Input', 'Strip');
-                const isVideo = inputId === 'videoInput';
+            Object.keys(config).forEach(id => {
+                const input = document.getElementById(id);
+                if (!input) return;
+                const { prop, isVideo } = config[id];
+                const stripId = id.replace('Input', 'Strip');
 
                 input.addEventListener('change', async function () {
-                    const btn = this.previousElementSibling;
-                    // INSTANT PREVIEW
-                    const localPaths = Array.from(this.files).map(f => URL.createObjectURL(f));
-                    renderThumbs(localPaths, stripId, isVideo);
-
-                    // BACKGROUND UPLOAD
-                    const serverPaths = await uploadFiles(this.files, btn);
-                    currentPatient[propName] = (currentPatient[propName] || []).concat(serverPaths);
+                    handleUploadProcess(this.files, this.previousElementSibling, prop, stripId, isVideo);
+                    this.value = ''; // Reset input to allow same file selection
                 });
             });
         }
 
-        async function uploadFiles(files, btnElement) {
+        async function compressImage(file) {
+            if (!file.type.startsWith('image/')) return file;
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 1200;
+                        const MAX_HEIGHT = 1200;
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > height) {
+                            if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                        } else {
+                            if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                        }
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        canvas.toBlob((blob) => {
+                            resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+                        }, 'image/jpeg', 0.75);
+                    };
+                };
+            });
+        }
+
+        async function handleUploadProcess(files, btn, dataProp, stripId, isVideo) {
+            const fileObjects = Array.from(files);
+
+            fileObjects.forEach(f => {
+                const url = URL.createObjectURL(f);
+                const tempId = 'temp_' + Math.random().toString(36).substr(2, 9);
+                f.tempId = tempId;
+                renderSingleThumb(url, stripId, isVideo, f.name, true, tempId, dataProp);
+            });
+
+            const uploadPromises = fileObjects.map(async (f) => {
+                let fileToUpload = f;
+                if (f.type.startsWith('image/')) {
+                    fileToUpload = await compressImage(f);
+                }
+
+                try {
+                    const serverPaths = await uploadFiles([fileToUpload], btn, f.tempId, dataProp);
+                    if (serverPaths.length) {
+                        currentPatient[dataProp] = (currentPatient[dataProp] || []).concat(serverPaths);
+                        const localEl = document.getElementById(f.tempId);
+                        if (localEl) localEl.remove();
+                        renderThumbs(serverPaths, stripId, isVideo, dataProp);
+                        await syncPatientToServer();
+                    }
+                } catch (err) {
+                    console.error("Upload failed or canceled for:", f.name);
+                    const localEl = document.getElementById(f.tempId);
+                    if (localEl && !err.message.includes('Aborted')) {
+                        localEl.style.opacity = '0.5';
+                        localEl.style.border = '2px solid red';
+                    }
+                }
+            });
+
+            await Promise.all(uploadPromises);
+        }
+
+        async function syncPatientToServer() {
+            const branch = localStorage.getItem('branch') || 'BRANCH';
+            const key = `appointments_${branch}`;
+            const appointments = JSON.parse(localStorage.getItem(key) || '[]');
+
+            const updatedAppointments = appointments.map(appt => {
+                if (appt.bookingId === currentPatient.bookingId) return { ...appt, ...currentPatient };
+                return appt;
+            });
+
+            localStorage.setItem(key, JSON.stringify(updatedAppointments));
+            localStorage.setItem('currentPatient', JSON.stringify(currentPatient));
+
+            try {
+                await fetch('/api/share', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(currentPatient)
+                });
+            } catch (e) { console.error("Auto-sync failed", e); }
+        }
+
+        async function uploadFiles(files, btnElement, tempId, dataProp) {
             if (!files || files.length === 0) return [];
 
-            const originalText = btnElement ? btnElement.innerText : '+ Upload';
-            const formData = new FormData();
-            Array.from(files).forEach(f => formData.append('files', f));
+            // Initialize button counter and track original text
+            if (!buttonActiveCounts.has(btnElement)) {
+                buttonActiveCounts.set(btnElement, 0);
+                btnElement.dataset.originalText = btnElement.innerText;
+            }
+            buttonActiveCounts.set(btnElement, buttonActiveCounts.get(btnElement) + 1);
+            const originalText = btnElement.dataset.originalText;
 
             return new Promise((resolve, reject) => {
+                const formData = new FormData();
+                files.forEach(f => formData.append('files', f));
+
                 const xhr = new XMLHttpRequest();
+                if (tempId) {
+                    activeUploads[tempId] = {
+                        xhr: xhr,
+                        btn: btnElement,
+                        originalText: originalText,
+                        dataProp: dataProp
+                    };
+                }
+
+                xhr.timeout = 30 * 60 * 1000;
                 xhr.open('POST', '/upload', true);
 
-                // REAL-TIME PROGRESS TRACKING
                 xhr.upload.onprogress = (e) => {
                     if (e.lengthComputable && btnElement) {
                         const percent = Math.round((e.loaded / e.total) * 100);
-                        btnElement.innerText = `Uploading ${percent}%`;
+                        btnElement.innerText = `🔄 ${percent}%`;
                         btnElement.style.background = `linear-gradient(90deg, #27ae60 ${percent}%, #14bfce ${percent}%)`;
                     }
                 };
 
-                xhr.onload = () => {
-                    if (btnElement) {
-                        btnElement.innerText = originalText;
-                        btnElement.style.background = '#14bfce';
-                        btnElement.disabled = false;
-                        btnElement.style.opacity = '1';
+                const finishUpload = (status) => {
+                    const count = buttonActiveCounts.get(btnElement) - 1;
+                    buttonActiveCounts.set(btnElement, Math.max(0, count));
+
+                    if (buttonActiveCounts.get(btnElement) <= 0) {
+                        if (status === 'success') {
+                            btnElement.innerText = '✅ Done';
+                            btnElement.style.background = '#27ae60';
+                        } else if (status === 'error') {
+                            btnElement.innerText = 'Retry';
+                            btnElement.style.background = '#e74c3c';
+                        } else {
+                            // Aborted or other - just reset
+                            btnElement.innerText = originalText;
+                            btnElement.style.background = '#14bfce';
+                            btnElement.disabled = false;
+                            return;
+                        }
+
+                        setTimeout(() => {
+                            if (buttonActiveCounts.get(btnElement) === 0) {
+                                btnElement.innerText = originalText;
+                                btnElement.style.background = '#14bfce';
+                                btnElement.disabled = false;
+                            }
+                        }, 1500);
                     }
+                };
+
+                xhr.onload = () => {
                     if (xhr.status === 200) {
-                        const json = JSON.parse(xhr.responseText);
-                        resolve(json.paths || []);
+                        finishUpload('success');
+                        resolve(JSON.parse(xhr.responseText).paths || []);
                     } else {
+                        finishUpload('error');
                         reject(new Error('Upload failed'));
                     }
                 };
 
                 xhr.onerror = () => {
-                    if (btnElement) {
-                        btnElement.innerText = 'Retry';
-                        btnElement.disabled = false;
-                        btnElement.style.opacity = '1';
-                    }
+                    finishUpload('error');
                     reject(new Error('Network error'));
                 };
 
-                if (btnElement) {
-                    btnElement.disabled = true;
-                    btnElement.style.opacity = '1';
-                }
+                xhr.onabort = () => {
+                    finishUpload('aborted');
+                    reject(new Error('Aborted'));
+                };
+
+                btnElement.disabled = true;
                 xhr.send(formData);
+
+                xhr.onloadend = () => { if (tempId) delete activeUploads[tempId]; };
             });
         }
 
-        function createDownloadBtn(path) {
-            const btn = document.createElement('a');
-            btn.href = path;
-            btn.download = path.split(/[/\\]/).pop();
-            btn.innerHTML = '&#11015;';
-            btn.title = 'Download';
-            btn.className = 'download-btn';
-            return btn;
+        function cancelUpload(tempId) {
+            const entry = activeUploads[tempId];
+            if (entry) {
+                entry.xhr.abort();
+                // delete happens in onloadend
+            }
+            const el = document.getElementById(tempId);
+            if (el) el.remove();
         }
 
-        function renderThumbs(paths, stripId, isVideo) {
+        function renderThumbs(paths, stripId, isVideo, dataProp) {
             const strip = document.getElementById(stripId);
             paths.forEach(path => {
-                const container = document.createElement('div');
-                container.className = 'media-container';
-
-                const ext = (path.split('.').pop() || '').toLowerCase();
-                const is3d = ['stl', 'obj', 'ply'].includes(ext);
-                const isPdf = ext === 'pdf';
-
-                if (is3d || isPdf) {
-                    const chip = document.createElement('div');
-                    const fname = path.split(/[/\\]/).pop();
-                    chip.textContent = fname;
-                    chip.className = 'file-chip';
-                    chip.onclick = () => window.open(path, '_blank');
-                    strip.appendChild(chip);
-                    return;
+                if (path && (path.startsWith('http') || path.startsWith('/uploads') || path.startsWith('blob:'))) {
+                    renderSingleThumb(path, stripId, isVideo, null, false, null, dataProp);
                 }
+            });
+        }
 
+        function renderSingleThumb(path, stripId, isVideo, customName, isLocal = false, tempId, dataProp) {
+            const strip = document.getElementById(stripId);
+
+            // Avoid duplicates
+            if (!isLocal) {
+                const existing = Array.from(strip.querySelectorAll('[data-path]')).map(el => el.getAttribute('data-path'));
+                if (existing.includes(path)) return;
+            }
+
+            const container = document.createElement('div');
+            container.className = isLocal ? 'local-preview' : 'media-container';
+            if (tempId) container.id = tempId;
+            if (!isLocal) container.setAttribute('data-path', path);
+
+            const fname = customName || path.split(/[/\\]/).pop();
+            const ext = (fname.split('.').pop() || '').toLowerCase();
+            const is3d = ['stl', 'obj', 'ply'].includes(ext);
+            const isPdf = ext === 'pdf';
+            const isVid = isVideo || ['mp4', 'webm', 'mov', 'avi', 'mkv'].includes(ext);
+
+            if (is3d || isPdf || isVid || isLocal) {
+                const chip = document.createElement('div');
+                let displayPath = fname.length > 15 ? fname.substring(0, 12) + '...' : fname;
+                if (isLocal) displayPath = "⏳ " + displayPath;
+                chip.textContent = displayPath;
+                chip.className = 'file-chip';
+                chip.title = fname;
+                if (!isLocal) chip.onclick = () => window.open(path, '_blank');
+                container.appendChild(chip);
+            } else {
                 let mediaEl;
-                if (isVideo) {
-                    mediaEl = document.createElement('video');
-                    mediaEl.src = path;
-                    mediaEl.muted = true;
-                    mediaEl.loop = true;
-                    mediaEl.autoplay = true;
-                } else {
-                    mediaEl = document.createElement('img');
-                    mediaEl.src = path;
-                }
+                mediaEl = document.createElement('img');
+                mediaEl.src = path;
+                mediaEl.style.width = '80px';
+                mediaEl.style.height = '60px';
+                mediaEl.style.objectFit = 'cover';
+                mediaEl.style.borderRadius = '6px';
                 mediaEl.onclick = () => window.open(path, '_blank');
                 container.appendChild(mediaEl);
+            }
 
-                const dlBtn = createDownloadBtn(path);
-                container.appendChild(dlBtn);
+            // Remove Button (always show if dataProp is provided, or if it's local)
+            if (dataProp || isLocal) {
+                const removeBtn = document.createElement('div');
+                removeBtn.className = 'remove-btn';
+                removeBtn.innerHTML = '&times;';
+                removeBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (isLocal) {
+                        if (confirm('Cancel this upload?')) {
+                            cancelUpload(tempId);
+                        }
+                    } else {
+                        removeFile(path, dataProp, container);
+                    }
+                };
+                container.appendChild(removeBtn);
+            }
 
-                strip.appendChild(container);
-            });
+            strip.appendChild(container);
+        }
+
+        function removeFile(path, dataProp, element) {
+            if (!confirm('Remove this file?')) return;
+            currentPatient[dataProp] = (currentPatient[dataProp] || []).filter(p => p !== path);
+            element.remove();
+            syncPatientToServer();
         }
 
         function saveAndProceed() {
-            const branch = localStorage.getItem('branch') || 'BRANCH';
-            const key = `appointments_${branch}`;
-            const appointments = JSON.parse(localStorage.getItem(key) || '[]');
+            syncPatientToServer().then(() => {
+                const branch = localStorage.getItem('branch') || 'BRANCH';
+                const key = `appointments_${branch}`;
+                const appointments = JSON.parse(localStorage.getItem(key) || '[]');
 
-            // Update patient data
-            const updatedAppointments = appointments.map(appt => {
-                if (appt.bookingId === currentPatient.bookingId) {
-                    const updated = {
-                        ...appt,
-                        planningStlPaths: currentPatient.planningStlPaths || [],
-                        planningPdfPaths2: currentPatient.planningPdfPaths2 || [],
-                        planningVideoPaths2: currentPatient.planningVideoPaths2 || [],
-                        planningFace3dPaths2: currentPatient.planningFace3dPaths2 || [],
-                        planningCompareUpperPaths: currentPatient.planningCompareUpperPaths || [],
-                        planningCompareLowerPaths: currentPatient.planningCompareLowerPaths || [],
-                        planningPreoptPaths: currentPatient.planningPreoptPaths || [],
-                        currentPhase: 'Phase 2 (Planning) - Completed',
-                        phase2Completed: true
-                    };
-                    localStorage.setItem('currentPatient', JSON.stringify(updated));
-                    return updated;
-                }
-                return appt;
+                const updatedAppointments = appointments.map(appt => {
+                    if (appt.bookingId === currentPatient.bookingId) {
+                        return { ...appt, ...currentPatient, currentPhase: 'Phase 2 (Planning) - Completed', phase2Completed: true };
+                    }
+                    return appt;
+                });
+                localStorage.setItem(key, JSON.stringify(updatedAppointments));
+
+                alert('Phase 2 completed successfully!\n\nYou can now proceed to Interaction phase when ready.');
+                window.location.href = 'patient-planning-list.html';
             });
-
-            localStorage.setItem(key, JSON.stringify(updatedAppointments));
-
-            alert('Phase 2 completed successfully!\n\nYou can now proceed to Interaction phase when ready.');
-            window.location.href = 'patient-planning-list.html';
         }
     </script>
 </body>

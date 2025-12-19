@@ -617,7 +617,8 @@
 
   <script>
     let currentPatient = null;
-    let activeUploads = {}; // Track ongoing XHR requests
+    let activeUploads = {};
+    let buttonUploadCounts = new Map(); // Track active uploads per button to fix race conditions
 
     document.addEventListener('DOMContentLoaded', function () {
       const branch = localStorage.getItem('branch') || 'BRANCH';
@@ -751,12 +752,14 @@
         renderSingleThumb(url, stripId, isVideo, f.name, true, tempId);
       });
 
-      // 2. PROCESS IN PARALLEL (Faster Uploads)
       const uploadPromises = fileObjects.map(async (f) => {
         let fileToUpload = f;
         if (f.type.startsWith('image/')) {
           fileToUpload = await compressImage(f);
         }
+
+        // Increase count for this button
+        buttonUploadCounts.set(btn, (buttonUploadCounts.get(btn) || 0) + 1);
 
         try {
           const serverPaths = await uploadFiles([fileToUpload], btn, f.tempId);
@@ -769,6 +772,42 @@
           }
         } catch (err) {
           console.error("Upload failed or cancelled for:", f.name);
+          const localEl = document.getElementById(f.tempId);
+          if (localEl) {
+            localEl.style.opacity = '1';
+            localEl.style.border = '2px solid red';
+          }
+        } finally {
+          // Decrease count and handle reset
+          const count = buttonUploadCounts.get(btn) - 1;
+          buttonUploadCounts.set(btn, count);
+
+          if (count === 0) {
+            // Only reset text if NO other files are uploading for this button
+            const isError = btn.innerText === 'Retry' || btn.innerText.includes('Timeout');
+            if (!isError) {
+              btn.innerText = '✅ All Done';
+              btn.style.background = '#27ae60';
+              setTimeout(() => {
+                let resetText = '+ Upload';
+                if (btn.onclick) {
+                  const clickStr = btn.onclick.toString();
+                  if (clickStr.includes('scan')) resetText = '+ Add More';
+                  else if (clickStr.includes('face')) resetText = '+ Add More';
+                  else if (clickStr.includes('extra')) resetText = '+ Add More';
+                  else if (clickStr.includes('intra')) resetText = '+ Add More';
+                  else if (clickStr.includes('stl')) resetText = '+ Upload Files';
+                  else if (clickStr.includes('pdf')) resetText = '+ Upload PDF';
+                  else if (clickStr.includes('video')) resetText = '+ Upload Video';
+                  else if (clickStr.includes('face3d')) resetText = '+ Upload Files';
+                  else if (clickStr.includes('preOp') || clickStr.includes('postOp')) resetText = '+ Upload STL';
+                }
+                btn.innerText = resetText;
+                btn.style.background = '#14bfce';
+                btn.disabled = false;
+              }, 1500);
+            }
+          }
         }
       });
 
@@ -797,6 +836,14 @@
     }
 
     function renderAllFiles() {
+      // Clear all strips first
+      const strips = ['scanStrip', 'faceStrip', 'extraStrip', 'intraStrip', 'stlStrip', 'pdfStrip', 'videoStrip', 'face3dStrip',
+        'preOpUpperStrip', 'preOpLowerStrip', 'postOpUpperStrip', 'postOpLowerStrip'];
+      strips.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) el.innerHTML = '';
+      });
+
       // Helper to load array
       const load = (prop, stripId, isVid, dataProp) => {
         if (currentPatient[prop] && currentPatient[prop].length) {
@@ -831,19 +878,35 @@
       load('comparePostOpLower', 'postOpLowerStrip', false, 'comparePostOpLower');
     }
 
-    async function uploadFiles(files, btnElement, tempId) {
+    async function uploadFiles(files, btnElement, tempId, dataProp) {
       if (!files || files.length === 0) return [];
-      const originalText = btnElement ? btnElement.innerText : '+ Upload';
+
+      // Initialize button counter and track original text
+      if (!buttonUploadCounts.has(btnElement)) {
+        buttonUploadCounts.set(btnElement, 0);
+        btnElement.dataset.originalText = btnElement.innerText;
+      }
+      buttonUploadCounts.set(btnElement, buttonUploadCounts.get(btnElement) + 1);
+      const originalText = btnElement.dataset.originalText;
 
       return new Promise((resolve, reject) => {
         const formData = new FormData();
         files.forEach(f => formData.append('files', f));
 
         const xhr = new XMLHttpRequest();
-        if (tempId) activeUploads[tempId] = xhr;
+        if (tempId) {
+          activeUploads[tempId] = {
+            xhr: xhr,
+            btn: btnElement,
+            originalText: originalText,
+            dataProp: dataProp
+          };
+        }
 
-        xhr.timeout = 30 * 60 * 1000; // 30 Minutes Patience
+        xhr.timeout = 30 * 60 * 1000; // 30 mins
         xhr.open('POST', '/upload', true);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        xhr.setRequestHeader('X-File-Size', files[0].size);
 
         xhr.upload.onprogress = (e) => {
           if (e.lengthComputable && btnElement) {
@@ -853,53 +916,59 @@
           }
         };
 
-        xhr.onload = () => {
-          if (btnElement) {
-            if (xhr.status === 200) {
+        const finishUpload = (status) => {
+          const count = buttonUploadCounts.get(btnElement) - 1;
+          buttonUploadCounts.set(btnElement, Math.max(0, count));
+
+          if (buttonUploadCounts.get(btnElement) <= 0) {
+            if (status === 'success') {
               btnElement.innerText = '✅ Done';
               btnElement.style.background = '#27ae60';
-              setTimeout(() => {
+            } else if (status === 'error') {
+              btnElement.innerText = 'Retry';
+              btnElement.style.background = '#e74c3c';
+            } else {
+              // Aborted or other - just reset
+              btnElement.innerText = originalText;
+              btnElement.style.background = '#14bfce';
+              btnElement.disabled = false;
+              return;
+            }
+
+            setTimeout(() => {
+              if (buttonUploadCounts.get(btnElement) === 0) {
                 btnElement.innerText = originalText;
                 btnElement.style.background = '#14bfce';
                 btnElement.disabled = false;
-              }, 1500);
-            } else {
-              btnElement.innerText = 'Retry';
-              btnElement.style.background = '#e74c3c';
-              btnElement.disabled = false;
-            }
+              }
+            }, 1500);
           }
+        };
+
+        xhr.onload = () => {
           if (xhr.status === 200) {
+            finishUpload('success');
             resolve(JSON.parse(xhr.responseText).paths || []);
           } else {
+            finishUpload('error');
             reject(new Error('Upload failed'));
           }
         };
 
         xhr.onerror = () => {
-          if (btnElement) {
-            btnElement.innerText = 'Retry';
-            btnElement.style.background = '#e74c3c';
-            btnElement.disabled = false;
-          }
+          finishUpload('error');
           reject(new Error('Network error'));
         };
 
-        xhr.ontimeout = () => {
-          if (btnElement) {
-            btnElement.innerText = 'Timeout (Slow)';
-            btnElement.style.background = '#e74c3c';
-            btnElement.disabled = false;
-          }
-          reject(new Error('Upload timed out'));
+        xhr.onabort = () => {
+          finishUpload('aborted');
+          reject(new Error('Aborted'));
         };
 
-        if (btnElement) btnElement.disabled = true;
+        btnElement.disabled = true;
         xhr.send(formData);
 
-        xhr.onloadend = () => {
-          if (tempId) delete activeUploads[tempId];
-        };
+        xhr.onloadend = () => { if (tempId) delete activeUploads[tempId]; };
       });
     }
 
@@ -919,37 +988,41 @@
 
     function renderSingleThumb(path, stripId, isVideo, customName, isLocal = false, tempId, dataProp) {
       const strip = document.getElementById(stripId);
+      if (!strip) return;
+
+      // Avoid duplicates
+      if (!isLocal && path) {
+        const existing = Array.from(strip.querySelectorAll('[data-path]')).map(el => el.getAttribute('data-path'));
+        if (existing.includes(path)) return;
+      }
+
       let fname = customName || path.split(/[/\\]/).pop();
 
       const ext = (fname.split('.').pop() || '').toLowerCase();
       const is3d = ['stl', 'obj', 'ply'].includes(ext) || path.startsWith('blob:');
       const isPdf = ext === 'pdf';
-      const treatAsVideo = isVideo || ['mp4', 'webm', 'ogg', 'mov', 'avi'].includes(ext);
+      const treatAsVideo = isVideo || ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'].includes(ext);
 
       const container = document.createElement('div');
       container.className = isLocal ? 'local-preview' : 'media-container';
       if (tempId) container.id = tempId;
+      if (!isLocal) container.setAttribute('data-path', path);
       container.style.display = 'inline-block';
       if (isLocal) container.style.opacity = '0.6';
 
-      if (is3d || isPdf) {
+      if (is3d || isPdf || treatAsVideo || isLocal) {
         const chip = document.createElement('div');
-        chip.textContent = isLocal ? `⏳ ${fname}` : fname;
+        let displayPath = fname.length > 20 ? fname.substring(0, 17) + '...' : fname;
+        if (isLocal) displayPath = "⏳ " + displayPath;
+        chip.textContent = displayPath;
         chip.className = 'file-chip';
-        chip.onclick = () => window.open(path, '_blank');
+        chip.title = fname;
+        if (!isLocal) chip.onclick = () => window.open(path, '_blank');
         container.appendChild(chip);
       } else {
         let mediaEl;
-        if (treatAsVideo) {
-          mediaEl = document.createElement('video');
-          mediaEl.src = path;
-          mediaEl.muted = true;
-          mediaEl.loop = true;
-          mediaEl.autoplay = true;
-        } else {
-          mediaEl = document.createElement('img');
-          mediaEl.src = path;
-        }
+        mediaEl = document.createElement('img');
+        mediaEl.src = path;
         mediaEl.onclick = () => window.open(path, '_blank');
         container.appendChild(mediaEl);
 
@@ -957,14 +1030,16 @@
         container.appendChild(dlBtn);
       }
 
-      // Add Remove Button
+      // Add Remove/Cancel Button
       const removeBtn = document.createElement('div');
       removeBtn.className = 'remove-btn';
-      removeBtn.innerHTML = '×';
+      removeBtn.innerHTML = '&times;';
       removeBtn.onclick = (e) => {
         e.stopPropagation();
         if (isLocal) {
-          cancelUpload(tempId);
+          if (confirm('Cancel this upload?')) {
+            cancelUpload(tempId);
+          }
         } else {
           deleteFile(path, dataProp, container);
         }
@@ -975,9 +1050,9 @@
     }
 
     function cancelUpload(tempId) {
-      if (activeUploads[tempId]) {
-        activeUploads[tempId].abort();
-        delete activeUploads[tempId];
+      const entry = activeUploads[tempId];
+      if (entry) {
+        entry.xhr.abort();
       }
       const el = document.getElementById(tempId);
       if (el) el.remove();
