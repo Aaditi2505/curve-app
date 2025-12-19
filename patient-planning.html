@@ -274,6 +274,7 @@
     }
 
     .media-container {
+      position: relative;
       display: inline-flex;
       flex-direction: column;
       align-items: center;
@@ -367,6 +368,45 @@
       display: flex;
       gap: 30px;
       margin-top: 20px;
+    }
+
+    .media-container,
+    .local-preview {
+      position: relative;
+      display: inline-block;
+      margin-right: 10px;
+      margin-top: 10px;
+      padding: 5px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .remove-btn {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      width: 22px;
+      height: 22px;
+      background: #ff5252;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      cursor: pointer;
+      border: 2px solid white;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      z-index: 10;
+      transition: all 0.2s ease;
+      font-weight: bold;
+      line-height: 1;
+    }
+
+    .remove-btn:hover {
+      background: #d32f2f;
+      transform: scale(1.1);
     }
   </style>
 </head>
@@ -577,6 +617,7 @@
 
   <script>
     let currentPatient = null;
+    let activeUploads = {}; // Track ongoing XHR requests
 
     document.addEventListener('DOMContentLoaded', function () {
       const branch = localStorage.getItem('branch') || 'BRANCH';
@@ -718,18 +759,16 @@
         }
 
         try {
-          const serverPaths = await uploadFiles([fileToUpload], btn);
+          const serverPaths = await uploadFiles([fileToUpload], btn, f.tempId);
           if (serverPaths.length) {
             currentPatient[dataProp] = (currentPatient[dataProp] || []).concat(serverPaths);
             const localEl = document.getElementById(f.tempId);
             if (localEl) localEl.remove();
-            renderThumbs(serverPaths, stripId, isVideo);
+            renderThumbs(serverPaths, stripId, isVideo, dataProp);
             await syncPatientToServer();
           }
         } catch (err) {
-          console.error("Upload failed for:", f.name, err);
-          const localEl = document.getElementById(f.tempId);
-          if (localEl) localEl.innerHTML += '<div style="color:red;font-size:10px">Failed</div>';
+          console.error("Upload failed or cancelled for:", f.name);
         }
       });
 
@@ -759,37 +798,40 @@
 
     function renderAllFiles() {
       // Helper to load array
-      const load = (prop, stripId, isVid) => {
+      const load = (prop, stripId, isVid, dataProp) => {
         if (currentPatient[prop] && currentPatient[prop].length) {
-          renderThumbs(currentPatient[prop], stripId, isVid);
+          renderThumbs(currentPatient[prop], stripId, isVid, dataProp);
         }
       };
 
       // Entry Phase (Phase 1 + 2 additions)
-      const loadCombined = (prop1, prop2, stripId, isVid) => {
-        const arr = (currentPatient[prop1] || []).concat(currentPatient[prop2] || []);
-        if (arr.length) renderThumbs(arr, stripId, isVid);
+      const loadCombined = (prop1, prop2, stripId, isVid, dataProp) => {
+        const arr1 = currentPatient[prop1] || [];
+        const arr2 = currentPatient[prop2] || [];
+
+        arr1.forEach(p => renderSingleThumb(p, stripId, isVid, null, false, null, prop1));
+        arr2.forEach(p => renderSingleThumb(p, stripId, isVid, null, false, null, prop2));
       };
 
-      loadCombined('scanPaths', 'scanPathsPhase2', 'scanStrip', false);
-      loadCombined('facePaths', 'facePathsPhase2', 'faceStrip', true);
-      loadCombined('extraPaths', 'extraPathsPhase2', 'extraStrip', false);
-      loadCombined('intraPaths', 'intraPathsPhase2', 'intraStrip', false);
+      loadCombined('scanPaths', 'scanPathsPhase2', 'scanStrip', false, 'scanPathsPhase2');
+      loadCombined('facePaths', 'facePathsPhase2', 'faceStrip', true, 'facePathsPhase2');
+      loadCombined('extraPaths', 'extraPathsPhase2', 'extraStrip', false, 'extraPathsPhase2');
+      loadCombined('intraPaths', 'intraPathsPhase2', 'intraStrip', false, 'intraPathsPhase2');
 
       // Planning Phase Content
-      load('planningStlPaths', 'stlStrip', false);
-      load('planningPdfPaths2', 'pdfStrip', false);
-      load('planningVideoPaths2', 'videoStrip', true);
-      load('planningFace3dPaths2', 'face3dStrip', false);
+      load('planningStlPaths', 'stlStrip', false, 'planningStlPaths');
+      load('planningPdfPaths2', 'pdfStrip', false, 'planningPdfPaths2');
+      load('planningVideoPaths2', 'videoStrip', true, 'planningVideoPaths2');
+      load('planningFace3dPaths2', 'face3dStrip', false, 'planningFace3dPaths2');
 
       // 3D Compare
-      load('comparePreOpUpper', 'preOpUpperStrip', false);
-      load('comparePreOpLower', 'preOpLowerStrip', false);
-      load('comparePostOpUpper', 'postOpUpperStrip', false);
-      load('comparePostOpLower', 'postOpLowerStrip', false);
+      load('comparePreOpUpper', 'preOpUpperStrip', false, 'comparePreOpUpper');
+      load('comparePreOpLower', 'preOpLowerStrip', false, 'comparePreOpLower');
+      load('comparePostOpUpper', 'postOpUpperStrip', false, 'comparePostOpUpper');
+      load('comparePostOpLower', 'postOpLowerStrip', false, 'comparePostOpLower');
     }
 
-    async function uploadFiles(files, btnElement) {
+    async function uploadFiles(files, btnElement, tempId) {
       if (!files || files.length === 0) return [];
       const originalText = btnElement ? btnElement.innerText : '+ Upload';
 
@@ -798,6 +840,8 @@
         files.forEach(f => formData.append('files', f));
 
         const xhr = new XMLHttpRequest();
+        if (tempId) activeUploads[tempId] = xhr;
+
         xhr.timeout = 30 * 60 * 1000; // 30 Minutes Patience
         xhr.open('POST', '/upload', true);
 
@@ -852,6 +896,10 @@
 
         if (btnElement) btnElement.disabled = true;
         xhr.send(formData);
+
+        xhr.onloadend = () => {
+          if (tempId) delete activeUploads[tempId];
+        };
       });
     }
 
@@ -865,11 +913,11 @@
       return btn;
     }
 
-    function renderThumbs(paths, stripId, isVideo) {
-      paths.forEach(path => renderSingleThumb(path, stripId, isVideo));
+    function renderThumbs(paths, stripId, isVideo, dataProp) {
+      paths.forEach(path => renderSingleThumb(path, stripId, isVideo, null, false, null, dataProp));
     }
 
-    function renderSingleThumb(path, stripId, isVideo, customName, isLocal = false, tempId) {
+    function renderSingleThumb(path, stripId, isVideo, customName, isLocal = false, tempId, dataProp) {
       const strip = document.getElementById(stripId);
       let fname = customName || path.split(/[/\\]/).pop();
 
@@ -905,12 +953,43 @@
         mediaEl.onclick = () => window.open(path, '_blank');
         container.appendChild(mediaEl);
 
-        if (!isLocal) {
-          const dlBtn = createDownloadBtn(path);
-          container.appendChild(dlBtn);
-        }
+        const dlBtn = createDownloadBtn(path);
+        container.appendChild(dlBtn);
       }
+
+      // Add Remove Button
+      const removeBtn = document.createElement('div');
+      removeBtn.className = 'remove-btn';
+      removeBtn.innerHTML = '×';
+      removeBtn.onclick = (e) => {
+        e.stopPropagation();
+        if (isLocal) {
+          cancelUpload(tempId);
+        } else {
+          deleteFile(path, dataProp, container);
+        }
+      };
+      container.appendChild(removeBtn);
+
       strip.appendChild(container);
+    }
+
+    function cancelUpload(tempId) {
+      if (activeUploads[tempId]) {
+        activeUploads[tempId].abort();
+        delete activeUploads[tempId];
+      }
+      const el = document.getElementById(tempId);
+      if (el) el.remove();
+    }
+
+    async function deleteFile(path, dataProp, element) {
+      if (!confirm('Are you sure you want to delete this file?')) return;
+      if (currentPatient[dataProp]) {
+        currentPatient[dataProp] = (currentPatient[dataProp] || []).filter(p => p !== path);
+        element.remove();
+        await syncPatientToServer();
+      }
     }
 
     async function saveAndFinish() {
