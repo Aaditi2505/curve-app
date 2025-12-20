@@ -615,14 +615,18 @@
     </form>
   </div>
 
+  <script src="sync.js"></script>
   <script>
     let currentPatient = null;
     let activeUploads = {};
     let buttonUploadCounts = new Map(); // Track active uploads per button to fix race conditions
 
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', async function () {
       const branch = localStorage.getItem('branch') || 'BRANCH';
       document.getElementById('branch-display').textContent = branch;
+
+      // Pull from cloud
+      await SyncUtil.pullAll();
 
       const raw = localStorage.getItem('currentPatient');
       if (!raw) {
@@ -778,36 +782,7 @@
             localEl.style.border = '2px solid red';
           }
         } finally {
-          // Decrease count and handle reset
-          const count = buttonUploadCounts.get(btn) - 1;
-          buttonUploadCounts.set(btn, count);
-
-          if (count === 0) {
-            // Only reset text if NO other files are uploading for this button
-            const isError = btn.innerText === 'Retry' || btn.innerText.includes('Timeout');
-            if (!isError) {
-              btn.innerText = '✅ All Done';
-              btn.style.background = '#27ae60';
-              setTimeout(() => {
-                let resetText = '+ Upload';
-                if (btn.onclick) {
-                  const clickStr = btn.onclick.toString();
-                  if (clickStr.includes('scan')) resetText = '+ Add More';
-                  else if (clickStr.includes('face')) resetText = '+ Add More';
-                  else if (clickStr.includes('extra')) resetText = '+ Add More';
-                  else if (clickStr.includes('intra')) resetText = '+ Add More';
-                  else if (clickStr.includes('stl')) resetText = '+ Upload Files';
-                  else if (clickStr.includes('pdf')) resetText = '+ Upload PDF';
-                  else if (clickStr.includes('video')) resetText = '+ Upload Video';
-                  else if (clickStr.includes('face3d')) resetText = '+ Upload Files';
-                  else if (clickStr.includes('preOp') || clickStr.includes('postOp')) resetText = '+ Upload STL';
-                }
-                btn.innerText = resetText;
-                btn.style.background = '#14bfce';
-                btn.disabled = false;
-              }, 1500);
-            }
-          }
+          // UI reset is now handled entirely inside uploadFiles/finishUpload
         }
       });
 
@@ -815,6 +790,13 @@
     }
 
     async function syncPatientToServer() {
+      if (!currentPatient || !currentPatient.bookingId) return;
+
+      const res = await SyncUtil.sharePatient(currentPatient);
+      if (res.success) {
+        console.log('Patient data shared successfully.');
+      }
+
       const branch = localStorage.getItem('branch') || 'BRANCH';
       const key = `appointments_${branch}`;
       const appointments = JSON.parse(localStorage.getItem(key) || '[]');
@@ -825,14 +807,6 @@
       });
 
       localStorage.setItem(key, JSON.stringify(updatedAppointments));
-
-      try {
-        await fetch('/api/share', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(currentPatient)
-        });
-      } catch (e) { console.error("Auto-sync failed", e); }
     }
 
     function renderAllFiles() {

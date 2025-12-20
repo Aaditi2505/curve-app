@@ -303,12 +303,16 @@
 
   </main>
 
+  <script src="sync.js"></script>
   <script>
     let currentBranch = '';
 
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', async function () {
       currentBranch = localStorage.getItem('branch') || 'BRANCH';
       document.getElementById('branch-display').textContent = currentBranch;
+
+      // Pull from cloud
+      await SyncUtil.pullAll();
 
       const role = localStorage.getItem('role') || 'User';
       if (role !== 'ADMINISTRATOR') {

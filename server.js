@@ -62,6 +62,17 @@ app.post('/api/share', (req, res) => {
   }
 });
 
+// Helper to get all patients
+app.get('/api/patients', (req, res) => {
+  if (!fs.existsSync(DB_FILE)) return res.json({});
+  try {
+    const db = JSON.parse(fs.readFileSync(DB_FILE));
+    res.json(db);
+  } catch (e) {
+    res.status(500).json({ error: 'Server error reading data.' });
+  }
+});
+
 // Helper to get patient data
 app.get('/api/patient/:id', (req, res) => {
   const { id } = req.params;
@@ -77,12 +88,37 @@ app.get('/api/patient/:id', (req, res) => {
   }
 });
 
+// Bulk save (optional but useful for first-time sync)
+app.post('/api/save-all', (req, res) => {
+  const data = req.body;
+  if (!data || typeof data !== 'object') {
+    return res.status(400).json({ error: 'Invalid data' });
+  }
+
+  let db = {};
+  if (fs.existsSync(DB_FILE)) {
+    try {
+      db = JSON.parse(fs.readFileSync(DB_FILE));
+    } catch (e) { }
+  }
+
+  // Merge new data into db
+  Object.assign(db, data);
+
+  try {
+    fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+    res.json({ success: true, count: Object.keys(data).length });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to save all data.' });
+  }
+});
+
 // Config Endpoint
 app.get('/api/config', (req, res) => {
   res.json({
     ip: getLocalIp(),
     port: PORT,
-    baseUrl: `http://${getLocalIp()}:${PORT}`
+    baseUrl: `http://x3dmanagement.com` // Official Production URL
   });
 });
 
@@ -127,8 +163,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🚀 CURVE PRODUCTION SERVER IS LIVE`);
   console.log(`-----------------------------------`);
   console.log(`URL: http://x3dmanagement.com`);
-  console.log(`Internal: http://localhost:${PORT}`);
-  console.log(`Local IP: http://${getLocalIp()}:${PORT}`);
+  console.log(`Status: Running on port ${PORT}`);
   console.log(`-----------------------------------\n`);
 });
 

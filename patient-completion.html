@@ -158,13 +158,18 @@
             </div>
         </form>
     </div>
+    <script src="sync.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', async function () {
             const branch = localStorage.getItem('branch') || 'BRANCH';
             document.getElementById('branch-name').textContent = branch;
+
+            // Pull from cloud
+            await SyncUtil.pullAll();
+
             const raw = localStorage.getItem('currentPatient');
             if (!raw) { window.location.href = 'patient-completion-list.html'; return; }
-            const p = JSON.parse(raw);
+            let p = JSON.parse(raw);
             document.getElementById('uniqueId').value = p.bookingId || '';
             document.getElementById('name').value = p.name || '';
             document.getElementById('finalRemarks').value = p.completionRemarks || '';
@@ -176,7 +181,7 @@
             }
 
             const form = document.getElementById('compForm');
-            form.addEventListener('submit', function (e) {
+            form.addEventListener('submit', async function (e) {
                 e.preventDefault();
                 const markDone = document.getElementById('markCompleted').checked;
 
@@ -185,9 +190,10 @@
 
                 const key = `appointments_${branch}`;
                 const list = JSON.parse(localStorage.getItem(key) || '[]');
+                let updatedObj = null;
                 const updated = list.map(a => {
                     if ((a.bookingId || '') === (p.bookingId || '')) {
-                        const updatedObj = {
+                        updatedObj = {
                             ...a,
                             completionRemarks: document.getElementById('finalRemarks').value,
                             currentPhase: markDone ? 'Completed' : 'Phase 5 (Completion)'
@@ -198,6 +204,12 @@
                     return a;
                 });
                 localStorage.setItem(key, JSON.stringify(updated));
+
+                // Sync to server
+                if (updatedObj) {
+                    await SyncUtil.sharePatient(updatedObj);
+                }
+
                 if (markDone) alert('Case closed successfully.');
                 else alert('Completion details saved.');
                 window.location.href = 'patient-completion-list.html';

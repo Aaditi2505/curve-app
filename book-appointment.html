@@ -649,12 +649,16 @@
   <!-- Back Button -->
   <button class="back-button" onclick="window.location.href='dashboard.html'">←</button>
 
+  <script src="sync.js"></script>
   <script>
     let currentBranch = '';
 
     document.addEventListener('DOMContentLoaded', function () {
       currentBranch = localStorage.getItem('branch') || 'BRANCH';
       document.getElementById('branch-display').textContent = currentBranch;
+
+      // Sync from cloud on load
+      SyncUtil.pullAll();
 
       // Generate booking ID
       updateBookingId();
@@ -757,6 +761,9 @@
 
       appointments.push(data);
       localStorage.setItem(key, JSON.stringify(appointments));
+
+      // Sync to cloud
+      SyncUtil.pushAll();
 
       alert('Appointment saved successfully!');
       resetForm();
@@ -944,6 +951,10 @@
       });
 
       localStorage.setItem(key, JSON.stringify(updatedAppointments));
+
+      // Sync to cloud
+      SyncUtil.pushAll();
+
       alert('Appointment updated successfully!');
       resetOldForm();
     }
@@ -1026,6 +1037,9 @@
 
       appointments = appointments.filter(a => a.bookingId !== bookingId);
       localStorage.setItem(key, JSON.stringify(appointments));
+
+      // Sync to cloud
+      SyncUtil.pushAll();
 
       alert('Appointment deleted successfully!');
       loadDeleteAppointments();

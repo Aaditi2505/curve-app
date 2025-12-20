@@ -526,14 +526,18 @@
     </form>
   </div>
 
+  <script src="sync.js"></script>
   <script>
     let currentPatient = null;
     let activeUploads = {};
     let buttonUploadCounts = new Map(); // Fix race conditions
 
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', async function () {
       const branch = localStorage.getItem('branch') || 'BRANCH';
       document.getElementById('branch-display').textContent = branch;
+
+      // Pull from cloud to ensure latest data
+      await SyncUtil.pullAll();
 
       // Permission Check - Hide Book Appointment for non-admin users
       const role = localStorage.getItem('role') || 'User';
@@ -721,13 +725,20 @@
     }
 
     async function syncPatientToServer() {
+      // Use the utility to share patient data
+      if (!currentPatient || !currentPatient.bookingId) return;
+
+      const res = await SyncUtil.sharePatient(currentPatient);
+      if (res.success) {
+        console.log('Patient data shared successfully.');
+      } else {
+        console.warn('Failed to sync patient data to server.');
+      }
+
+      // Keep local update logic
       const branch = localStorage.getItem('branch') || 'BRANCH';
       const key = `appointments_${branch}`;
       const appointments = JSON.parse(localStorage.getItem(key) || '[]');
-
-      // Update counts before syncing
-      currentPatient.extraImageCount = (currentPatient.extraPaths || []).length;
-      currentPatient.intraImageCount = (currentPatient.intraPaths || []).length;
 
       const updatedAppointments = appointments.map(appt => {
         if (appt.bookingId === currentPatient.bookingId) return { ...appt, ...currentPatient };
@@ -735,14 +746,6 @@
       });
 
       localStorage.setItem(key, JSON.stringify(updatedAppointments));
-
-      try {
-        await fetch('/api/share', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(currentPatient)
-        });
-      } catch (e) { console.error("Auto-sync failed", e); }
     }
 
     async function uploadFiles(files, btnElement, tempId, dataProp) {

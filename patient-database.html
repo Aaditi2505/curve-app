@@ -294,10 +294,14 @@
 
   </div>
 
+  <script src="sync.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', async function () {
       const branch = localStorage.getItem('branch') || 'General';
       document.getElementById('branch-name').textContent = branch;
+
+      // Pull from cloud
+      await SyncUtil.pullAll();
 
       const role = localStorage.getItem('role') || 'User';
       if (role !== 'ADMINISTRATOR') {

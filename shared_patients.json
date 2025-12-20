@@ -58,5 +58,71 @@
     "postSimPaths": [],
     "planningModelsUpper": 0,
     "planningModelsLower": 0
+  },
+  "0001": {
+    "name": "Test User 3",
+    "age": "40",
+    "sex": "Male",
+    "date": "2025-12-09",
+    "time": "12:00",
+    "contact": "555555555",
+    "whatsapp": "",
+    "bookingId": "0001",
+    "branch": "CHENNAI"
+  },
+  "0002": {
+    "name": "aad",
+    "age": "23",
+    "sex": "Female",
+    "date": "2025-12-09",
+    "time": "19:07",
+    "contact": "8220422505",
+    "whatsapp": "8220422505",
+    "bookingId": "0002",
+    "branch": "CHENNAI",
+    "chiefComplaint": "",
+    "treatmentPlan": "",
+    "scanPaths": [
+      "/uploads/20251002-107-upperjaw[1]-1765260086704 (6)-1765267558612-1765289394933.stl"
+    ],
+    "facePaths": [
+      "/uploads/20251002-107-upperjaw[1]-1765260086704 (6)-1765289400781.stl"
+    ],
+    "extraPaths": [
+      "/uploads/im3-1765289406755.jpeg"
+    ],
+    "intraPaths": [
+      "/uploads/im4-1765289413514.jpeg"
+    ],
+    "extraImageCount": 1,
+    "intraImageCount": 1,
+    "currentPhase": "Interaction Phase",
+    "planningModelsUpper": 0,
+    "planningModelsLower": 0,
+    "approved": true,
+    "planningStlPaths": [
+      "/uploads/im3-1765297439180.jpeg",
+      "/uploads/im2-1765297445796.jpeg"
+    ],
+    "planningPdfPaths2": [
+      "/uploads/mongo11-1765297451166.pdf"
+    ],
+    "planningVideoPaths2": [
+      "/uploads/video-1765297456489.mp4"
+    ],
+    "planningFace3dPaths2": [
+      "/uploads/im2-1765297463720.jpeg",
+      "/uploads/rex-1765297469363.jpg"
+    ],
+    "planningCompareUpperPaths": [
+      "/uploads/rex2-1765297475432.jpg"
+    ],
+    "planningCompareLowerPaths": [
+      "/uploads/rex-1765297480916.jpg"
+    ],
+    "planningPreoptPaths": [
+      "/uploads/im1-1765297488086.jpeg",
+      "/uploads/im4-1765297493807.jpeg"
+    ]
   }
 }

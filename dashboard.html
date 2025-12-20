@@ -453,6 +453,11 @@
     </div>
 
     <div class="header-right">
+      <button id="sync-btn" onclick="triggerSync()"
+        style="padding: 10px 20px; background: #14bfce; color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease;">
+        <span>☁️</span> Cloud Sync
+      </button>
+
       <!-- User Profile OTT Style -->
       <div class="user-profile" onclick="window.location.href='login.html'" style="cursor: pointer;"
         title="Switch Account">
@@ -484,12 +489,12 @@
 
       <!-- Stats -->
       <div class="stat-card card-total">
-        <span class="stat-num">12</span>
+        <span class="stat-num" id="total-appts">0</span>
         <span class="stat-label">Total Appointments</span>
       </div>
 
       <div class="stat-card card-today">
-        <span class="stat-num" style="color: #14bfce;">5</span>
+        <span class="stat-num" id="today-appts" style="color: #14bfce;">0</span>
         <span class="stat-label">Today's Appointment</span>
       </div>
 
@@ -535,11 +540,43 @@
     </div>
   </div>
 
+  <script src="sync.js"></script>
   <script>
+    async function triggerSync() {
+      const btn = document.getElementById('sync-btn');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<span>🔄</span> Syncing...';
+      btn.disabled = true;
+
+      // Pull from cloud
+      const res = await SyncUtil.pullAll();
+
+      // Also Push local data just in case
+      await SyncUtil.pushAll();
+
+      if (res && res.success) {
+        btn.innerHTML = '<span>✅</span> Synced';
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+          location.reload(); // Refresh to show new data
+        }, 2000);
+      } else {
+        btn.innerHTML = '<span>❌</span> Failed';
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }, 2000);
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       // 1. Set Branch
       const branch = localStorage.getItem('branch') || 'General';
       document.getElementById('branch-display').textContent = branch;
+
+      // Update Stats
+      updateStats();
 
       // 2. Set User & Role
       const role = localStorage.getItem('role') || 'User';
@@ -619,6 +656,18 @@
         }
       }
       renderCalendar();
+
+      function updateStats() {
+        const branch = localStorage.getItem('branch') || 'General';
+        const key = `appointments_${branch}`;
+        const appts = JSON.parse(localStorage.getItem(key) || '[]');
+
+        document.getElementById('total-appts').textContent = appts.length;
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        const todayAppts = appts.filter(a => a.date === todayStr).length;
+        document.getElementById('today-appts').textContent = todayAppts;
+      }
     });
   </script>
 </body>

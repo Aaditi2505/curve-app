@@ -553,13 +553,17 @@
         </div>
     </div>
 
+    <script src="sync.js"></script>
     <script>
         let p = {}; // Current patient data
 
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', async function () {
             // Populate branch
             const branch = localStorage.getItem('branch') || 'BRANCH';
             document.getElementById('branch-name').textContent = branch;
+
+            // Pull from cloud
+            await SyncUtil.pullAll();
 
             const raw = localStorage.getItem('currentPatient');
             if (!raw) {
