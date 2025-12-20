@@ -744,6 +744,10 @@
     }
 
     async function handleUploadProcess(files, btn, dataProp, stripId, isVideo) {
+      if (!buttonUploadCounts.has(btn)) {
+        buttonUploadCounts.set(btn, 0);
+        btn.dataset.originalText = btn.innerText;
+      }
       const strip = document.getElementById(stripId);
       const fileObjects = Array.from(files);
 
@@ -856,11 +860,6 @@
       if (!files || files.length === 0) return [];
 
       // Initialize button counter and track original text
-      if (!buttonUploadCounts.has(btnElement)) {
-        buttonUploadCounts.set(btnElement, 0);
-        btnElement.dataset.originalText = btnElement.innerText;
-      }
-      buttonUploadCounts.set(btnElement, buttonUploadCounts.get(btnElement) + 1);
       const originalText = btnElement.dataset.originalText;
 
       return new Promise((resolve, reject) => {

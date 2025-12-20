@@ -392,7 +392,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             const urlParams = new URLSearchParams(window.location.search);
             const id = urlParams.get('id');
-            const view = urlParams.get('view') || 'preop';
+            const view = urlParams.get('view') || 'images';
 
             if (!id) {
                 showError('Invalid Link', 'This link is missing the Patient ID.');
