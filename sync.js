@@ -127,14 +127,29 @@ const SyncUtil = {
     async sharePatient(patientData) {
         if (!patientData || !patientData.bookingId) return;
         try {
-            await fetch('/api/share', {
+            const res = await fetch('/api/share', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(patientData)
             });
+            return await res.json();
         } catch (e) {
             console.error('Failed to share patient', e);
+            return { success: false, error: e.message };
         }
+    },
+
+    /**
+     * Resets local data to start fresh (for new branch setup)
+     */
+    async resetLocal() {
+        const branches = ['CHENNAI', 'BANGALORE', 'General', 'BRANCH'];
+        branches.forEach(b => {
+            localStorage.removeItem(`appointments_${b}`);
+        });
+        localStorage.removeItem('currentPatient');
+        console.log('Local data reset complete.');
+        return { success: true };
     }
 };
 
