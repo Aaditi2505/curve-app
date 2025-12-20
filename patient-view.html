@@ -427,12 +427,11 @@
             // Find valid tab button or default
             let btn = document.querySelector(`button[onclick="showTab('${initialView}', this)"]`);
             if (!btn) {
-                // heuristic fallback if view param is mismatch
-                if (initialView === 'preop') btn = document.querySelectorAll('.nav-btn')[5];
-                else btn = document.querySelectorAll('.nav-btn')[0];
+                btn = document.querySelectorAll('.nav-btn')[0];
+                showTab('images', btn);
+            } else {
+                showTab(initialView, btn);
             }
-
-            showTab(initialView, btn);
         }
 
         function showError(title, message) {
@@ -475,17 +474,6 @@
             } else if (type === 'compare') {
                 title.textContent = '3D Comparison';
                 render3DCompare(p);
-            } else if (type === 'preop') {
-                title.textContent = 'Pre-Op Clinicals';
-                paths = Array.from(new Set([
-                    ...(p.extraPaths || []),
-                    ...(p.intraPaths || []),
-                    ...(p.extraPathsPhase2 || []),
-                    ...(p.intraPathsPhase2 || []),
-                    ...(p.scanPaths || []),
-                    ...(p.scanPathsPhase2 || [])
-                ]));
-                renderGrid(paths);
             }
         }
 
