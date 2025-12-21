@@ -73,6 +73,32 @@
       font-weight: 600;
     }
 
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .back-btn-header {
+      padding: 10px 20px;
+      background: #2c3e50;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
+    }
+
+    .back-btn-header:hover {
+      background: #34495e;
+      transform: translateX(-3px);
+    }
+
     .branch-badge {
       background: rgba(44, 62, 80, 0.05);
       padding: 10px 25px;
@@ -465,10 +491,25 @@
         flex-shrink: 0;
       }
 
+      .header-right {
+        width: auto;
+        gap: 10px;
+        margin-top: 0;
+      }
+
+      .back-btn-header span:last-child {
+        display: none;
+      }
+
+      .back-btn-header {
+        padding: 8px 12px;
+      }
+
       .branch-badge {
         font-size: 0.75rem;
         padding: 6px 12px;
         white-space: nowrap;
+        margin-top: 0;
       }
 
       .main-container {
@@ -562,7 +603,13 @@
         <a href="patient-interaction-list.html" class="nav-item">Interaction</a>
       </nav>
     </div>
-    <div class="branch-badge" id="branch-display">Branch</div>
+    <div class="header-right">
+      <button class="back-btn-header" onclick="window.location.href='dashboard.html'">
+        <span>←</span>
+        <span>Back</span>
+      </button>
+      <div class="branch-badge" id="branch-display">Branch</div>
+    </div>
   </header>
 
   <div class="main-container">
