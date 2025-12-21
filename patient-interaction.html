@@ -935,12 +935,11 @@
             const updatables = [];
 
             // Definitions: Separate boxes
-            // Dynamic Mapping based on uploaded data
+            // Layout: Pre-Op vs Post-Op (Upper), then Pre-Op vs Post-Op (Lower)
             const views = [
                 { label: 'Pre-Op Upper', paths: patient.planningCompareUpperPaths || patient.comparePreOpUpper, color: 0xffffff },
+                { label: 'Post-Op Upper', paths: patient.planningStlPaths || patient.comparePostOpUpper, color: 0x4dd0e1 },
                 { label: 'Pre-Op Lower', paths: patient.planningCompareLowerPaths || patient.comparePreOpLower, color: 0xffffff },
-                { label: 'Pre-Op Scan', paths: patient.planningPreoptPaths, color: 0xffffff },
-                { label: 'Post-Op Upper', paths: patient.comparePostOpUpper || patient.planningStlPaths, color: 0x4dd0e1 },
                 { label: 'Post-Op Lower', paths: patient.comparePostOpLower, color: 0x4dd0e1 }
             ];
 
