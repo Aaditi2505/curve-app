@@ -253,6 +253,74 @@
         .image-section:hover .tooth-image {
             transform: scale(1.05);
         }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+
+            body,
+            html {
+                overflow-y: auto !important;
+                height: auto !important;
+            }
+
+            .logo-container {
+                position: relative;
+                top: auto;
+                left: auto;
+                text-align: center;
+                padding-top: 20px;
+                width: 100%;
+                margin-bottom: 0;
+            }
+
+            .branch-container {
+                position: relative;
+                top: auto;
+                right: auto;
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                margin-bottom: 20px;
+                margin-top: 10px;
+            }
+
+            .main-container {
+                display: flex;
+                flex-direction: column;
+                padding: 20px;
+                height: auto;
+                justify-content: flex-start;
+            }
+
+            .login-card {
+                flex-direction: column;
+                height: auto;
+                max-height: none;
+                width: 100%;
+            }
+
+            .image-section {
+                display: none;
+            }
+
+            .form-section {
+                padding: 40px 20px;
+            }
+
+            .welcome-title {
+                font-size: 2rem;
+                text-align: center;
+            }
+
+            .welcome-sub {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+
+            .login-button {
+                padding: 15px;
+            }
+        }
     </style>
 </head>
 

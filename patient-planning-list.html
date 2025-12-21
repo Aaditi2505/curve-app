@@ -258,6 +258,47 @@
       color: var(--text-light);
       font-size: 1.1rem;
     }
+
+    /* Mobile Optimization */
+    @media (max-width: 768px) {
+      .dashboard-header {
+        height: auto;
+        padding: 15px;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .header-left {
+        flex-direction: column;
+        gap: 15px;
+        width: 100%;
+      }
+
+      .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .list-main {
+        margin-top: 240px;
+        padding: 15px;
+      }
+
+      .list-container {
+        padding: 15px;
+      }
+
+      .list-table th,
+      .list-table td {
+        padding: 10px 5px;
+        font-size: 0.85rem;
+      }
+
+      .branch-badge {
+        margin-top: 10px;
+      }
+    }
   </style>
 </head>
 

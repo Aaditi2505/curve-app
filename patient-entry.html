@@ -299,6 +299,54 @@
       border-radius: 20px;
       backdrop-filter: blur(10px);
     }
+
+    /* Mobile Optimization */
+    @media (max-width: 768px) {
+      .page-header {
+        height: auto;
+        padding: 15px;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .header-left {
+        flex-direction: column;
+        gap: 15px;
+        width: 100%;
+      }
+
+      .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .header-right {
+        width: 100%;
+        justify-content: space-between;
+        margin-top: 10px;
+      }
+
+      .main-container {
+        margin-top: 240px;
+        padding: 15px;
+      }
+
+      .search-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+
+      .table-container {
+        padding: 15px;
+      }
+
+      th,
+      td {
+        padding: 10px;
+        font-size: 0.85rem;
+      }
+    }
   </style>
 </head>
 
