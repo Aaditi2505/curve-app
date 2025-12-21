@@ -113,7 +113,25 @@ app.post('/api/save-all', (req, res) => {
   }
 });
 
-// Config Endpoint
+// Helper to delete a patient
+app.delete('/api/patient/:id', (req, res) => {
+  const { id } = req.params;
+  if (!fs.existsSync(DB_FILE)) return res.json({ success: true });
+
+  try {
+    let db = JSON.parse(fs.readFileSync(DB_FILE));
+    if (db[id]) {
+      delete db[id];
+      fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+      res.json({ success: true, message: 'Patient deleted successfully.' });
+    } else {
+      res.json({ success: true, message: 'Patient not found or already deleted.' });
+    }
+  } catch (e) {
+    console.error('Error deleting patient:', e);
+    res.status(500).json({ error: 'Failed to delete patient on server.' });
+  }
+});
 app.get('/api/config', (req, res) => {
   res.json({
     ip: getLocalIp(),

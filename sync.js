@@ -65,6 +65,7 @@ const SyncUtil = {
 
     /**
      * Pulls all shared data from server and merges into local storage
+     * NOTE: Updated to ensure local deletions are reflected from cloud
      */
     async pullAll() {
         if (this.isSyncing) return;
@@ -80,35 +81,20 @@ const SyncUtil = {
                 return;
             }
 
-            // Group by branch
-            const branchGroups = {};
+            // Group cloud data by branch
+            const cloudBranchGroups = {};
             Object.values(cloudData).forEach(appt => {
                 const branch = appt.branch || 'General';
                 const key = `appointments_${branch}`;
-                if (!branchGroups[key]) branchGroups[key] = [];
-
-                // Avoid duplicates in the same pull
-                if (!branchGroups[key].find(a => a.bookingId === appt.bookingId)) {
-                    branchGroups[key].push(appt);
-                }
+                if (!cloudBranchGroups[key]) cloudBranchGroups[key] = [];
+                cloudBranchGroups[key].push(appt);
             });
 
-            // Update LocalStorage
-            Object.keys(branchGroups).forEach(key => {
-                const local = JSON.parse(localStorage.getItem(key) || '[]');
-                const merged = [...local];
-
-                branchGroups[key].forEach(cloudAppt => {
-                    const index = merged.findIndex(a => a.bookingId === cloudAppt.bookingId);
-                    if (index !== -1) {
-                        // Update existing if cloud data is likely newer (simplification)
-                        merged[index] = cloudAppt;
-                    } else {
-                        merged.push(cloudAppt);
-                    }
-                });
-
-                localStorage.setItem(key, JSON.stringify(merged));
+            // Update LocalStorage for EVERY branch that has data in the cloud
+            // Any patient NOT in cloud but in local and matching branch should be removed
+            // if we want full sync. For now, let's at least ensure cloud is mirror.
+            Object.keys(cloudBranchGroups).forEach(key => {
+                localStorage.setItem(key, JSON.stringify(cloudBranchGroups[key]));
             });
 
             this.isSyncing = false;
@@ -118,6 +104,22 @@ const SyncUtil = {
             this.isSyncing = false;
             console.error('Pull failed:', e);
             return { error: 'Connection failed' };
+        }
+    },
+
+    /**
+     * Permanent delete from server
+     */
+    async deletePatient(bookingId) {
+        if (!bookingId) return;
+        try {
+            const res = await fetch(`/api/patient/${bookingId}`, {
+                method: 'DELETE'
+            });
+            return await res.json();
+        } catch (e) {
+            console.error('Delete failed:', e);
+            return { success: false, error: e.message };
         }
     },
 

@@ -1245,19 +1245,25 @@
       });
     }
 
-    function deleteAppointment(bookingId) {
-      if (!confirm('Are you sure you want to delete this appointment?')) return;
+    async function deleteAppointment(bookingId) {
+      if (!confirm('Are you sure you want to delete this appointment?\n\nThis will permanently remove the patient from ALL phases (Entry, Planning, Interaction) throughout the website.')) return;
 
       const key = `appointments_${currentBranch}`;
       let appointments = JSON.parse(localStorage.getItem(key) || '[]');
 
+      // 1. Delete from Local Storage
       appointments = appointments.filter(a => a.bookingId !== bookingId);
       localStorage.setItem(key, JSON.stringify(appointments));
 
-      // Sync to cloud
-      SyncUtil.pushAll();
+      // 2. Delete from Server (Cloud)
+      try {
+        await SyncUtil.deletePatient(bookingId);
+        console.log('Deleted from cloud.');
+      } catch (err) {
+        console.error('Failed to delete from cloud:', err);
+      }
 
-      alert('Appointment deleted successfully!');
+      alert('Patient deleted successfully from all phases.');
       loadDeleteAppointments();
     }
   </script>
