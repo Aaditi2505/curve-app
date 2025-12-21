@@ -971,6 +971,21 @@
                 label.style.color = '#2c3e50';
                 label.style.boxShadow = '0 4px 10px rgba(0,0,0,0.05)';
                 cell.appendChild(label);
+                cell.appendChild(label);
+
+                if (!def.paths || !def.paths.length) {
+                    const empty = document.createElement('div');
+                    empty.textContent = 'No 3D Model';
+                    empty.style.width = '100%';
+                    empty.style.height = '100%';
+                    empty.style.display = 'flex';
+                    empty.style.alignItems = 'center';
+                    empty.style.justifyContent = 'center';
+                    empty.style.color = '#bdc3c7';
+                    empty.style.fontWeight = '500';
+                    cell.appendChild(empty);
+                    return;
+                }
 
                 // 3D Setup
                 const scene = new THREE.Scene();
