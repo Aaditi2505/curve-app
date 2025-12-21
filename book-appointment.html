@@ -425,28 +425,46 @@
     @media (max-width: 768px) {
       .page-header {
         height: auto;
-        padding: 15px;
+        padding: 10px;
         flex-direction: column;
-        gap: 15px;
-        background: rgba(255, 255, 255, 0.95);
-        /* More opaque */
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.98);
+        top: 10px;
+        left: 10px;
+        right: 10px;
       }
 
       .header-left {
         flex-direction: column;
-        gap: 15px;
+        gap: 10px;
         width: 100%;
+        align-items: center;
       }
 
       .nav-links {
-        flex-wrap: wrap;
-        justify-content: center;
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        width: 100%;
+        justify-content: flex-start;
+        padding: 5px 0;
         gap: 10px;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .nav-links::-webkit-scrollbar {
+        display: none;
+      }
+
+      .nav-item {
+        white-space: nowrap;
+        padding: 8px 15px;
+        font-size: 0.85rem;
+        flex-shrink: 0;
       }
 
       .main-container {
-        margin-top: 300px;
-        /* Increased to clear header */
+        margin-top: 220px;
         flex-direction: column;
         padding: 15px;
         gap: 20px;
@@ -455,26 +473,40 @@
       .sidebar-menu {
         width: 100%;
         flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: space-between;
+        overflow-x: auto;
         gap: 10px;
-        padding-bottom: 0;
+        padding: 5px 0;
         margin-bottom: 20px;
-        overflow-x: visible;
+        -webkit-overflow-scrolling: touch;
       }
 
       .menu-btn {
-        flex: 1;
-        min-width: 80px;
-        padding: 12px 5px;
-        font-size: 0.9rem;
-        text-align: center;
+        flex-shrink: 0;
+        min-width: 100px;
+        padding: 12px 15px;
+        font-size: 0.85rem;
+      }
+
+      .appointment-card {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+        padding: 15px;
+      }
+
+      .appt-info {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .delete-btn {
+        width: 100%;
+        padding: 12px;
       }
 
       .content-area {
         padding: 20px;
         padding-bottom: 100px;
-        /* Space for fixed buttons if any */
       }
 
       .form-row {

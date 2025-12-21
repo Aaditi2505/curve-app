@@ -437,32 +437,53 @@
     @media (max-width: 768px) {
       .dashboard-header {
         height: auto;
-        padding: 20px;
+        padding: 10px;
         flex-direction: column;
-        gap: 15px;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.98);
+        top: 10px;
+        left: 10px;
+        right: 10px;
       }
 
       .header-left {
         flex-direction: column;
-        gap: 15px;
+        gap: 10px;
         width: 100%;
+        align-items: center;
       }
 
       .nav-links {
-        flex-wrap: wrap;
-        justify-content: center;
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        width: 100%;
+        justify-content: flex-start;
+        padding: 5px 0;
         gap: 10px;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .nav-links::-webkit-scrollbar {
+        display: none;
+      }
+
+      .nav-item {
+        white-space: nowrap;
+        padding: 8px 15px;
+        font-size: 0.85rem;
+        flex-shrink: 0;
       }
 
       .header-right {
         width: 100%;
         justify-content: space-between;
-        margin-top: 10px;
+        margin-top: 5px;
       }
 
       .dashboard-container {
         margin-top: 240px;
-        padding: 20px;
+        padding: 15px;
       }
 
       .top-row {
@@ -491,7 +512,7 @@
       }
 
       .time-display {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
       }
     }
   </style>
