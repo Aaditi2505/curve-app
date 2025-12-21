@@ -454,6 +454,82 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
         }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            .dashboard-header {
+                height: auto;
+                padding: 15px;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .header-left {
+                flex-direction: column;
+                gap: 15px;
+                width: 100%;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 10px;
+            }
+
+            .layout-container {
+                flex-direction: column;
+                padding-top: 180px;
+                /* Adjust for taller header */
+                height: auto;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: static;
+                margin-left: 0;
+                order: -1;
+                /* Show before content */
+                flex-direction: row;
+                /* Horizontal tabs */
+                overflow-x: auto;
+                padding: 15px;
+                gap: 10px;
+                max-height: none;
+                border-radius: 0;
+                background: white;
+            }
+
+            .patient-info-card {
+                display: none;
+                /* Hide patient info card on mobile to save space, or style effectively */
+            }
+
+            .sidebar .nav-btn {
+                min-width: 120px;
+                /* Ensure buttons are clickable */
+                flex-shrink: 0;
+            }
+
+            .main-content {
+                padding: 20px;
+                overflow: visible;
+            }
+
+            .media-grid {
+                grid-template-columns: 1fr;
+                /* Single column */
+            }
+
+            .split-view {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .split-panel {
+                width: 100%;
+            }
+        }
     </style>
     <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
     <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/STLLoader.js"></script>

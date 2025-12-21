@@ -408,6 +408,60 @@
       background: #d32f2f;
       transform: scale(1.1);
     }
+
+    /* Mobile Optimization */
+    @media (max-width: 768px) {
+      .page-header {
+        height: auto;
+        padding: 15px;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .header-left {
+        flex-direction: column;
+        gap: 15px;
+        width: 100%;
+      }
+
+      .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .header-right {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .main-container {
+        margin-top: 220px;
+        padding: 20px;
+      }
+
+      .info-grid,
+      .upload-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .models-row {
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .form-input {
+        width: 100%;
+      }
+
+      .page-title {
+        font-size: 2rem;
+      }
+
+      .section-title {
+        font-size: 1.5rem;
+      }
+    }
   </style>
 </head>
 

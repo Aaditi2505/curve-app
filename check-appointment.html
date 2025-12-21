@@ -347,6 +347,64 @@
       color: #2c3e50;
       font-family: 'Montserrat', sans-serif;
     }
+
+    /* Mobile Optimization */
+    @media (max-width: 768px) {
+      .page-header {
+        height: auto;
+        padding: 15px;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .header-left {
+        flex-direction: column;
+        gap: 15px;
+        width: 100%;
+      }
+
+      .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .main-container {
+        margin-top: 220px;
+        padding: 20px;
+      }
+
+      .stats-summary {
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .filter-section {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+      }
+
+      .filter-section>div {
+        flex-direction: column;
+        align-items: flex-start !important;
+        margin-left: 0 !important;
+        width: 100%;
+        gap: 10px !important;
+      }
+
+      .date-input,
+      .search-input {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .appointments-table th,
+      .appointments-table td {
+        font-size: 0.85rem;
+        padding: 10px;
+      }
+    }
   </style>
 </head>
 

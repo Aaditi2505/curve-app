@@ -420,6 +420,67 @@
     .hidden {
       display: none !important;
     }
+
+    /* Mobile Optimization */
+    @media (max-width: 768px) {
+      .page-header {
+        height: auto;
+        padding: 20px;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .header-left {
+        flex-direction: column;
+        gap: 15px;
+        width: 100%;
+      }
+
+      .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .main-container {
+        margin-top: 220px;
+        flex-direction: column;
+        padding: 20px;
+      }
+
+      .sidebar-menu {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 10px;
+      }
+
+      .menu-btn {
+        min-width: 100px;
+        flex: 1;
+      }
+
+      .content-area {
+        padding: 20px;
+      }
+
+      .form-row {
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .form-group {
+        width: 100%;
+      }
+
+      .back-button {
+        bottom: 20px;
+        left: 20px;
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+      }
+    }
   </style>
 </head>
 
