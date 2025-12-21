@@ -1042,7 +1042,8 @@
                 cell.appendChild(rotateBtn);
 
                 // Load Files
-                def.paths.forEach(p => {
+                def.paths.forEach(rawPath => {
+                    const p = rawPath.replace(/\\/g, '/'); // Normalize Windows paths
                     const ext = p.split('.').pop().toLowerCase();
                     let loader;
                     if (ext === 'stl') loader = new THREE.STLLoader();
@@ -1050,7 +1051,22 @@
                     else if (ext === 'obj') loader = new THREE.OBJLoader();
 
                     if (loader) {
+                        // Show Loading Text
+                        const loadingParams = document.createElement('div');
+                        loadingParams.textContent = `Loading ${ext.toUpperCase()}...`;
+                        loadingParams.style.position = 'absolute';
+                        loadingParams.style.top = '50%';
+                        loadingParams.style.left = '50%';
+                        loadingParams.style.transform = 'translate(-50%, -50%)';
+                        loadingParams.style.color = '#7f8c8d';
+                        loadingParams.id = `loading-${p.split('/').pop().replace(/\./g, '-')}`;
+                        cell.appendChild(loadingParams);
+
                         loader.load(p, (obj) => {
+                            // Remove Loading Text
+                            const loaderEl = document.getElementById(`loading-${p.split('/').pop().replace(/\./g, '-')}`);
+                            if (loaderEl) loaderEl.remove();
+
                             let mesh;
 
                             if (obj.isBufferGeometry) {
@@ -1097,7 +1113,25 @@
                                 controls.target.copy(center);
                                 controls.update();
                             }
-                        });
+                        },
+                            undefined,
+                            (err) => {
+                                // Error Callback
+                                console.error("Error loading 3D model:", err);
+                                const loaderEl = document.getElementById(`loading-${p.split('/').pop().replace(/\./g, '-')}`);
+                                if (loaderEl) loaderEl.remove();
+
+                                const errDiv = document.createElement('div');
+                                errDiv.textContent = '❌ Failed to load: ' + p.split('/').pop();
+                                errDiv.style.color = '#e74c3c';
+                                errDiv.style.position = 'absolute';
+                                errDiv.style.bottom = '10px';
+                                errDiv.style.left = '10px';
+                                errDiv.style.fontSize = '0.8rem';
+                                errDiv.style.background = 'rgba(255,255,255,0.9)';
+                                errDiv.style.padding = '2px 5px';
+                                cell.appendChild(errDiv);
+                            });
                     }
                 });
 
