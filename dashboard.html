@@ -437,9 +437,10 @@
     @media (max-width: 768px) {
       .dashboard-header {
         height: auto;
-        padding: 10px;
-        flex-direction: column;
-        gap: 10px;
+        padding: 10px 15px;
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 15px;
         background: rgba(255, 255, 255, 0.98);
         top: 10px;
         left: 10px;
@@ -447,10 +448,11 @@
       }
 
       .header-left {
-        flex-direction: column;
-        gap: 10px;
-        width: 100%;
-        align-items: center;
+        flex-direction: row;
+        gap: 20px;
+        width: auto;
+        flex: 1;
+        overflow: hidden;
       }
 
       .nav-links {
@@ -460,7 +462,7 @@
         width: 100%;
         justify-content: flex-start;
         padding: 5px 0;
-        gap: 10px;
+        gap: 5px;
         -webkit-overflow-scrolling: touch;
       }
 
@@ -470,15 +472,27 @@
 
       .nav-item {
         white-space: nowrap;
-        padding: 8px 15px;
-        font-size: 0.85rem;
+        padding: 6px 10px;
+        font-size: 0.8rem;
         flex-shrink: 0;
       }
 
       .header-right {
-        width: 100%;
-        justify-content: space-between;
-        margin-top: 5px;
+        width: auto;
+        gap: 10px;
+        margin-top: 0;
+      }
+
+      .user-info {
+        display: none;
+      }
+
+      #sync-btn span:last-child {
+        display: none;
+      }
+
+      #sync-btn {
+        padding: 8px 12px;
       }
 
       .dashboard-container {

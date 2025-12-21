@@ -425,9 +425,10 @@
     @media (max-width: 768px) {
       .page-header {
         height: auto;
-        padding: 10px;
-        flex-direction: column;
-        gap: 10px;
+        padding: 10px 15px;
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 15px;
         background: rgba(255, 255, 255, 0.98);
         top: 10px;
         left: 10px;
@@ -435,10 +436,11 @@
       }
 
       .header-left {
-        flex-direction: column;
-        gap: 10px;
-        width: 100%;
-        align-items: center;
+        flex-direction: row;
+        gap: 20px;
+        width: auto;
+        flex: 1;
+        overflow: hidden;
       }
 
       .nav-links {
@@ -448,7 +450,7 @@
         width: 100%;
         justify-content: flex-start;
         padding: 5px 0;
-        gap: 10px;
+        gap: 5px;
         -webkit-overflow-scrolling: touch;
       }
 
@@ -458,13 +460,19 @@
 
       .nav-item {
         white-space: nowrap;
-        padding: 8px 15px;
-        font-size: 0.85rem;
+        padding: 6px 10px;
+        font-size: 0.8rem;
         flex-shrink: 0;
       }
 
+      .branch-badge {
+        font-size: 0.75rem;
+        padding: 6px 12px;
+        white-space: nowrap;
+      }
+
       .main-container {
-        margin-top: 220px;
+        margin-top: 140px;
         flex-direction: column;
         padding: 15px;
         gap: 20px;
@@ -482,9 +490,20 @@
 
       .menu-btn {
         flex-shrink: 0;
-        min-width: 100px;
-        padding: 12px 15px;
-        font-size: 0.85rem;
+        min-width: 80px;
+        padding: 10px 12px;
+        font-size: 0.8rem;
+      }
+
+      .search-group {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+
+      .search-btn-inline {
+        width: 100%;
+        padding: 10px;
       }
 
       .appointment-card {
