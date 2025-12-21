@@ -905,9 +905,8 @@
         Array.from(resultsDivDoctor.children).forEach((item, idx) => {
           item.onclick = function () {
             searchDoctorInput.value = uniqueMatches[idx].doctorName;
-            // Since multiple appointments can have same doctor, we don't auto-fill yet
-            // or we fill the most recent one? Let's just set the search box value.
             resultsDivDoctor.innerHTML = '';
+            searchByDoctor();
           };
         });
       });
@@ -972,7 +971,7 @@
 
       // Filter all appointments by this doctor
       const matches = appointments.filter(appt =>
-        typeof appt.doctorName === "string" && appt.doctorName.toLowerCase() === input
+        typeof appt.doctorName === "string" && appt.doctorName.toLowerCase().includes(input)
       );
 
       if (matches.length > 0) {
