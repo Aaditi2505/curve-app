@@ -937,11 +937,14 @@
             const updatables = [];
 
             // Definitions: Separate boxes
+            // Helper: Get first non-empty array
+            const getP = (a, b) => (a && a.length > 0) ? a : (b && b.length > 0 ? b : []);
+
             // Layout: Pre-Op vs Post-Op (Upper), then Pre-Op vs Post-Op (Lower)
             const views = [
-                { label: 'Pre-Op Upper', paths: patient.planningCompareUpperPaths || patient.comparePreOpUpper, color: 0xffffff },
-                { label: 'Post-Op Upper', paths: patient.planningStlPaths || patient.comparePostOpUpper, color: 0x4dd0e1 },
-                { label: 'Pre-Op Lower', paths: patient.planningCompareLowerPaths || patient.comparePreOpLower, color: 0xffffff },
+                { label: 'Pre-Op Upper', paths: getP(patient.comparePreOpUpper, patient.planningCompareUpperPaths), color: 0xffffff },
+                { label: 'Post-Op Upper', paths: getP(patient.comparePostOpUpper, patient.planningStlPaths), color: 0x4dd0e1 },
+                { label: 'Pre-Op Lower', paths: getP(patient.comparePreOpLower, patient.planningCompareLowerPaths), color: 0xffffff },
                 { label: 'Post-Op Lower', paths: patient.comparePostOpLower, color: 0x4dd0e1 }
             ];
 
