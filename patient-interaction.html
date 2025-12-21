@@ -942,7 +942,7 @@
                 { label: 'Pre-Op Scan', paths: patient.planningPreoptPaths, color: 0xffffff },
                 { label: 'Post-Op Upper', paths: patient.comparePostOpUpper || patient.planningStlPaths, color: 0x4dd0e1 },
                 { label: 'Post-Op Lower', paths: patient.comparePostOpLower, color: 0x4dd0e1 }
-            ].filter(v => v.paths && v.paths.length > 0);
+            ];
 
             views.forEach((def) => {
                 const cell = document.createElement('div');
