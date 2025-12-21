@@ -17,3 +17,6 @@ Thumbs.db
 
 # Environment variables
 .env
+
+# Data
+shared_patients.json
