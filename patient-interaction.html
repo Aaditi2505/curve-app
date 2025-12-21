@@ -1036,20 +1036,19 @@
 
                     if (loader) {
                         loader.load(p, (obj) => {
-                            let geo;
                             let mesh;
 
                             if (obj.isBufferGeometry) {
-                                geo = obj;
+                                // STL/PLY
                                 const mat = new THREE.MeshPhongMaterial({
                                     color: def.color,
                                     specular: 0x111111,
                                     shininess: 30,
                                     side: THREE.DoubleSide
                                 });
-                                mesh = new THREE.Mesh(geo, mat);
+                                mesh = new THREE.Mesh(obj, mat);
                             } else {
-                                // OBJ loads a Group
+                                // OBJ Group
                                 mesh = obj;
                                 mesh.traverse(child => {
                                     if (child.isMesh) {
@@ -1063,16 +1062,26 @@
                                 });
                             }
 
-                            // Center geometry
-                            const box = new THREE.Box3().setFromObject(mesh);
-                            const center = box.getCenter(new THREE.Vector3());
-                            mesh.position.sub(center); // Center the mesh at 0,0,0
-
-                            // Auto-scale if huge or tiny
-                            const size = box.getSize(new THREE.Vector3()).length();
-                            if (size < 1) mesh.scale.set(100, 100, 100);
-
+                            // Add to scene
                             scene.add(mesh);
+
+                            // Auto-Fit Camera to all objects in scene
+                            const box = new THREE.Box3().setFromObject(scene);
+                            const size = box.getSize(new THREE.Vector3());
+                            const center = box.getCenter(new THREE.Vector3());
+
+                            // Avoid fitting to empty scene
+                            if (size.lengthSq() > 0) {
+                                const maxDim = Math.max(size.x, size.y, size.z);
+                                const fov = camera.fov * (Math.PI / 180);
+                                let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+                                cameraZ *= 1.5; // Zoom out a little
+
+                                camera.position.set(center.x, center.y - (cameraZ * 0.5), center.z + cameraZ);
+                                camera.lookAt(center);
+                                controls.target.copy(center);
+                                controls.update();
+                            }
                         });
                     }
                 });
