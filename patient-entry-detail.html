@@ -443,6 +443,10 @@
           <span class="info-value" id="whatsapp">-</span>
         </div>
         <div class="info-item">
+          <span class="info-label">Doctor Name</span>
+          <span class="info-value" id="docName">-</span>
+        </div>
+        <div class="info-item">
           <span class="info-label">Address</span>
           <span class="info-value" id="address">-</span>
         </div>
@@ -564,6 +568,7 @@
       document.getElementById('sex').textContent = currentPatient.sex || '-';
       document.getElementById('contact').textContent = currentPatient.contact || '-';
       document.getElementById('whatsapp').textContent = currentPatient.whatsapp || '-';
+      document.getElementById('docName').textContent = currentPatient.doctorName || '-';
       document.getElementById('address').textContent = currentPatient.address || '-';
 
       // Fill existing data

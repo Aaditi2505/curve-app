@@ -508,10 +508,14 @@
           </div>
 
           <div class="form-row">
-            <div class="form-group" style="flex: 1;">
+            <div class="form-group" style="flex: 2;">
               <label class="form-label">Address</label>
               <textarea class="form-input" name="address" rows="2"
                 style="resize: vertical; font-family: 'Outfit', sans-serif;"></textarea>
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label class="form-label">Doctor Name</label>
+              <input type="text" class="form-input" name="doctorName" placeholder="Enter doctor name">
             </div>
           </div>
 
@@ -549,6 +553,13 @@
               autocomplete="off" spellcheck="false">
             <button type="button" class="search-btn-inline" onclick="searchByContact()">Search</button>
             <div id="searchResultsContact" class="autocomplete-results"></div>
+          </div>
+
+          <div class="search-group" style="position: relative; margin-top: 15px;">
+            <input type="text" class="form-input" id="searchDoctor" placeholder="Type doctor name..." autocomplete="off"
+              spellcheck="false">
+            <button type="button" class="search-btn-inline" onclick="searchByDoctor()">Search</button>
+            <div id="searchResultsDoctor" class="autocomplete-results"></div>
           </div>
         </div>
 
@@ -599,10 +610,14 @@
           </div>
 
           <div class="form-row">
-            <div class="form-group" style="flex: 1;">
+            <div class="form-group" style="flex: 2;">
               <label class="form-label">Address</label>
               <textarea class="form-input" id="oldAddress" rows="2"
                 style="resize: vertical; font-family: 'Outfit', sans-serif;"></textarea>
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label class="form-label">Doctor Name</label>
+              <input type="text" class="form-input" id="oldDoctorName" placeholder="Enter doctor name">
             </div>
           </div>
 
@@ -755,6 +770,7 @@
         contact: '+91' + contactVal,
         whatsapp: isWhatsappEnabled ? '+91' + whatsappVal : '',
         address: form.address.value,
+        doctorName: form.doctorName.value,
         bookingId: bookingId,
         branch: currentBranch
       };
@@ -783,6 +799,8 @@
       const searchContactInput = document.getElementById('searchContact');
       const resultsDiv = document.getElementById('searchResults');
       const resultsDivContact = document.getElementById('searchResultsContact');
+      const searchDoctorInput = document.getElementById('searchDoctor');
+      const resultsDivDoctor = document.getElementById('searchResultsDoctor');
 
       // Name search autocomplete
       searchNameInput.addEventListener('input', function () {
@@ -850,6 +868,50 @@
         });
       });
 
+      // Doctor search autocomplete
+      searchDoctorInput.addEventListener('input', function () {
+        const input = this.value.trim().toLowerCase();
+        const key = `appointments_${currentBranch}`;
+        const appointments = JSON.parse(localStorage.getItem(key) || '[]');
+
+        if (!input) {
+          resultsDivDoctor.innerHTML = '';
+          return;
+        }
+
+        const matches = appointments.filter(appt =>
+          typeof appt.doctorName === "string" && appt.doctorName.toLowerCase().includes(input)
+        );
+
+        if (matches.length === 0) {
+          resultsDivDoctor.innerHTML = '<div class="autocomplete-item">No matches</div>';
+          return;
+        }
+
+        // Use a Set to get unique doctor names
+        const uniqueMatches = [];
+        const seenNames = new Set();
+        matches.forEach(m => {
+          if (!seenNames.has(m.doctorName.toLowerCase())) {
+            seenNames.add(m.doctorName.toLowerCase());
+            uniqueMatches.push(m);
+          }
+        });
+
+        resultsDivDoctor.innerHTML = uniqueMatches.map(appt =>
+          `<div class="autocomplete-item">${appt.doctorName}</div>`
+        ).join('');
+
+        Array.from(resultsDivDoctor.children).forEach((item, idx) => {
+          item.onclick = function () {
+            searchDoctorInput.value = uniqueMatches[idx].doctorName;
+            // Since multiple appointments can have same doctor, we don't auto-fill yet
+            // or we fill the most recent one? Let's just set the search box value.
+            resultsDivDoctor.innerHTML = '';
+          };
+        });
+      });
+
       // Hide dropdowns when clicking away
       document.addEventListener('click', function (event) {
         if (!resultsDiv.contains(event.target) && event.target !== searchNameInput) {
@@ -857,6 +919,9 @@
         }
         if (!resultsDivContact.contains(event.target) && event.target !== searchContactInput) {
           resultsDivContact.innerHTML = '';
+        }
+        if (!resultsDivDoctor.contains(event.target) && event.target !== searchDoctorInput) {
+          resultsDivDoctor.innerHTML = '';
         }
       });
 
@@ -883,14 +948,13 @@
         alert("No record found for this name.");
       }
     }
-
     function searchByContact() {
       const input = document.getElementById('searchContact').value.trim();
       const key = `appointments_${currentBranch}`;
       const appointments = JSON.parse(localStorage.getItem(key) || '[]');
 
       const found = appointments.find(appt =>
-        typeof appt.contact === "string" && appt.contact === input
+        typeof appt.contact === "string" && appt.contact.includes(input)
       );
 
       if (found) {
@@ -898,6 +962,27 @@
         document.getElementById('searchResultsContact').innerHTML = '';
       } else {
         alert("No record found for this contact number.");
+      }
+    }
+
+    function searchByDoctor() {
+      const input = document.getElementById('searchDoctor').value.trim().toLowerCase();
+      const key = `appointments_${currentBranch}`;
+      const appointments = JSON.parse(localStorage.getItem(key) || '[]');
+
+      // Filter all appointments by this doctor
+      const matches = appointments.filter(appt =>
+        typeof appt.doctorName === "string" && appt.doctorName.toLowerCase() === input
+      );
+
+      if (matches.length > 0) {
+        // If there are multiple, maybe we should show a list, but current UI fills 1.
+        // Let's fill the most recent one.
+        matches.sort((a, b) => new Date(b.date + ' ' + b.time) - new Date(a.date + ' ' + a.time));
+        fillOldAppointmentDetails(matches[0]);
+        document.getElementById('searchResultsDoctor').innerHTML = '';
+      } else {
+        alert("No record found for this doctor name.");
       }
     }
 
@@ -912,6 +997,7 @@
       document.getElementById('oldContact').value = appointment.contact || '';
       document.getElementById('oldWhatsapp').value = appointment.whatsapp || '';
       document.getElementById('oldAddress').value = appointment.address || '';
+      document.getElementById('oldDoctorName').value = appointment.doctorName || '';
       document.getElementById('oldProcedure').value = appointment.procedure || '';
 
       // Show WhatsApp field if it has a value
@@ -944,6 +1030,7 @@
             contact: document.getElementById('oldContact').value,
             whatsapp: document.getElementById('oldWhatsapp').value,
             address: document.getElementById('oldAddress').value,
+            doctorName: document.getElementById('oldDoctorName').value,
             procedure: document.getElementById('oldProcedure').value
           };
         }
@@ -966,6 +1053,7 @@
       document.getElementById('oldWhatsappGroup').style.display = 'none';
       document.getElementById('searchName').value = '';
       document.getElementById('searchContact').value = '';
+      document.getElementById('searchDoctor').value = '';
     }
 
     function loadDeleteAppointments() {
@@ -1017,6 +1105,10 @@
                         <div class="appt-field">
                             <span class="appt-label">Time</span>
                             <span class="appt-value">${appt.time}</span>
+                        </div>
+                        <div class="appt-field">
+                            <span class="appt-label">Doctor</span>
+                            <span class="appt-value">${appt.doctorName || '-'}</span>
                         </div>
                         <div class="appt-field">
                             <span class="appt-label">Booking ID</span>
