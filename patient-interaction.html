@@ -935,12 +935,14 @@
             const updatables = [];
 
             // Definitions: Separate boxes
+            // Dynamic Mapping based on uploaded data
             const views = [
-                { label: 'Pre-Op Upper', paths: patient.comparePreOpUpper, color: 0xffffff },
-                { label: 'Pre-Op Lower', paths: patient.comparePreOpLower, color: 0xffffff },
-                { label: 'Post-Op Upper', paths: patient.comparePostOpUpper, color: 0x4dd0e1 }, // Cyan/Blue
+                { label: 'Upper Model', paths: patient.planningCompareUpperPaths || patient.comparePreOpUpper, color: 0xffffff },
+                { label: 'Lower Model', paths: patient.planningCompareLowerPaths || patient.comparePreOpLower, color: 0xffffff },
+                { label: 'Pre-Op Scan', paths: patient.planningPreoptPaths, color: 0xffffff },
+                { label: 'Post-Op Upper', paths: patient.comparePostOpUpper, color: 0x4dd0e1 },
                 { label: 'Post-Op Lower', paths: patient.comparePostOpLower, color: 0x4dd0e1 }
-            ];
+            ].filter(v => v.paths && v.paths.length > 0);
 
             views.forEach((def) => {
                 const cell = document.createElement('div');
@@ -969,47 +971,28 @@
                 label.style.boxShadow = '0 4px 10px rgba(0,0,0,0.05)';
                 cell.appendChild(label);
 
-                if (!def.paths || !def.paths.length) {
-                    const empty = document.createElement('div');
-                    empty.textContent = 'No 3D Model';
-                    empty.style.width = '100%';
-                    empty.style.height = '100%';
-                    empty.style.display = 'flex';
-                    empty.style.alignItems = 'center';
-                    empty.style.justifyContent = 'center';
-                    empty.style.color = '#bdc3c7';
-                    empty.style.fontWeight = '500';
-                    cell.appendChild(empty);
-                    return;
-                }
-
                 // 3D Setup
                 const scene = new THREE.Scene();
                 scene.background = new THREE.Color(0xfcfcfc);
 
-                const w = cell.clientWidth || 400;
+                const w = 400; // flexible width handled by resize
                 const h = 400;
 
-                const camera = new THREE.PerspectiveCamera(45, w / h, 1, 1000);
+                const camera = new THREE.PerspectiveCamera(45, 1, 1, 1000);
                 camera.position.set(0, -150, 100);
 
-                // --- Improved Lighting System ---
-                // 1. Hemisphere Light (Soft overall illumination)
+                // Lighting
                 const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.8);
                 scene.add(hemiLight);
-
-                // 2. Directional Light (Main Key Light)
                 const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
                 dirLight.position.set(50, 50, 100);
                 scene.add(dirLight);
-
-                // 3. Camera Light (Fill Light attached to camera)
                 const camLight = new THREE.PointLight(0xffffff, 0.5);
                 camera.add(camLight);
                 scene.add(camera);
 
                 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
-                renderer.setSize(w, h);
+                renderer.setSize(w, h); // will be resized
                 renderer.setPixelRatio(window.devicePixelRatio);
                 cell.appendChild(renderer.domElement);
 
@@ -1017,10 +1000,10 @@
                 controls.enableDamping = true;
                 controls.dampingFactor = 0.05;
                 controls.enableZoom = true;
-                controls.autoRotate = true; // Enable Auto Rotation
-                controls.autoRotateSpeed = 2.0; // Moderate speed
+                controls.autoRotate = true;
+                controls.autoRotateSpeed = 2.0;
 
-                // Toggle Auto-Rotate Button
+                // Toggle Auto-Rotate
                 const rotateBtn = document.createElement('button');
                 rotateBtn.innerHTML = '🔄 Auto-Rotate: ON';
                 rotateBtn.style.position = 'absolute';
@@ -1032,10 +1015,8 @@
                 rotateBtn.style.color = '#14bfce';
                 rotateBtn.style.padding = '5px 10px';
                 rotateBtn.style.borderRadius = '15px';
-                rotateBtn.style.fontSize = '0.8rem';
                 rotateBtn.style.cursor = 'pointer';
                 rotateBtn.style.fontWeight = '600';
-
                 rotateBtn.onclick = () => {
                     controls.autoRotate = !controls.autoRotate;
                     rotateBtn.innerHTML = controls.autoRotate ? '🔄 Auto-Rotate: ON' : '🔄 Auto-Rotate: OFF';
@@ -1044,31 +1025,55 @@
                 };
                 cell.appendChild(rotateBtn);
 
-                // Load STL
-                const loader = new THREE.STLLoader();
+                // Load Files
                 def.paths.forEach(p => {
-                    loader.load(p, (geo) => {
-                        // Auto-center geometry
-                        geo.computeBoundingSphere();
-                        const center = geo.boundingSphere.center;
-                        geo.translate(-center.x, -center.y, -center.z);
+                    const ext = p.split('.').pop().toLowerCase();
+                    let loader;
+                    if (ext === 'stl') loader = new THREE.STLLoader();
+                    else if (ext === 'ply') loader = new THREE.PLYLoader();
+                    else if (ext === 'obj') loader = new THREE.OBJLoader();
 
-                        // Use MeshPhongMaterial for better tooth-like appearance
-                        const mat = new THREE.MeshPhongMaterial({
-                            color: def.color,
-                            specular: 0x111111,
-                            shininess: 30,
-                            side: THREE.DoubleSide
+                    if (loader) {
+                        loader.load(p, (obj) => {
+                            let geo;
+                            let mesh;
+
+                            if (obj.isBufferGeometry) {
+                                geo = obj;
+                                const mat = new THREE.MeshPhongMaterial({
+                                    color: def.color,
+                                    specular: 0x111111,
+                                    shininess: 30,
+                                    side: THREE.DoubleSide
+                                });
+                                mesh = new THREE.Mesh(geo, mat);
+                            } else {
+                                // OBJ loads a Group
+                                mesh = obj;
+                                mesh.traverse(child => {
+                                    if (child.isMesh) {
+                                        child.material = new THREE.MeshPhongMaterial({
+                                            color: def.color,
+                                            specular: 0x111111,
+                                            shininess: 30,
+                                            side: THREE.DoubleSide
+                                        });
+                                    }
+                                });
+                            }
+
+                            // Center geometry
+                            const box = new THREE.Box3().setFromObject(mesh);
+                            const center = box.getCenter(new THREE.Vector3());
+                            mesh.position.sub(center); // Center the mesh at 0,0,0
+
+                            // Auto-scale if huge or tiny
+                            const size = box.getSize(new THREE.Vector3()).length();
+                            if (size < 1) mesh.scale.set(100, 100, 100);
+
+                            scene.add(mesh);
                         });
-                        const mesh = new THREE.Mesh(geo, mat);
-
-                        // Fix rotation for common dental STL orientation (often needs X rotation)
-                        // mesh.rotation.x = -Math.PI / 2; 
-                        // Note: Only applying if needed, but centering usually handles position. 
-                        // Dental scans often come Z-up or Y-up. OrbitControls handles Y-up best.
-
-                        scene.add(mesh);
-                    });
+                    }
                 });
 
                 updatables.push({ renderer, scene, camera, controls, cell });
