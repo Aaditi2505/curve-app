@@ -425,9 +425,11 @@
     @media (max-width: 768px) {
       .page-header {
         height: auto;
-        padding: 20px;
+        padding: 15px;
         flex-direction: column;
         gap: 15px;
+        background: rgba(255, 255, 255, 0.95);
+        /* More opaque */
       }
 
       .header-left {
@@ -439,29 +441,40 @@
       .nav-links {
         flex-wrap: wrap;
         justify-content: center;
-        gap: 8px;
+        gap: 10px;
       }
 
       .main-container {
-        margin-top: 220px;
+        margin-top: 300px;
+        /* Increased to clear header */
         flex-direction: column;
-        padding: 20px;
+        padding: 15px;
+        gap: 20px;
       }
 
       .sidebar-menu {
         width: 100%;
         flex-direction: row;
-        overflow-x: auto;
-        padding-bottom: 10px;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 10px;
+        padding-bottom: 0;
+        margin-bottom: 20px;
+        overflow-x: visible;
       }
 
       .menu-btn {
-        min-width: 100px;
         flex: 1;
+        min-width: 80px;
+        padding: 12px 5px;
+        font-size: 0.9rem;
+        text-align: center;
       }
 
       .content-area {
         padding: 20px;
+        padding-bottom: 100px;
+        /* Space for fixed buttons if any */
       }
 
       .form-row {
