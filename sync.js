@@ -84,10 +84,14 @@ const SyncUtil = {
             // Group cloud data by branch
             const cloudBranchGroups = {};
             Object.values(cloudData).forEach(appt => {
-                const branch = appt.branch || 'General';
+                let branch = appt.branch || 'General';
+                // Migration: map old branches to X3DENTALS
+                if (branch === 'CHENNAI' || branch === 'COIMBATORE') {
+                    branch = 'X3DENTALS';
+                }
                 const key = `appointments_${branch}`;
                 if (!cloudBranchGroups[key]) cloudBranchGroups[key] = [];
-                cloudBranchGroups[key].push(appt);
+                cloudBranchGroups[key].push({ ...appt, branch: branch }); // Ensure appt object also has updated branch
             });
 
             // Update LocalStorage for EVERY branch that has data in the cloud
@@ -142,6 +146,44 @@ const SyncUtil = {
     },
 
     /**
+     * Migrates data from old branch names to X3DENTALS
+     */
+    migrateData() {
+        const branchesToMigrate = ['CHENNAI', 'COIMBATORE'];
+        const targetBranch = 'X3DENTALS';
+        const targetKey = `appointments_${targetBranch}`;
+
+        let targetData = JSON.parse(localStorage.getItem(targetKey) || '[]');
+        let migratedAny = false;
+
+        branchesToMigrate.forEach(oldBranch => {
+            const oldKey = `appointments_${oldBranch}`;
+            const oldData = localStorage.getItem(oldKey);
+
+            if (oldData) {
+                const parsedOld = JSON.parse(oldData);
+                if (parsedOld.length > 0) {
+                    console.log(`Migrating ${parsedOld.length} records from ${oldBranch} to ${targetBranch}`);
+                    parsedOld.forEach(appt => {
+                        // Avoid duplicates if already migrated
+                        if (!targetData.find(a => a.bookingId === appt.bookingId)) {
+                            targetData.push({ ...appt, branch: targetBranch });
+                            migratedAny = true;
+                        }
+                    });
+                    // Optional: remove old key after migration
+                    // localStorage.removeItem(oldKey);
+                }
+            }
+        });
+
+        if (migratedAny) {
+            localStorage.setItem(targetKey, JSON.stringify(targetData));
+            this.pushAll(); // Save to cloud
+        }
+    },
+
+    /**
      * Resets local data to start fresh (for new branch setup)
      */
     async resetLocal() {
@@ -155,12 +197,21 @@ const SyncUtil = {
     }
 };
 
-// Auto-Sync on load if on dashboard
-if (window.location.pathname.includes('dashboard.html')) {
-    window.addEventListener('load', () => {
+// Auto-Sync and Migration on load
+window.addEventListener('load', () => {
+    // 1. Run local migration
+    SyncUtil.migrateData();
+
+    // 2. Pull from cloud if on dashboard or other management pages
+    const path = window.location.pathname;
+    if (path.includes('dashboard.html') ||
+        path.includes('check-appointment.html') ||
+        path.includes('patient-entry.html') ||
+        path.includes('patient-planning-list.html') ||
+        path.includes('patient-interaction-list.html')) {
+
         SyncUtil.pullAll().then(() => {
-            // Refresh counts if they exist on the page
             if (typeof updateStats === 'function') updateStats();
         });
-    });
-}
+    }
+});
