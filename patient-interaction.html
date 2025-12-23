@@ -34,10 +34,10 @@
         /* Premium Header */
         .page-header {
             position: fixed;
-            top: 20px;
+            top: 15px;
             left: 20px;
             right: 20px;
-            height: 160px;
+            height: 80px;
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(12px);
             border-radius: 20px;
@@ -57,7 +57,7 @@
         }
 
         .logo-img {
-            height: 120px;
+            height: 50px;
             /* mix-blend-mode: multiply; */
         }
 
@@ -71,8 +71,8 @@
             color: var(--text-dark);
             opacity: 0.7;
             font-weight: 500;
-            font-size: 0.95rem;
-            padding: 10px 18px;
+            font-size: 0.9rem;
+            padding: 8px 15px;
             border-radius: 12px;
             transition: all 0.3s ease;
         }
@@ -126,8 +126,8 @@
         .layout-container {
             display: flex;
             height: 100vh;
-            padding-top: 120px;
-            /* Header height + gap */
+            padding-top: 110px;
+            /* Header height (80) + top (15) + gap (15) */
         }
 
         /* Sidebar Glass Panel */
@@ -137,7 +137,7 @@
             backdrop-filter: blur(20px);
             /* Standard visible sidebar */
             position: sticky;
-            top: 120px;
+            top: 110px;
             /* Offset for header */
             height: auto;
             max-height: calc(100vh - 140px);
