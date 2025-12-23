@@ -93,7 +93,32 @@
     .header-right {
       display: flex;
       align-items: center;
-      gap: 15px;
+      gap: 20px;
+    }
+
+    #sync-btn {
+      padding: 10px 22px;
+      background: linear-gradient(135deg, #14bfce, #0e9aa7);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(20, 191, 206, 0.2);
+    }
+
+    #sync-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(20, 191, 206, 0.3);
+      background: linear-gradient(135deg, #15d1e2, #14bfce);
+    }
+
+    #sync-btn:active {
+      transform: translateY(0);
     }
 
     /* User Profile (OTT Style) */
@@ -112,10 +137,10 @@
     }
 
     .user-avatar {
-      width: 45px;
-      height: 45px;
+      width: 42px;
+      height: 42px;
       background: linear-gradient(135deg, #14bfce, #2c3e50);
-      border-radius: 12px;
+      border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -126,7 +151,8 @@
     .user-avatar span {
       color: white;
       font-weight: 700;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
+      line-height: 1;
     }
 
     .user-info {
@@ -550,8 +576,7 @@
     </div>
 
     <div class="header-right">
-      <button id="sync-btn" onclick="triggerSync()"
-        style="padding: 10px 20px; background: #14bfce; color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease;">
+      <button id="sync-btn" onclick="triggerSync()">
         <span>☁️</span> Cloud Sync
       </button>
 
