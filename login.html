@@ -121,16 +121,6 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            position: relative;
-        }
-
-        .login-logo {
-            position: absolute;
-            top: 60px;
-            left: 60px;
-            height: 150px;
-            filter: contrast(1.1);
-            z-index: 10;
         }
 
         .welcome-title {
@@ -362,10 +352,10 @@
 <body>
     <div class="page-background"></div>
 
-    <!-- Top Left: Logo (Hidden, now moved inside card) -->
-    <!-- <div class="logo-container">
+    <!-- Top Left: Logo -->
+    <div class="logo-container">
         <img src="assets/logo-transparent.png" alt="Curve Logo" class="logo-img">
-    </div> -->
+    </div>
 
     <!-- Top Right: Branch -->
     <div class="branch-container">
@@ -379,7 +369,6 @@
 
             <!-- Left: Form -->
             <div class="form-section">
-                <img src="assets/logo-transparent.png" alt="X3" class="login-logo">
                 <div>
                     <h1 class="welcome-title">Welcome Back</h1>
                     <h1 class="welcome-title" style="font-weight: 300;">to X3DENTALS</h1>
