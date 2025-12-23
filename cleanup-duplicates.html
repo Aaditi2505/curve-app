@@ -82,7 +82,7 @@
 
     <script>
         function checkDuplicates() {
-            const branch = localStorage.getItem('branch') || 'CHENNAI';
+            const branch = localStorage.getItem('branch') || 'X3DENTALS';
             const key = `appointments_${branch}`;
             const appointments = JSON.parse(localStorage.getItem(key) || '[]');
 
@@ -120,7 +120,7 @@
                 return;
             }
 
-            const branch = localStorage.getItem('branch') || 'CHENNAI';
+            const branch = localStorage.getItem('branch') || 'X3DENTALS';
             const key = `appointments_${branch}`;
             const appointments = JSON.parse(localStorage.getItem(key) || '[]');
 

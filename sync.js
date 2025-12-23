@@ -26,7 +26,7 @@ const SyncUtil = {
         this.isSyncing = true;
         console.log('Pushing data to cloud...');
 
-        const branches = ['CHENNAI', 'BANGALORE', 'General', 'BRANCH']; // Common branch keys
+        const branches = ['X3DENTALS', 'BANGALORE', 'General', 'BRANCH']; // Common branch keys
         const allLocalData = {};
 
         // Collect all appointments from all branches in localStorage
@@ -145,7 +145,7 @@ const SyncUtil = {
      * Resets local data to start fresh (for new branch setup)
      */
     async resetLocal() {
-        const branches = ['CHENNAI', 'BANGALORE', 'General', 'BRANCH'];
+        const branches = ['X3DENTALS', 'BANGALORE', 'General', 'BRANCH'];
         branches.forEach(b => {
             localStorage.removeItem(`appointments_${b}`);
         });

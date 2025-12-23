@@ -407,19 +407,11 @@
             let role = '';
             let isValid = false;
 
-            if (selectedBranch === 'CHENNAI') {
+            if (selectedBranch === 'X3DENTALS') {
                 if (user.toLowerCase() === 'admin' && pass === 'curve123') {
                     role = 'ADMINISTRATOR';
                     isValid = true;
-                } else if (user.toLowerCase() === 'user' && pass === 'chennai123') {
-                    role = 'USER';
-                    isValid = true;
-                }
-            } else if (selectedBranch === 'COIMBATORE') {
-                if (user.toLowerCase() === 'admin' && pass === 'curve345') {
-                    role = 'ADMINISTRATOR';
-                    isValid = true;
-                } else if (user.toLowerCase() === 'user' && pass === 'coimbatore345') {
+                } else if (user.toLowerCase() === 'user' && pass === 'x3dentals123') {
                     role = 'USER';
                     isValid = true;
                 }

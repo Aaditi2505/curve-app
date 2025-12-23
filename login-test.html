@@ -18,7 +18,7 @@
 
     <script>
         // Set branch for testing
-        localStorage.setItem('branch', 'CHENNAI');
+        localStorage.setItem('branch', 'X3DENTALS');
 
         function testLogin() {
             const user = document.getElementById('username').value.trim();
@@ -29,7 +29,7 @@
 
             const selectedBranch = localStorage.getItem('branch');
 
-            if (selectedBranch === 'CHENNAI') {
+            if (selectedBranch === 'X3DENTALS') {
                 if (user.toLowerCase() === 'admin' && pass === 'curve123') {
                     result.textContent = 'SUCCESS! Would redirect to dashboard';
                     result.style.color = 'green';

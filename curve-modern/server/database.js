@@ -61,8 +61,8 @@ db.serialize(() => {
     db.get("SELECT count(*) as count FROM users", [], (err, row) => {
         if (row && row.count === 0) {
             const stmt = db.prepare("INSERT INTO users (username, password, role, branch) VALUES (?, ?, ?, ?)");
-            stmt.run("admin", "admin123", "ADMINISTRATOR", "CHENNAI");
-            stmt.run("user", "user123", "USER", "CHENNAI");
+            stmt.run("admin", "admin123", "ADMINISTRATOR", "X3DENTALS");
+            stmt.run("user", "user123", "USER", "X3DENTALS");
             stmt.finalize();
             console.log("Seeded initial users.");
         }
