@@ -114,6 +114,14 @@
             overflow: hidden;
         }
 
+        .login-logo-top {
+            width: 250px;
+            height: auto;
+            margin: -20px auto 40px;
+            display: block;
+            filter: contrast(1.1);
+        }
+
         /* Left Side: Form */
         .form-section {
             flex: 1;
@@ -223,15 +231,6 @@
             font-size: 0.95rem;
             text-align: center;
             margin-top: 15px;
-
-            min- if ($args[0].Value -match '100px') {
-                "height: 180px;"
-            }
-
-            else {
-                $args[0].Value
-            }
-
             font-weight: 500;
         }
 
@@ -352,10 +351,7 @@
 <body>
     <div class="page-background"></div>
 
-    <!-- Top Left: Logo -->
-    <div class="logo-container">
-        <img src="assets/logo-transparent.png" alt="Curve Logo" class="logo-img">
-    </div>
+    <!-- Logo removed from here and moved inside the card -->
 
     <!-- Top Right: Branch -->
     <div class="branch-container">
@@ -369,6 +365,7 @@
 
             <!-- Left: Form -->
             <div class="form-section">
+                <img src="assets/logo-transparent.png" alt="X3" class="login-logo-top">
                 <div>
                     <h1 class="welcome-title">Welcome Back</h1>
                     <h1 class="welcome-title" style="font-weight: 300;">to X3DENTALS</h1>
