@@ -121,18 +121,16 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-        }
-
-        .login-header {
-            display: flex;
-            align-items: center;
-            gap: 25px;
-            margin-bottom: 30px;
+            position: relative;
         }
 
         .login-logo {
-            height: 100px;
+            position: absolute;
+            top: 60px;
+            left: 60px;
+            height: 150px;
             filter: contrast(1.1);
+            z-index: 10;
         }
 
         .welcome-title {
@@ -141,7 +139,7 @@
             font-weight: 700;
             color: #2c3e50;
             margin: 0;
-            line-height: 1.1;
+            line-height: 1.2;
             background: linear-gradient(45deg, #2c3e50, #14bfce);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -381,12 +379,10 @@
 
             <!-- Left: Form -->
             <div class="form-section">
-                <div class="login-header">
-                    <img src="assets/logo-transparent.png" alt="X3" class="login-logo">
-                    <div>
-                        <h1 class="welcome-title">Welcome Back</h1>
-                        <h1 class="welcome-title" style="font-weight: 300;">to X3DENTALS</h1>
-                    </div>
+                <img src="assets/logo-transparent.png" alt="X3" class="login-logo">
+                <div>
+                    <h1 class="welcome-title">Welcome Back</h1>
+                    <h1 class="welcome-title" style="font-weight: 300;">to X3DENTALS</h1>
                 </div>
                 <p class="welcome-sub">Please sign in to continue</p>
 
