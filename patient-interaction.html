@@ -812,21 +812,36 @@
                     img.onclick = () => window.open(path, '_blank');
                     item.appendChild(img);
                 } else if (isVideo) {
+                    // Make video large and cinematic
+                    item.style.gridColumn = "1 / -1";
+                    item.style.maxWidth = "100%";
+                    item.style.background = "transparent"; // Remove white card bg
+                    item.style.boxShadow = "none";
+                    item.style.padding = "0";
+
                     const vid = document.createElement('video');
                     vid.src = path;
                     vid.controls = true;
                     vid.style.width = '100%';
-                    vid.style.height = '200px';
+                    vid.style.height = 'auto'; // Maintain aspect ratio
+                    vid.style.maxHeight = '85vh'; // Very large but fits on screen
                     vid.style.borderRadius = '12px';
+                    vid.style.boxShadow = '0 20px 50px rgba(0,0,0,0.2)'; // Nice shadow for video
+                    vid.style.outline = 'none';
                     item.appendChild(vid);
                 } else if (isPdf) {
+                    // Remove container wrapper to allow grid to control size, or style it to fill
                     const container = document.createElement('div');
                     container.style.width = '100%';
-                    container.style.height = '850px'; // Increased height
+                    container.style.height = '85vh'; // Use viewport height relative
                     container.style.background = '#f8f9fa';
                     container.style.borderRadius = '12px';
                     container.style.overflow = 'hidden';
                     container.style.border = '1px solid #ddd';
+
+                    // Make it span full width in grid
+                    item.style.gridColumn = "1 / -1";
+                    item.style.maxWidth = "100%";
 
                     const iframe = document.createElement('iframe');
                     iframe.src = path;
