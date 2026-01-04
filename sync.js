@@ -5,6 +5,19 @@
  */
 
 const SyncUtil = {
+    // Force Clear Data Version - Change this to wipe all clients
+    DATA_VERSION: 'RESET_2026_01_04_V2',
+
+    init() {
+        if (localStorage.getItem('DATA_VERSION') !== this.DATA_VERSION) {
+            console.warn('Version Mismatch: Clearing Local Data to ensure clean slate.');
+            localStorage.clear();
+            localStorage.setItem('DATA_VERSION', this.DATA_VERSION);
+            // Set default branch after clear
+            localStorage.setItem('branch', 'X3DENTAL');
+        }
+    },
+
     // Sync status
     isSyncing: false,
 
@@ -200,6 +213,9 @@ const SyncUtil = {
 
 // Auto-Sync and Migration on load
 window.addEventListener('load', () => {
+    // 0. Check Version & Force Clear if needed
+    SyncUtil.init();
+
     // 1. Run local migration
     SyncUtil.migrateData();
 
