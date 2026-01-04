@@ -822,7 +822,7 @@
                 } else if (isPdf) {
                     const container = document.createElement('div');
                     container.style.width = '100%';
-                    container.style.height = '450px';
+                    container.style.height = '850px'; // Increased height
                     container.style.background = '#f8f9fa';
                     container.style.borderRadius = '12px';
                     container.style.overflow = 'hidden';
@@ -1176,19 +1176,20 @@
                 controls.enableDamping = true;
                 controls.dampingFactor = 0.05;
                 controls.enableZoom = true;
-                controls.autoRotate = true;
+                controls.enableZoom = true;
+                controls.autoRotate = false; // Default OFF
                 controls.autoRotateSpeed = 2.0;
 
                 // Toggle Auto-Rotate
                 const rotateBtn = document.createElement('button');
-                rotateBtn.innerHTML = '🔄 Auto-Rotate: ON';
+                rotateBtn.innerHTML = '🔄 Auto-Rotate: OFF';
                 rotateBtn.style.position = 'absolute';
                 rotateBtn.style.bottom = '10px';
                 rotateBtn.style.right = '10px';
                 rotateBtn.style.zIndex = '10';
                 rotateBtn.style.border = 'none';
-                rotateBtn.style.background = 'rgba(20, 191, 206, 0.1)';
-                rotateBtn.style.color = '#14bfce';
+                rotateBtn.style.background = '#eee'; // Default Gray
+                rotateBtn.style.color = '#7f8c8d';
                 rotateBtn.style.padding = '5px 10px';
                 rotateBtn.style.borderRadius = '15px';
                 rotateBtn.style.cursor = 'pointer';
@@ -1231,11 +1232,14 @@
 
                             if (obj.isBufferGeometry) {
                                 // STL/PLY
+                                // Check for vertex colors (common in dental scans)
+                                const hasColor = obj.attributes.color ? true : false;
                                 const mat = new THREE.MeshPhongMaterial({
-                                    color: def.color,
+                                    color: hasColor ? 0xffffff : def.color, // If vertex colors exist, use white base so they show
                                     specular: 0x111111,
                                     shininess: 30,
-                                    side: THREE.DoubleSide
+                                    side: THREE.DoubleSide,
+                                    vertexColors: hasColor
                                 });
                                 mesh = new THREE.Mesh(obj, mat);
                             } else {
@@ -1243,11 +1247,13 @@
                                 mesh = obj;
                                 mesh.traverse(child => {
                                     if (child.isMesh) {
+                                        const hasColor = child.geometry.attributes.color ? true : false;
                                         child.material = new THREE.MeshPhongMaterial({
-                                            color: def.color,
+                                            color: hasColor ? 0xffffff : def.color,
                                             specular: 0x111111,
                                             shininess: 30,
-                                            side: THREE.DoubleSide
+                                            side: THREE.DoubleSide,
+                                            vertexColors: hasColor
                                         });
                                     }
                                 });
