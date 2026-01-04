@@ -93,11 +93,13 @@ const SyncUtil = {
                 cloudBranchGroups[key].push({ ...appt, branch: branch }); // Ensure appt object also has updated branch
             });
 
-            // Update LocalStorage for EVERY branch that has data in the cloud
-            // Any patient NOT in cloud but in local and matching branch should be removed
-            // if we want full sync. For now, let's at least ensure cloud is mirror.
-            Object.keys(cloudBranchGroups).forEach(key => {
-                localStorage.setItem(key, JSON.stringify(cloudBranchGroups[key]));
+            // Update LocalStorage for EVERY branch (Strict Mirror)
+            // If cloud is empty, local must be empty.
+            const knownKeys = ['appointments_X3DENTAL', 'appointments_BANGALORE', 'appointments_General', 'appointments_BRANCH'];
+
+            knownKeys.forEach(key => {
+                const data = cloudBranchGroups[key] || [];
+                localStorage.setItem(key, JSON.stringify(data));
             });
 
             this.isSyncing = false;
@@ -178,7 +180,7 @@ const SyncUtil = {
 
         if (migratedAny) {
             localStorage.setItem(targetKey, JSON.stringify(targetData));
-            this.pushAll(); // Save to cloud
+            // this.pushAll(); // Prevent auto-push of migrated data to avoid re-populating cleared server
         }
     },
 
