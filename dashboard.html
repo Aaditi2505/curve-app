@@ -599,7 +599,7 @@
     <!-- Welcome & Branch -->
     <div class="top-row">
       <div class="welcome-section">
-        <h1>Welcome <span>to Curve</span></h1>
+        <h1>Welcome to <span id="welcome-branch-display">Curve</span></h1>
       </div>
       <div class="branch-badge" id="branch-display">
         Branch Name
@@ -696,6 +696,8 @@
       // 1. Set Branch
       const branch = localStorage.getItem('branch') || 'General';
       document.getElementById('branch-display').textContent = branch;
+      const welcomeBranchEl = document.getElementById('welcome-branch-display');
+      if (welcomeBranchEl) welcomeBranchEl.textContent = branch;
 
       // Update Stats
       updateStats();

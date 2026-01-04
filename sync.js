@@ -26,7 +26,7 @@ const SyncUtil = {
         this.isSyncing = true;
         console.log('Pushing data to cloud...');
 
-        const branches = ['X3DENTALS', 'BANGALORE', 'General', 'BRANCH']; // Common branch keys
+        const branches = ['X3DENTAL', 'BANGALORE', 'General', 'BRANCH']; // Common branch keys
         const allLocalData = {};
 
         // Collect all appointments from all branches in localStorage
@@ -85,9 +85,8 @@ const SyncUtil = {
             const cloudBranchGroups = {};
             Object.values(cloudData).forEach(appt => {
                 let branch = appt.branch || 'General';
-                // Migration: map old branches to X3DENTALS
-                if (branch === 'CHENNAI' || branch === 'COIMBATORE') {
-                    branch = 'X3DENTALS';
+                if (branch === 'CHENNAI' || branch === 'COIMBATORE' || branch === 'X3DENTALS') {
+                    branch = 'X3DENTAL';
                 }
                 const key = `appointments_${branch}`;
                 if (!cloudBranchGroups[key]) cloudBranchGroups[key] = [];
@@ -149,8 +148,8 @@ const SyncUtil = {
      * Migrates data from old branch names to X3DENTALS
      */
     migrateData() {
-        const branchesToMigrate = ['CHENNAI', 'COIMBATORE'];
-        const targetBranch = 'X3DENTALS';
+        const branchesToMigrate = ['CHENNAI', 'COIMBATORE', 'X3DENTALS'];
+        const targetBranch = 'X3DENTAL';
         const targetKey = `appointments_${targetBranch}`;
 
         let targetData = JSON.parse(localStorage.getItem(targetKey) || '[]');
@@ -187,7 +186,7 @@ const SyncUtil = {
      * Resets local data to start fresh (for new branch setup)
      */
     async resetLocal() {
-        const branches = ['X3DENTALS', 'BANGALORE', 'General', 'BRANCH'];
+        const branches = ['X3DENTAL', 'BANGALORE', 'General', 'BRANCH'];
         branches.forEach(b => {
             localStorage.removeItem(`appointments_${b}`);
         });

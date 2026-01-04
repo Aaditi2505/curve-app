@@ -309,15 +309,7 @@
             .image-section {
                 display: block;
                 width: 100%;
-
-                if ($args[0].Value -match '100px') {
-                    "height: 180px;"
-                }
-
-                else {
-                    $args[0].Value
-                }
-
+                height: 180px;
                 order: -1;
                 overflow: hidden;
             }
@@ -370,7 +362,8 @@
                 <img src="assets/logo-transparent.png" alt="X3" class="login-logo-top">
                 <div>
                     <h1 class="welcome-title">Welcome Back</h1>
-                    <h1 class="welcome-title" style="font-weight: 300;">to X3DENTALS</h1>
+                    <h1 class="welcome-title" style="font-weight: 300;">to <span
+                            id="branch-title-display">Selection</span></h1>
                 </div>
                 <p class="welcome-sub">Please sign in to continue</p>
 
@@ -420,11 +413,11 @@
             let role = '';
             let isValid = false;
 
-            if (selectedBranch === 'X3DENTALS') {
+            if (selectedBranch === 'X3DENTAL' || selectedBranch === 'X3DENTALS') {
                 if (user.toLowerCase() === 'admin' && pass === 'curve123') {
                     role = 'ADMINISTRATOR';
                     isValid = true;
-                } else if (user.toLowerCase() === 'user' && pass === 'x3dentals123') {
+                } else if (user.toLowerCase() === 'user' && (pass === 'x3dental123' || pass === 'x3dentals123')) {
                     role = 'USER';
                     isValid = true;
                 }
@@ -452,8 +445,11 @@
         window.addEventListener('load', () => {
             const branch = localStorage.getItem('branch');
             const displayEl = document.getElementById('branch-display');
-            if (branch && displayEl) {
-                displayEl.textContent = branch;
+            const titleEl = document.getElementById('branch-title-display');
+
+            if (branch) {
+                if (displayEl) displayEl.textContent = branch;
+                if (titleEl) titleEl.textContent = branch;
             }
         });
     </script>
