@@ -1358,7 +1358,7 @@
 
             const controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
-            controls.autoRotate = true;
+            controls.autoRotate = false; // Default OFF
             controls.autoRotateSpeed = 4;
 
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
@@ -1391,7 +1391,15 @@
                         const center = geometry.boundingSphere.center;
                         geometry.translate(-center.x, -center.y, -center.z);
 
-                        const material = new THREE.MeshPhongMaterial({ color: 0x14bfce, specular: 0x111111, shininess: 30 });
+                        // Check for vertex colors
+                        const hasColor = geometry.attributes.color ? true : false;
+                        const material = new THREE.MeshPhongMaterial({
+                            color: hasColor ? 0xffffff : 0x14bfce, // White if vertex colors exist, else Teal
+                            specular: 0x111111,
+                            shininess: 30,
+                            vertexColors: hasColor
+                        });
+
                         const mesh = new THREE.Mesh(geometry, material);
                         scene.add(mesh);
 
