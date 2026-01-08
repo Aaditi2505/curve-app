@@ -800,11 +800,11 @@
                 item.className = 'media-item';
                 item.style.animationDelay = `${index * 0.1}s`;
 
-                const ext = path.split('.').pop().toLowerCase();
-                const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
-                const isVideo = ['mp4', 'webm', 'mov', 'avi'].includes(ext);
-                const isPdf = ext === 'pdf';
-                const is3d = ['stl', 'obj', 'ply'].includes(ext);
+                const ext = path.toLowerCase();
+                const isImage = /\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(ext);
+                const isVideo = /\.(mp4|webm|mov|avi)(\?.*)?$/i.test(ext);
+                const isPdf = ext.includes('.pdf');
+                const is3d = ['stl', 'obj', 'ply'].some(e => ext.includes(e));
 
                 if (isImage) {
                     const img = document.createElement('img');
@@ -830,21 +830,22 @@
                     vid.style.outline = 'none';
                     item.appendChild(vid);
                 } else if (isPdf) {
-                    // Remove container wrapper to allow grid to control size, or style it to fill
+                    // PDF DIRECT DISPLAY - Premium Viewer
+                    item.style.gridColumn = "1 / -1";
+                    item.style.width = "100%";
+                    item.style.maxWidth = "100%";
+                    item.style.padding = "0";
+                    item.style.background = "#000"; // Contrast for PDF
+
                     const container = document.createElement('div');
                     container.style.width = '100%';
-                    container.style.height = '85vh'; // Use viewport height relative
-                    container.style.background = '#f8f9fa';
+                    container.style.height = '90vh'; // Maximum height
                     container.style.borderRadius = '12px';
                     container.style.overflow = 'hidden';
-                    container.style.border = '1px solid #ddd';
-
-                    // Make it span full width in grid
-                    item.style.gridColumn = "1 / -1";
-                    item.style.maxWidth = "100%";
 
                     const iframe = document.createElement('iframe');
-                    iframe.src = path;
+                    // Add #toolbar=0&navpanes=0 to clean up viewer UI if possible
+                    iframe.src = path + (path.includes('?') ? '&' : '?') + 'view=FitH';
                     iframe.style.width = '100%';
                     iframe.style.height = '100%';
                     iframe.style.border = 'none';
@@ -1095,14 +1096,19 @@
                 return;
             }
 
-            // Grid Container
+            // Grid Container - Forced 2 columns for better comparison
             const grid = document.createElement('div');
             grid.style.display = 'grid';
-            grid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(400px, 1fr))';
+            grid.style.gridTemplateColumns = 'repeat(2, 1fr)';
             grid.style.gap = '25px';
             grid.style.width = '100%';
             grid.style.paddingBottom = '40px';
             viewer.appendChild(grid);
+
+            // Responsive adjustment for small tablets/phones
+            if (window.innerWidth < 900) {
+                grid.style.gridTemplateColumns = '1fr';
+            }
 
             if (window.compareReqId) cancelAnimationFrame(window.compareReqId);
 
@@ -1114,10 +1120,10 @@
 
             // Layout: Pre-Op vs Post-Op (Upper), then Pre-Op vs Post-Op (Lower)
             const views = [
-                { label: 'Pre-Op Upper', paths: getP(patient.comparePreOpUpper, patient.planningCompareUpperPaths), color: 0xffffff },
-                { label: 'Post-Op Upper', paths: getP(patient.comparePostOpUpper, patient.planningStlPaths), color: 0x4dd0e1 },
-                { label: 'Pre-Op Lower', paths: getP(patient.comparePreOpLower, patient.planningCompareLowerPaths), color: 0xffffff },
-                { label: 'Post-Op Lower', paths: patient.comparePostOpLower, color: 0x4dd0e1 }
+                { label: 'Pre-Op Upper', paths: patient.comparePreOpUpper || patient.planningCompareUpperPaths || [], color: 0xffffff },
+                { label: 'Post-Op Upper', paths: patient.comparePostOpUpper || patient.planningStlPaths || [], color: 0x4dd0e1 },
+                { label: 'Pre-Op Lower', paths: patient.comparePreOpLower || patient.planningCompareLowerPaths || [], color: 0xffffff },
+                { label: 'Post-Op Lower', paths: patient.comparePostOpLower || [], color: 0x4dd0e1 }
             ];
 
             views.forEach((def) => {
@@ -1391,23 +1397,45 @@
                         const center = geometry.boundingSphere.center;
                         geometry.translate(-center.x, -center.y, -center.z);
 
-                        // Check for vertex colors
                         const hasColor = geometry.attributes.color ? true : false;
                         const material = new THREE.MeshPhongMaterial({
-                            color: hasColor ? 0xffffff : 0x14bfce, // White if vertex colors exist, else Teal
-                            specular: 0x111111,
-                            shininess: 30,
-                            vertexColors: hasColor
+                            color: hasColor ? 0xffffff : 0x14bfce, // Use pure white if natural color exists
+                            specular: 0x222222,
+                            shininess: 40,
+                            vertexColors: hasColor,
+                            side: THREE.DoubleSide
                         });
 
                         const mesh = new THREE.Mesh(geometry, material);
                         scene.add(mesh);
 
-                        // Adjust camera
-                        const size = geometry.boundingBox.getSize(new THREE.Vector3()).length();
-                        camera.position.z = size * 1.5;
+                        // Auto-fit
+                        geometry.computeBoundingBox();
+                        const bBox = geometry.boundingBox;
+                        const size = bBox.getSize(new THREE.Vector3());
+                        const vCenter = bBox.getCenter(new THREE.Vector3());
+                        const maxDim = Math.max(size.x, size.y, size.z);
+                        camera.position.z = maxDim * 1.8;
+                        controls.target.copy(vCenter);
                     } else if (obj.isGroup || obj.isObject3D) {
+                        obj.traverse(child => {
+                            if (child.isMesh) {
+                                const hasColor = child.geometry.attributes.color ? true : false;
+                                child.material = new THREE.MeshPhongMaterial({
+                                    color: hasColor ? 0xffffff : 0x14bfce,
+                                    specular: 0x222222,
+                                    shininess: 40,
+                                    vertexColors: hasColor,
+                                    side: THREE.DoubleSide
+                                });
+                            }
+                        });
                         scene.add(obj);
+                        const box = new THREE.Box3().setFromObject(obj);
+                        const gCenter = box.getCenter(new THREE.Vector3());
+                        const size = box.getSize(new THREE.Vector3());
+                        camera.position.z = Math.max(size.x, size.y, size.z) * 1.8;
+                        controls.target.copy(gCenter);
                     }
                 });
             }

@@ -600,11 +600,11 @@
                 item.className = 'media-item';
                 item.style.animationDelay = `${index * 0.1}s`;
 
-                const ext = path.split('.').pop().toLowerCase();
-                const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
-                const isVideo = ['mp4', 'webm', 'mov', 'avi'].includes(ext);
-                const isPdf = ext === 'pdf';
-                const is3d = ['stl', 'obj', 'ply'].includes(ext);
+                const ext = path.toLowerCase();
+                const isImage = /\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(ext);
+                const isVideo = /\.(mp4|webm|mov|avi)(\?.*)?$/i.test(ext);
+                const isPdf = ext.includes('.pdf');
+                const is3d = ['stl', 'obj', 'ply'].some(e => ext.includes(e));
 
                 if (isImage) {
                     const img = document.createElement('img');
@@ -620,28 +620,26 @@
                     vid.style.borderRadius = '12px';
                     item.appendChild(vid);
                 } else if (isPdf) {
+                    // PDF DIRECT DISPLAY - Premium Viewer
+                    item.style.gridColumn = "1 / -1";
+                    item.style.width = "100%";
+                    item.style.maxWidth = "100%";
+                    item.style.padding = "0";
+                    item.style.background = "#000"; // Contrast for PDF
+
                     const container = document.createElement('div');
                     container.style.width = '100%';
-                    container.style.height = '450px';
-                    container.style.background = '#f8f9fa';
+                    container.style.height = '90vh'; // Maximum height
                     container.style.borderRadius = '12px';
                     container.style.overflow = 'hidden';
-                    container.style.border = '1px solid #ddd';
 
                     const iframe = document.createElement('iframe');
-                    iframe.src = path;
+                    iframe.src = path + (path.includes('?') ? '&' : '?') + 'view=FitH';
                     iframe.style.width = '100%';
                     iframe.style.height = '100%';
                     iframe.style.border = 'none';
                     container.appendChild(iframe);
                     item.appendChild(container);
-
-                    const label = document.createElement('div');
-                    label.textContent = 'Plan PDF Document';
-                    label.style.padding = '8px';
-                    label.style.fontSize = '12px';
-                    label.style.textAlign = 'center';
-                    item.appendChild(label);
                 } else if (is3d) {
                     const canvasContainer = document.createElement('div');
                     canvasContainer.style.width = '100%';
@@ -730,14 +728,19 @@
                 return;
             }
 
-            // Grid Container
+            // Grid Container - Forced 2 columns for better comparison
             const grid = document.createElement('div');
             grid.style.display = 'grid';
-            grid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(400px, 1fr))';
+            grid.style.gridTemplateColumns = 'repeat(2, 1fr)';
             grid.style.gap = '25px';
             grid.style.width = '100%';
             grid.style.paddingBottom = '40px';
             viewer.appendChild(grid);
+
+            // Responsive adjustment for small tablets/phones
+            if (window.innerWidth < 900) {
+                grid.style.gridTemplateColumns = '1fr';
+            }
 
             if (window.compareReqId) cancelAnimationFrame(window.compareReqId);
 
@@ -745,10 +748,10 @@
 
             // Definitions: Separate boxes
             const views = [
-                { label: 'Pre-Op Upper', paths: patient.comparePreOpUpper, color: 0xffffff },
-                { label: 'Pre-Op Lower', paths: patient.comparePreOpLower, color: 0xffffff },
-                { label: 'Post-Op Upper', paths: patient.comparePostOpUpper, color: 0x4dd0e1 },
-                { label: 'Post-Op Lower', paths: patient.comparePostOpLower, color: 0x4dd0e1 }
+                { label: 'Pre-Op Upper', paths: patient.comparePreOpUpper || patient.planningCompareUpperPaths || [], color: 0xffffff },
+                { label: 'Post-Op Upper', paths: patient.comparePostOpUpper || patient.planningStlPaths || [], color: 0x4dd0e1 },
+                { label: 'Pre-Op Lower', paths: patient.comparePreOpLower || patient.planningCompareLowerPaths || [], color: 0xffffff },
+                { label: 'Post-Op Lower', paths: patient.comparePostOpLower || [], color: 0x4dd0e1 }
             ];
 
             views.forEach((def) => {
@@ -801,17 +804,12 @@
                 const camera = new THREE.PerspectiveCamera(45, w / h, 1, 1000);
                 camera.position.set(0, -150, 100);
 
-                // --- Improved Lighting System ---
-                // 1. Hemisphere Light
+                // Lighting
                 const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.8);
                 scene.add(hemiLight);
-
-                // 2. Directional Light
                 const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
                 dirLight.position.set(50, 50, 100);
                 scene.add(dirLight);
-
-                // 3. Camera Light
                 const camLight = new THREE.PointLight(0xffffff, 0.5);
                 camera.add(camLight);
                 scene.add(camera);
@@ -825,19 +823,19 @@
                 controls.enableDamping = true;
                 controls.dampingFactor = 0.05;
                 controls.enableZoom = true;
-                controls.autoRotate = true; // Enable Auto Rotation
+                controls.autoRotate = false;
                 controls.autoRotateSpeed = 2.0;
 
                 // Toggle Auto-Rotate Button
                 const rotateBtn = document.createElement('button');
-                rotateBtn.innerHTML = '🔄 Auto-Rotate: ON';
+                rotateBtn.innerHTML = '🔄 Auto-Rotate: OFF';
                 rotateBtn.style.position = 'absolute';
                 rotateBtn.style.bottom = '10px';
                 rotateBtn.style.right = '10px';
                 rotateBtn.style.zIndex = '10';
                 rotateBtn.style.border = 'none';
-                rotateBtn.style.background = 'rgba(20, 191, 206, 0.1)';
-                rotateBtn.style.color = '#14bfce';
+                rotateBtn.style.background = '#eee';
+                rotateBtn.style.color = '#7f8c8d';
                 rotateBtn.style.padding = '5px 10px';
                 rotateBtn.style.borderRadius = '15px';
                 rotateBtn.style.fontSize = '0.8rem';
@@ -852,23 +850,61 @@
                 };
                 cell.appendChild(rotateBtn);
 
-                // Load STL
-                const loader = new THREE.STLLoader();
-                def.paths.forEach(p => {
-                    loader.load(p, (geo) => {
-                        geo.computeBoundingSphere();
-                        const center = geo.boundingSphere.center;
-                        geo.translate(-center.x, -center.y, -center.z);
+                // Load Files
+                def.paths.forEach(rawPath => {
+                    const p = rawPath.replace(/\\/g, '/');
+                    const ext = p.split('.').pop().toLowerCase();
+                    let loader;
+                    if (ext === 'stl') loader = new THREE.STLLoader();
+                    else if (ext === 'ply') loader = new THREE.PLYLoader();
+                    else if (ext === 'obj') loader = new THREE.OBJLoader();
 
-                        const mat = new THREE.MeshPhongMaterial({
-                            color: def.color,
-                            specular: 0x111111,
-                            shininess: 30,
-                            side: THREE.DoubleSide
+                    if (loader) {
+                        loader.load(p, (obj) => {
+                            let mesh;
+                            if (obj.isBufferGeometry) {
+                                const hasColor = obj.attributes.color ? true : false;
+                                const mat = new THREE.MeshPhongMaterial({
+                                    color: hasColor ? 0xffffff : def.color,
+                                    specular: 0x111111,
+                                    shininess: 30,
+                                    side: THREE.DoubleSide,
+                                    vertexColors: hasColor
+                                });
+                                mesh = new THREE.Mesh(obj, mat);
+                            } else {
+                                mesh = obj;
+                                mesh.traverse(child => {
+                                    if (child.isMesh) {
+                                        const hasColor = child.geometry.attributes.color ? true : false;
+                                        child.material = new THREE.MeshPhongMaterial({
+                                            color: hasColor ? 0xffffff : def.color,
+                                            specular: 0x111111,
+                                            shininess: 30,
+                                            side: THREE.DoubleSide,
+                                            vertexColors: hasColor
+                                        });
+                                    }
+                                });
+                            }
+                            scene.add(mesh);
+
+                            // Auto-fit
+                            const box = new THREE.Box3().setFromObject(scene);
+                            const size = box.getSize(new THREE.Vector3());
+                            const center = box.getCenter(new THREE.Vector3());
+                            if (size.lengthSq() > 0) {
+                                const maxDim = Math.max(size.x, size.y, size.z);
+                                const fov = camera.fov * (Math.PI / 180);
+                                let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+                                cameraZ *= 1.5;
+                                camera.position.set(center.x, center.y - (cameraZ * 0.5), center.z + cameraZ);
+                                camera.lookAt(center);
+                                controls.target.copy(center);
+                                controls.update();
+                            }
                         });
-                        const mesh = new THREE.Mesh(geo, mat);
-                        scene.add(mesh);
-                    });
+                    }
                 });
 
                 updatables.push({ renderer, scene, camera, controls, cell });
@@ -927,32 +963,45 @@
             else if (ext === 'obj') loader = new THREE.OBJLoader();
 
             if (loader) {
-                loader.load(path, (obj) => {
-                    let geometry;
-                    if (obj.isBufferGeometry) {
-                        geometry = obj;
-                    } else {
-                        obj.traverse(child => {
-                            if (child.isMesh) geometry = child.geometry;
-                        });
-                    }
+                let mesh;
+                if (obj.isBufferGeometry) {
+                    const hasColor = obj.attributes.color ? true : false;
+                    const mat = new THREE.MeshPhongMaterial({
+                        color: hasColor ? 0xffffff : 0x14bfce,
+                        specular: 0x222222,
+                        shininess: 40,
+                        vertexColors: hasColor,
+                        side: THREE.DoubleSide
+                    });
+                    mesh = new THREE.Mesh(obj, mat);
+                } else {
+                    mesh = obj;
+                    mesh.traverse(child => {
+                        if (child.isMesh) {
+                            const hasColor = child.geometry.attributes.color ? true : false;
+                            child.material = new THREE.MeshPhongMaterial({
+                                color: hasColor ? 0xffffff : 0x14bfce,
+                                specular: 0x222222,
+                                shininess: 40,
+                                vertexColors: hasColor,
+                                side: THREE.DoubleSide
+                            });
+                        }
+                    });
+                }
+                scene.add(mesh);
 
-                    if (geometry) {
-                        geometry.computeBoundingBox();
-                        geometry.computeBoundingSphere();
-                        const center = geometry.boundingSphere.center;
-                        geometry.translate(-center.x, -center.y, -center.z);
-
-                        const material = new THREE.MeshPhongMaterial({ color: 0x14bfce, specular: 0x111111, shininess: 30 });
-                        const mesh = new THREE.Mesh(geometry, material);
-                        scene.add(mesh);
-
-                        const size = geometry.boundingBox.getSize(new THREE.Vector3()).length();
-                        camera.position.z = size * 1.5;
-                    } else if (obj.isGroup || obj.isObject3D) {
-                        scene.add(obj);
-                    }
-                });
+                // Auto-fit logic for mini viewer
+                const box = new THREE.Box3().setFromObject(scene);
+                const size = box.getSize(new THREE.Vector3());
+                const center = box.getCenter(new THREE.Vector3());
+                if (size.lengthSq() > 0) {
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    camera.position.set(center.x, center.y, center.z + (maxDim * 1.5));
+                    camera.lookAt(center);
+                    controls.target.copy(center);
+                    controls.update();
+                }
             }
 
             function animate() {

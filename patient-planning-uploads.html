@@ -557,30 +557,43 @@
 
             <div class="upload-grid">
                 <div class="upload-item">
-                    <span class="upload-label">Upper Image</span>
-                    <button type="button" class="upload-btn" onclick="document.getElementById('upperInput').click()">
-                        + Upload Images
+                    <span class="upload-label">Pre-Op Upper</span>
+                    <button type="button" class="upload-btn"
+                        onclick="document.getElementById('preOpUpperInput').click()">
+                        + Upload Files
                     </button>
-                    <input type="file" id="upperInput" accept=".stl,.obj,.ply,image/*" multiple>
-                    <div class="thumb-strip" id="upperStrip"></div>
+                    <input type="file" id="preOpUpperInput" accept=".stl,.obj,.ply,image/*" multiple>
+                    <div class="thumb-strip" id="preOpUpperStrip"></div>
                 </div>
 
                 <div class="upload-item">
-                    <span class="upload-label">Lower Image</span>
-                    <button type="button" class="upload-btn" onclick="document.getElementById('lowerInput').click()">
-                        + Upload Images
+                    <span class="upload-label">Post-Op Upper</span>
+                    <button type="button" class="upload-btn"
+                        onclick="document.getElementById('postOpUpperInput').click()">
+                        + Upload Files
                     </button>
-                    <input type="file" id="lowerInput" accept=".stl,.obj,.ply,image/*" multiple>
-                    <div class="thumb-strip" id="lowerStrip"></div>
+                    <input type="file" id="postOpUpperInput" accept=".stl,.obj,.ply,image/*" multiple>
+                    <div class="thumb-strip" id="postOpUpperStrip"></div>
                 </div>
 
                 <div class="upload-item">
-                    <span class="upload-label">Preopt Image</span>
-                    <button type="button" class="upload-btn" onclick="document.getElementById('preoptInput').click()">
-                        + Upload Images
+                    <span class="upload-label">Pre-Op Lower</span>
+                    <button type="button" class="upload-btn"
+                        onclick="document.getElementById('preOpLowerInput').click()">
+                        + Upload Files
                     </button>
-                    <input type="file" id="preoptInput" accept=".stl,.obj,.ply,image/*" multiple>
-                    <div class="thumb-strip" id="preoptStrip"></div>
+                    <input type="file" id="preOpLowerInput" accept=".stl,.obj,.ply,image/*" multiple>
+                    <div class="thumb-strip" id="preOpLowerStrip"></div>
+                </div>
+
+                <div class="upload-item">
+                    <span class="upload-label">Post-Op Lower</span>
+                    <button type="button" class="upload-btn"
+                        onclick="document.getElementById('postOpLowerInput').click()">
+                        + Upload Files
+                    </button>
+                    <input type="file" id="postOpLowerInput" accept=".stl,.obj,.ply,image/*" multiple>
+                    <div class="thumb-strip" id="postOpLowerStrip"></div>
                 </div>
             </div>
 
@@ -644,9 +657,11 @@
             if (currentPatient.planningPdfPaths2) renderThumbs(currentPatient.planningPdfPaths2, 'pdfStrip', false, 'planningPdfPaths2');
             if (currentPatient.planningVideoPaths2) renderThumbs(currentPatient.planningVideoPaths2, 'videoStrip', true, 'planningVideoPaths2');
             if (currentPatient.planningFace3dPaths2) renderThumbs(currentPatient.planningFace3dPaths2, 'face3dStrip', false, 'planningFace3dPaths2');
-            if (currentPatient.planningCompareUpperPaths) renderThumbs(currentPatient.planningCompareUpperPaths, 'upperStrip', false, 'planningCompareUpperPaths');
-            if (currentPatient.planningCompareLowerPaths) renderThumbs(currentPatient.planningCompareLowerPaths, 'lowerStrip', false, 'planningCompareLowerPaths');
-            if (currentPatient.planningPreoptPaths) renderThumbs(currentPatient.planningPreoptPaths, 'preoptStrip', false, 'planningPreoptPaths');
+            if (currentPatient.planningCompareUpperPaths) renderThumbs(currentPatient.planningCompareUpperPaths, 'preOpUpperStrip', false, 'comparePreOpUpper');
+            if (currentPatient.comparePreOpUpper) renderThumbs(currentPatient.comparePreOpUpper, 'preOpUpperStrip', false, 'comparePreOpUpper');
+            if (currentPatient.comparePostOpUpper) renderThumbs(currentPatient.comparePostOpUpper, 'postOpUpperStrip', false, 'comparePostOpUpper');
+            if (currentPatient.comparePreOpLower) renderThumbs(currentPatient.comparePreOpLower, 'preOpLowerStrip', false, 'comparePreOpLower');
+            if (currentPatient.comparePostOpLower) renderThumbs(currentPatient.comparePostOpLower, 'postOpLowerStrip', false, 'comparePostOpLower');
 
             document.getElementById('planningForm').addEventListener('submit', function (e) {
                 e.preventDefault();
@@ -660,9 +675,10 @@
                 pdfInput: { prop: 'planningPdfPaths2', isVideo: false },
                 videoInput: { prop: 'planningVideoPaths2', isVideo: true },
                 face3dInput: { prop: 'planningFace3dPaths2', isVideo: false },
-                upperInput: { prop: 'planningCompareUpperPaths', isVideo: false },
-                lowerInput: { prop: 'planningCompareLowerPaths', isVideo: false },
-                preoptInput: { prop: 'planningPreoptPaths', isVideo: false }
+                preOpUpperInput: { prop: 'comparePreOpUpper', isVideo: false },
+                postOpUpperInput: { prop: 'comparePostOpUpper', isVideo: false },
+                preOpLowerInput: { prop: 'comparePreOpLower', isVideo: false },
+                postOpLowerInput: { prop: 'comparePostOpLower', isVideo: false }
             };
 
             Object.keys(config).forEach(id => {
