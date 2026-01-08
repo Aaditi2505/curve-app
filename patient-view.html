@@ -787,10 +787,10 @@
 
             // Definitions: Separate boxes
             const views = [
-                { label: 'Pre-Op Upper', paths: patient.comparePreOpUpper || patient.planningCompareUpperPaths || [], color: 0xffffff },
-                { label: 'Post-Op Upper', paths: patient.comparePostOpUpper || patient.planningStlPaths || [], color: 0x4dd0e1 },
-                { label: 'Pre-Op Lower', paths: patient.comparePreOpLower || patient.planningCompareLowerPaths || [], color: 0xffffff },
-                { label: 'Post-Op Lower', paths: patient.comparePostOpLower || [], color: 0x4dd0e1 }
+                { label: 'Pre-Op Upper', paths: patient.comparePreOpUpper || patient.planningCompareUpperPaths || [], color: 0xfcfcfc },
+                { label: 'Post-Op Upper', paths: patient.comparePostOpUpper || patient.planningStlPaths || [], color: 0xfcfcfc },
+                { label: 'Pre-Op Lower', paths: patient.comparePreOpLower || patient.planningCompareLowerPaths || [], color: 0xfcfcfc },
+                { label: 'Post-Op Lower', paths: patient.comparePostOpLower || [], color: 0xfcfcfc }
             ];
 
             views.forEach((def) => {
@@ -904,7 +904,7 @@
                             if (obj.isBufferGeometry) {
                                 const hasColor = obj.attributes.color ? true : false;
                                 const mat = new THREE.MeshPhongMaterial({
-                                    color: hasColor ? 0xffffff : (def.label.includes('Post-Op') ? 0xe0f7fa : 0xfcfcfc), // Soft teal for post-op, natural for pre
+                                    color: hasColor ? 0xffffff : def.color,
                                     specular: 0x222222,
                                     shininess: 40,
                                     side: THREE.DoubleSide,
@@ -917,7 +917,7 @@
                                     if (child.isMesh) {
                                         const hasColor = child.geometry.attributes.color ? true : false;
                                         child.material = new THREE.MeshPhongMaterial({
-                                            color: hasColor ? 0xffffff : (def.label.includes('Post-Op') ? 0xe0f7fa : 0xfcfcfc),
+                                            color: hasColor ? 0xffffff : def.color,
                                             specular: 0x222222,
                                             shininess: 40,
                                             side: THREE.DoubleSide,
