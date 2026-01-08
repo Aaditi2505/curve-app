@@ -753,19 +753,32 @@
 
             if (type === 'images') {
                 title.textContent = 'Images';
-                paths = Array.from(new Set(p.planningStlPaths || []));
+                paths = Array.from(new Set([
+                    ...(p.planningStlPaths || []),
+                    ...(p.planningStlPaths2 || [])
+                ]));
                 renderGrid(paths);
             } else if (type === 'pdf') {
                 title.textContent = 'Plan PDF';
-                paths = Array.from(new Set(p.planningPdfPaths2 || []));
+                paths = Array.from(new Set([
+                    ...(p.planningPdfPaths || []),
+                    ...(p.planningPdfPaths2 || [])
+                ]));
                 renderGrid(paths);
             } else if (type === 'video') {
                 title.textContent = 'Plan Video';
-                paths = Array.from(new Set(p.planningVideoPaths2 || []));
+                paths = Array.from(new Set([
+                    ...(p.planningVideoPaths || []),
+                    ...(p.planningVideoPaths2 || [])
+                ]));
                 renderGrid(paths);
             } else if (type === 'face3d') {
                 title.textContent = 'Face 3D Analysis';
-                paths = Array.from(new Set(p.planningFace3dPaths2 || []));
+                paths = Array.from(new Set([
+                    ...(p.planningFace3dPaths || []),
+                    ...(p.face3dPathsPhase2 || []),
+                    ...(p.planningFace3dPaths2 || [])
+                ]));
                 renderGrid(paths);
             } else if (type === 'compare') {
                 title.textContent = '3D Comparison';
@@ -835,21 +848,48 @@
                     item.style.width = "100%";
                     item.style.maxWidth = "100%";
                     item.style.padding = "0";
-                    item.style.background = "#000"; // Contrast for PDF
+                    item.style.background = "#fff";
 
                     const container = document.createElement('div');
                     container.style.width = '100%';
-                    container.style.height = '90vh'; // Maximum height
+                    container.style.height = '90vh';
                     container.style.borderRadius = '12px';
-                    container.style.overflow = 'hidden';
+                    container.style.display = 'flex';
+                    container.style.flexDirection = 'column';
 
-                    const iframe = document.createElement('iframe');
-                    // Add #toolbar=0&navpanes=0 to clean up viewer UI if possible
-                    iframe.src = path + (path.includes('?') ? '&' : '?') + 'view=FitH';
-                    iframe.style.width = '100%';
-                    iframe.style.height = '100%';
-                    iframe.style.border = 'none';
-                    container.appendChild(iframe);
+                    // Mobile detection
+                    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+                    if (isMobile) {
+                        // On mobile, PDFs in iframes often fail. Show a premium "View Document" button.
+                        container.style.justifyContent = 'center';
+                        container.style.alignItems = 'center';
+                        container.style.background = '#f8f9fa';
+                        container.innerHTML = `
+                            <div style="text-align:center; padding:40px;">
+                                <div style="font-size:4rem; margin-bottom:20px;">📄</div>
+                                <h3 style="margin-bottom:20px;">Plan Document</h3>
+                                <a href="${path}" target="_blank" style="
+                                    background: var(--primary-color);
+                                    color: white;
+                                    padding: 15px 40px;
+                                    border-radius: 30px;
+                                    text-decoration: none;
+                                    font-weight: 700;
+                                    display: inline-block;
+                                    box-shadow: 0 10px 20px rgba(20, 191, 206, 0.3);
+                                ">OPEN PDF DIRECTLY</a>
+                                <p style="margin-top:20px; color:#95a5a6; font-size:0.8rem;">Tap to view the treatment plan on your mobile device.</p>
+                            </div>
+                        `;
+                    } else {
+                        const iframe = document.createElement('iframe');
+                        iframe.src = path + (path.includes('?') ? '&' : '?') + 'view=FitH';
+                        iframe.style.width = '100%';
+                        iframe.style.height = '100%';
+                        iframe.style.border = 'none';
+                        container.appendChild(iframe);
+                    }
                     item.appendChild(container);
 
                     const label = document.createElement('div');
@@ -1420,9 +1460,13 @@
                     } else if (obj.isGroup || obj.isObject3D) {
                         obj.traverse(child => {
                             if (child.isMesh) {
+                                // If the model already has color attributes, use them. 
+                                // Otherwise, use a natural tooth-white color.
                                 const hasColor = child.geometry.attributes.color ? true : false;
+                                const naturalToothColor = 0xfcfcfc; // Cleaner natural white
+
                                 child.material = new THREE.MeshPhongMaterial({
-                                    color: hasColor ? 0xffffff : 0x14bfce,
+                                    color: hasColor ? 0xffffff : naturalToothColor,
                                     specular: 0x222222,
                                     shininess: 40,
                                     vertexColors: hasColor,
