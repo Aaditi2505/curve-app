@@ -1110,18 +1110,17 @@
             }
 
             // Grid Container - Forced 2 columns for better comparison
+            // Grid Container - Forced 2 columns for better comparison
+            // Pre-Op (Left) vs Post-Op (Right)
             const grid = document.createElement('div');
             grid.style.display = 'grid';
-            grid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+            grid.style.gridTemplateColumns = '1fr 1fr'; // Always 2 columns
             grid.style.gap = '25px';
             grid.style.width = '100%';
             grid.style.paddingBottom = '40px';
             viewer.appendChild(grid);
 
-            // Responsive adjustment for small tablets/phones
-            if (window.innerWidth < 900) {
-                grid.style.gridTemplateColumns = '1fr';
-            }
+            // Removed narrow screen check to force same layout everywhere
 
             if (window.compareReqId) cancelAnimationFrame(window.compareReqId);
 
@@ -1131,7 +1130,9 @@
             // Helper: Get first non-empty array
             const getP = (a, b) => (a && a.length > 0) ? a : (b && b.length > 0 ? b : []);
 
-            // Layout: Pre-Op vs Post-Op (Upper), then Pre-Op vs Post-Op (Lower)
+            // Layout Order:
+            // Row 1: Pre-Op Upper (Left) | Post-Op Upper (Right)
+            // Row 2: Pre-Op Lower (Left) | Post-Op Lower (Right)
             const views = [
                 { label: 'Pre-Op Upper', paths: patient.comparePreOpUpper || patient.planningCompareUpperPaths || [], color: 0xFFECE0 },
                 { label: 'Post-Op Upper', paths: patient.comparePostOpUpper || patient.planningStlPaths || [], color: 0xFFECE0 },
