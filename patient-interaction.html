@@ -1295,12 +1295,21 @@
                                 // STL/PLY
                                 // Check for vertex colors (common in dental scans)
                                 const hasColor = obj.attributes.color ? true : false;
+
+                                if (!hasColor) {
+                                    const label = def.label.toLowerCase();
+                                    const isUpper = label.includes('upper');
+                                    applyNaturalColors(obj, isUpper);
+                                }
+
+                                const hasVertexColor = obj.attributes.color ? true : false;
+
                                 const mat = new THREE.MeshPhongMaterial({
-                                    color: hasColor ? 0xffffff : def.color, // If vertex colors exist, use white base so they show
+                                    color: hasVertexColor ? 0xffffff : def.color, // If vertex colors exist (now likely), use white base
                                     specular: 0x111111,
                                     shininess: 30,
                                     side: THREE.DoubleSide,
-                                    vertexColors: hasColor
+                                    vertexColors: hasVertexColor
                                 });
                                 mesh = new THREE.Mesh(obj, mat);
                             } else {
@@ -1316,12 +1325,24 @@
                                             child.material.color.setHex(0xffffff);
                                             child.material.side = THREE.DoubleSide;
                                         } else {
+                                            // Apply procedural gradient if plain
+                                            if (!hasColor && !hasTexture) {
+                                                // Guess jaw type from Label
+                                                const label = def.label.toLowerCase();
+                                                const isUpper = label.includes('upper');
+                                                applyNaturalColors(child.geometry, isUpper);
+                                                child.geometry.attributes.color.needsUpdate = true;
+                                            }
+
+                                            // Re-check color attribute after application
+                                            const hasVertexColor = child.geometry.attributes.color ? true : false;
+
                                             child.material = new THREE.MeshPhongMaterial({
-                                                color: hasColor ? 0xffffff : def.color,
+                                                color: hasVertexColor ? 0xffffff : def.color, // If colored (natural/gradient), use white base
                                                 specular: 0x111111,
                                                 shininess: 30,
                                                 side: THREE.DoubleSide,
-                                                vertexColors: hasColor
+                                                vertexColors: hasVertexColor
                                             });
                                         }
                                     }
@@ -1495,15 +1516,58 @@
                 });
             }
 
-            function animate() {
-                if (!document.body.contains(container)) return;
-                requestAnimationFrame(animate);
-                controls.update();
-                renderer.render(scene, camera);
-            }
-            animate();
         }
-    </script>
-</body>
+        animate();
 
-</html>
+
+        // Helper: Apply Natural Teeth/Gum Gradient to plain meshes
+        function applyNaturalColors(geometry, isUpper) {
+            geometry.computeBoundingBox();
+            const minZ = geometry.boundingBox.min.z;
+            const maxZ = geometry.boundingBox.max.z;
+            const range = maxZ - minZ;
+
+            const positionAttribute = geometry.attributes.position;
+            const count = positionAttribute.count;
+
+            // Create color buffer
+            const colors = new Float32Array(count * 3);
+
+            // Colors: Gum (Salmon/Orange) -> Teeth (Ivory White)
+            const cGum = { r: 0.85, g: 0.55, b: 0.45 }; // Natural Gum
+            const cTooth = { r: 1.0, g: 0.98, b: 0.95 }; // Ivory White
+
+            for (let i = 0; i < count; i++) {
+                const z = positionAttribute.getZ(i);
+                // Normalized height (0 to 1)
+                let t = (z - minZ) / (range || 1); // Avoid div/0
+
+                // Logic:
+                // Upper Jaw (Teeth point DOWN): High Z is Gum, Low Z is Tooth.
+                // Lower Jaw (Teeth point UP): Low Z is Gum, High Z is Tooth.
+                // NOTE: This assumes standard dental orientation where Z is vertical.
+
+                // Interpolation Factor (f)
+                // 0 = Gum, 1 = Tooth
+                let f = 0;
+
+                if (isUpper) {
+                    // High Z (t=1) is Gum. Low Z (t=0) is Tooth.
+                    // So f = 1 - t; (f=1 when t=0)
+                    f = 1.0 - t;
+                } else {
+                    // Low Z (t=0) is Gum. High Z (t=1) is Tooth.
+                    // So f = t;
+                    f = t;
+                }
+
+                // Sharp transition for teeth/gum line (approx 40-50%)
+                const mix = f < 0.3 ? 0.0 : (f > 0.6 ? 1.0 : (f - 0.3) / 0.3);
+
+                colors[i * 3] = cGum.r * (1 - mix) + cTooth.r * mix;
+                colors[i * 3 + 1] = cGum.g * (1 - mix) + cTooth.g * mix;
+                colors[i * 3 + 2] = cGum.b * (1 - mix) + cTooth.b * mix;
+            }
+
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        }
