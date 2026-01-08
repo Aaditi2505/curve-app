@@ -916,13 +916,20 @@
                                 mesh.traverse(child => {
                                     if (child.isMesh) {
                                         const hasColor = child.geometry.attributes.color ? true : false;
-                                        child.material = new THREE.MeshPhongMaterial({
-                                            color: hasColor ? 0xffffff : def.color,
-                                            specular: 0x222222,
-                                            shininess: 40,
-                                            side: THREE.DoubleSide,
-                                            vertexColors: hasColor
-                                        });
+                                        const hasTexture = child.material && child.material.map;
+
+                                        if (hasTexture) {
+                                            child.material.color.setHex(0xffffff);
+                                            child.material.side = THREE.DoubleSide;
+                                        } else {
+                                            child.material = new THREE.MeshPhongMaterial({
+                                                color: hasColor ? 0xffffff : def.color,
+                                                specular: 0x222222,
+                                                shininess: 40,
+                                                side: THREE.DoubleSide,
+                                                vertexColors: hasColor
+                                            });
+                                        }
                                     }
                                 });
                             }
@@ -1019,13 +1026,20 @@
                         mesh.traverse(child => {
                             if (child.isMesh) {
                                 const hasColor = child.geometry.attributes.color ? true : false;
-                                child.material = new THREE.MeshPhongMaterial({
-                                    color: hasColor ? 0xffffff : 0xFFECE0,
-                                    specular: 0x222222,
-                                    shininess: 40,
-                                    vertexColors: hasColor,
-                                    side: THREE.DoubleSide
-                                });
+                                const hasTexture = child.material && child.material.map;
+
+                                if (hasTexture) {
+                                    child.material.color.setHex(0xffffff);
+                                    child.material.side = THREE.DoubleSide;
+                                } else {
+                                    child.material = new THREE.MeshPhongMaterial({
+                                        color: hasColor ? 0xffffff : 0xFFECE0,
+                                        specular: 0x222222,
+                                        shininess: 40,
+                                        vertexColors: hasColor,
+                                        side: THREE.DoubleSide
+                                    });
+                                }
                             }
                         });
                     }

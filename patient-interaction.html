@@ -1309,13 +1309,21 @@
                                 mesh.traverse(child => {
                                     if (child.isMesh) {
                                         const hasColor = child.geometry.attributes.color ? true : false;
-                                        child.material = new THREE.MeshPhongMaterial({
-                                            color: hasColor ? 0xffffff : def.color,
-                                            specular: 0x111111,
-                                            shininess: 30,
-                                            side: THREE.DoubleSide,
-                                            vertexColors: hasColor
-                                        });
+                                        const hasTexture = child.material && child.material.map;
+
+                                        if (hasTexture) {
+                                            // Preserve existing material/texture, just ensure color is white
+                                            child.material.color.setHex(0xffffff);
+                                            child.material.side = THREE.DoubleSide;
+                                        } else {
+                                            child.material = new THREE.MeshPhongMaterial({
+                                                color: hasColor ? 0xffffff : def.color,
+                                                specular: 0x111111,
+                                                shininess: 30,
+                                                side: THREE.DoubleSide,
+                                                vertexColors: hasColor
+                                            });
+                                        }
                                     }
                                 });
                             }
@@ -1323,17 +1331,16 @@
                             // Add to scene
                             scene.add(mesh);
 
-                            // Auto-Fit Camera to all objects in scene
+                            // Auto-fit
                             const box = new THREE.Box3().setFromObject(scene);
                             const size = box.getSize(new THREE.Vector3());
                             const center = box.getCenter(new THREE.Vector3());
 
-                            // Avoid fitting to empty scene
                             if (size.lengthSq() > 0) {
                                 const maxDim = Math.max(size.x, size.y, size.z);
                                 const fov = camera.fov * (Math.PI / 180);
                                 let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
-                                cameraZ *= 1.5; // Zoom out a little
+                                cameraZ *= 1.5;
 
                                 camera.position.set(center.x, center.y - (cameraZ * 0.5), center.z + cameraZ);
                                 camera.lookAt(center);
@@ -1343,7 +1350,6 @@
                         },
                             undefined,
                             (err) => {
-                                // Error Callback
                                 console.error("Error loading 3D model:", err);
                                 const loaderEl = document.getElementById(`loading-${p.split('/').pop().replace(/\./g, '-')}`);
                                 if (loaderEl) loaderEl.remove();
@@ -1460,18 +1466,23 @@
                     } else if (obj.isGroup || obj.isObject3D) {
                         obj.traverse(child => {
                             if (child.isMesh) {
-                                // If the model already has color attributes, use them. 
-                                // Otherwise, use a natural tooth-white color.
                                 const hasColor = child.geometry.attributes.color ? true : false;
-                                const naturalToothColor = 0xFFECE0; // Real tooth color
+                                const hasTexture = child.material && child.material.map;
+                                const naturalToothColor = 0xFFECE0;
 
-                                child.material = new THREE.MeshPhongMaterial({
-                                    color: hasColor ? 0xffffff : naturalToothColor,
-                                    specular: 0x222222,
-                                    shininess: 40,
-                                    vertexColors: hasColor,
-                                    side: THREE.DoubleSide
-                                });
+                                if (hasTexture) {
+                                    // Preserve texture
+                                    child.material.color.setHex(0xffffff);
+                                    child.material.side = THREE.DoubleSide;
+                                } else {
+                                    child.material = new THREE.MeshPhongMaterial({
+                                        color: hasColor ? 0xffffff : naturalToothColor,
+                                        specular: 0x222222,
+                                        shininess: 40,
+                                        vertexColors: hasColor,
+                                        side: THREE.DoubleSide
+                                    });
+                                }
                             }
                         });
                         scene.add(obj);
