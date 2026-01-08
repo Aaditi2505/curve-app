@@ -1160,10 +1160,10 @@
 
             // Layout: Pre-Op vs Post-Op (Upper), then Pre-Op vs Post-Op (Lower)
             const views = [
-                { label: 'Pre-Op Upper', paths: patient.comparePreOpUpper || patient.planningCompareUpperPaths || [], color: 0xfcfcfc },
-                { label: 'Post-Op Upper', paths: patient.comparePostOpUpper || patient.planningStlPaths || [], color: 0xfcfcfc },
-                { label: 'Pre-Op Lower', paths: patient.comparePreOpLower || patient.planningCompareLowerPaths || [], color: 0xfcfcfc },
-                { label: 'Post-Op Lower', paths: patient.comparePostOpLower || [], color: 0xfcfcfc }
+                { label: 'Pre-Op Upper', paths: patient.comparePreOpUpper || patient.planningCompareUpperPaths || [], color: 0xFFECE0 },
+                { label: 'Post-Op Upper', paths: patient.comparePostOpUpper || patient.planningStlPaths || [], color: 0xFFECE0 },
+                { label: 'Pre-Op Lower', paths: patient.comparePreOpLower || patient.planningCompareLowerPaths || [], color: 0xFFECE0 },
+                { label: 'Post-Op Lower', paths: patient.comparePostOpLower || [], color: 0xFFECE0 }
             ];
 
             views.forEach((def) => {
@@ -1439,8 +1439,8 @@
 
                         const hasColor = geometry.attributes.color ? true : false;
                         const material = new THREE.MeshPhongMaterial({
-                            color: hasColor ? 0xffffff : 0x14bfce, // Use pure white if natural color exists
-                            specular: 0x222222,
+                            color: hasColor ? 0xffffff : 0xFFECE0, // Real tooth color
+                            specular: 0x111111,
                             shininess: 40,
                             vertexColors: hasColor,
                             side: THREE.DoubleSide
@@ -1463,7 +1463,7 @@
                                 // If the model already has color attributes, use them. 
                                 // Otherwise, use a natural tooth-white color.
                                 const hasColor = child.geometry.attributes.color ? true : false;
-                                const naturalToothColor = 0xfcfcfc; // Cleaner natural white
+                                const naturalToothColor = 0xFFECE0; // Real tooth color
 
                                 child.material = new THREE.MeshPhongMaterial({
                                     color: hasColor ? 0xffffff : naturalToothColor,
