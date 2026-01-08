@@ -1516,8 +1516,14 @@
                 });
             }
 
+            function animate() {
+                if (!document.body.contains(container)) return;
+                requestAnimationFrame(animate);
+                controls.update();
+                renderer.render(scene, camera);
+            }
+            animate();
         }
-        animate();
 
 
         // Helper: Apply Natural Teeth/Gum Gradient to plain meshes
