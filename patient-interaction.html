@@ -1134,10 +1134,10 @@
             // Row 1: Pre-Op Upper (Left) | Post-Op Upper (Right)
             // Row 2: Pre-Op Lower (Left) | Post-Op Lower (Right)
             const views = [
-                { label: 'Pre-Op Upper', paths: patient.comparePreOpUpper || patient.planningCompareUpperPaths || [], color: 0xFFECE0 },
-                { label: 'Post-Op Upper', paths: patient.comparePostOpUpper || patient.planningStlPaths || [], color: 0xFFECE0 },
-                { label: 'Pre-Op Lower', paths: patient.comparePreOpLower || patient.planningCompareLowerPaths || [], color: 0xFFECE0 },
-                { label: 'Post-Op Lower', paths: patient.comparePostOpLower || [], color: 0xFFECE0 }
+                { label: 'Pre-Op Upper', paths: patient.comparePreOpUpper || patient.planningCompareUpperPaths || [], color: 0x00008B },
+                { label: 'Post-Op Upper', paths: patient.comparePostOpUpper || patient.planningStlPaths || [], color: 0x00008B },
+                { label: 'Pre-Op Lower', paths: patient.comparePreOpLower || patient.planningCompareLowerPaths || [], color: 0x00008B },
+                { label: 'Post-Op Lower', paths: patient.comparePostOpLower || [], color: 0x00008B }
             ];
 
             views.forEach((def) => {
@@ -1273,7 +1273,7 @@
                                 if (!hasColor) {
                                     const label = def.label.toLowerCase();
                                     const isUpper = label.includes('upper');
-                                    applyNaturalColors(obj, isUpper);
+                                    // applyNaturalColors(obj, isUpper);
                                 }
 
                                 const hasVertexColor = obj.attributes.color ? true : false;
@@ -1304,7 +1304,7 @@
                                                 // Guess jaw type from Label
                                                 const label = def.label.toLowerCase();
                                                 const isUpper = label.includes('upper');
-                                                applyNaturalColors(child.geometry, isUpper);
+                                                // applyNaturalColors(child.geometry, isUpper);
                                                 child.geometry.attributes.color.needsUpdate = true;
                                             }
 
@@ -1440,7 +1440,7 @@
 
                         const hasColor = geometry.attributes.color ? true : false;
                         const material = new THREE.MeshPhongMaterial({
-                            color: hasColor ? 0xffffff : 0xFFECE0, // Real tooth color
+                            color: hasColor ? 0xffffff : 0x00008B, // Dark Blue default
                             specular: 0x111111,
                             shininess: 40,
                             vertexColors: hasColor,
@@ -1463,7 +1463,7 @@
                             if (child.isMesh) {
                                 const hasColor = child.geometry.attributes.color ? true : false;
                                 const hasTexture = child.material && child.material.map;
-                                const naturalToothColor = 0xFFECE0;
+                                const naturalToothColor = 0x00008B;
 
                                 if (hasTexture) {
                                     // Preserve texture
