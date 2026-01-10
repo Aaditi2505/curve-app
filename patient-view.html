@@ -762,10 +762,10 @@
 
             // Definitions: Separate boxes
             const views = [
-                { label: 'Pre-Op Upper', paths: patient.comparePreOpUpper || patient.planningCompareUpperPaths || [], color: 0x00008B },
-                { label: 'Post-Op Upper', paths: patient.comparePostOpUpper || patient.planningStlPaths || [], color: 0x00008B },
-                { label: 'Pre-Op Lower', paths: patient.comparePreOpLower || patient.planningCompareLowerPaths || [], color: 0x00008B },
-                { label: 'Post-Op Lower', paths: patient.comparePostOpLower || [], color: 0x00008B }
+                { label: 'Pre-Op Upper', paths: patient.comparePreOpUpper || patient.planningCompareUpperPaths || [], color: 0xffffff },
+                { label: 'Post-Op Upper', paths: patient.comparePostOpUpper || patient.planningStlPaths || [], color: 0xffffff },
+                { label: 'Pre-Op Lower', paths: patient.comparePreOpLower || patient.planningCompareLowerPaths || [], color: 0xffffff },
+                { label: 'Post-Op Lower', paths: patient.comparePostOpLower || [], color: 0xffffff }
             ];
 
             views.forEach((def) => {
@@ -879,11 +879,11 @@
                             if (obj.isBufferGeometry) {
                                 const hasColor = obj.attributes.color ? true : false;
                                 const mat = new THREE.MeshPhongMaterial({
-                                    color: hasColor ? 0xffffff : def.color,
+                                    color: hasColor ? 0xffffff : (ext === 'stl' ? 0x00008B : 0xffffff),
                                     specular: 0x222222,
                                     shininess: 40,
-                                    side: THREE.DoubleSide,
-                                    vertexColors: hasColor
+                                    vertexColors: hasColor,
+                                    side: THREE.DoubleSide
                                 });
                                 mesh = new THREE.Mesh(obj, mat);
                             } else {
@@ -898,7 +898,7 @@
                                             child.material.side = THREE.DoubleSide;
                                         } else {
                                             child.material = new THREE.MeshPhongMaterial({
-                                                color: hasColor ? 0xffffff : def.color,
+                                                color: hasColor ? 0xffffff : (ext === 'stl' ? 0x00008B : 0xffffff),
                                                 specular: 0x222222,
                                                 shininess: 40,
                                                 side: THREE.DoubleSide,
@@ -989,7 +989,7 @@
                     if (obj.isBufferGeometry) {
                         const hasColor = obj.attributes.color ? true : false;
                         const mat = new THREE.MeshPhongMaterial({
-                            color: hasColor ? 0xffffff : 0x00008B,
+                            color: hasColor ? 0xffffff : (ext === 'stl' ? 0x00008B : 0xffffff),
                             specular: 0x222222,
                             shininess: 40,
                             vertexColors: hasColor,
@@ -1008,7 +1008,7 @@
                                     child.material.side = THREE.DoubleSide;
                                 } else {
                                     child.material = new THREE.MeshPhongMaterial({
-                                        color: hasColor ? 0xffffff : 0x00008B,
+                                        color: hasColor ? 0xffffff : (ext === 'stl' ? 0x00008B : 0xffffff),
                                         specular: 0x222222,
                                         shininess: 40,
                                         vertexColors: hasColor,

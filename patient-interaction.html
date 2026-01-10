@@ -1134,10 +1134,10 @@
             // Row 1: Pre-Op Upper (Left) | Post-Op Upper (Right)
             // Row 2: Pre-Op Lower (Left) | Post-Op Lower (Right)
             const views = [
-                { label: 'Pre-Op Upper', paths: patient.comparePreOpUpper || patient.planningCompareUpperPaths || [], color: 0x00008B },
-                { label: 'Post-Op Upper', paths: patient.comparePostOpUpper || patient.planningStlPaths || [], color: 0x00008B },
-                { label: 'Pre-Op Lower', paths: patient.comparePreOpLower || patient.planningCompareLowerPaths || [], color: 0x00008B },
-                { label: 'Post-Op Lower', paths: patient.comparePostOpLower || [], color: 0x00008B }
+                { label: 'Pre-Op Upper', paths: patient.comparePreOpUpper || patient.planningCompareUpperPaths || [], color: 0xffffff },
+                { label: 'Post-Op Upper', paths: patient.comparePostOpUpper || patient.planningStlPaths || [], color: 0xffffff },
+                { label: 'Pre-Op Lower', paths: patient.comparePreOpLower || patient.planningCompareLowerPaths || [], color: 0xffffff },
+                { label: 'Post-Op Lower', paths: patient.comparePostOpLower || [], color: 0xffffff }
             ];
 
             views.forEach((def) => {
@@ -1278,8 +1278,12 @@
 
                                 const hasVertexColor = obj.attributes.color ? true : false;
 
+                                // Logic: STL = Dark Blue, OBJ/PLY = Native (White Base)
+                                const isStl = ext === 'stl';
+                                const baseColor = isStl ? 0x00008B : 0xffffff;
+
                                 const mat = new THREE.MeshPhongMaterial({
-                                    color: hasVertexColor ? 0xffffff : def.color, // If vertex colors exist (now likely), use white base
+                                    color: hasVertexColor ? 0xffffff : baseColor,
                                     specular: 0x111111,
                                     shininess: 30,
                                     side: THREE.DoubleSide,
@@ -1311,8 +1315,11 @@
                                             // Re-check color attribute after application
                                             const hasVertexColor = child.geometry.attributes.color ? true : false;
 
+                                            const isStl = ext === 'stl';
+                                            const baseColor = isStl ? 0x00008B : 0xffffff;
+
                                             child.material = new THREE.MeshPhongMaterial({
-                                                color: hasVertexColor ? 0xffffff : def.color, // If colored (natural/gradient), use white base
+                                                color: hasVertexColor ? 0xffffff : baseColor,
                                                 specular: 0x111111,
                                                 shininess: 30,
                                                 side: THREE.DoubleSide,
@@ -1440,7 +1447,7 @@
 
                         const hasColor = geometry.attributes.color ? true : false;
                         const material = new THREE.MeshPhongMaterial({
-                            color: hasColor ? 0xffffff : 0x00008B, // Dark Blue default
+                            color: hasColor ? 0xffffff : (ext === 'stl' ? 0x00008B : 0xffffff),
                             specular: 0x111111,
                             shininess: 40,
                             vertexColors: hasColor,
@@ -1463,7 +1470,9 @@
                             if (child.isMesh) {
                                 const hasColor = child.geometry.attributes.color ? true : false;
                                 const hasTexture = child.material && child.material.map;
-                                const naturalToothColor = 0x00008B;
+                                // Logic: STL = Dark Blue, OBJ/PLY = Native (White Base)
+                                const isStl = ext === 'stl';
+                                const naturalToothColor = isStl ? 0x00008B : 0xffffff;
 
                                 if (hasTexture) {
                                     // Preserve texture
