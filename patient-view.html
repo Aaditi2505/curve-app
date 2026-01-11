@@ -845,6 +845,8 @@
                 controls.maxPolarAngle = Math.PI;
                 controls.minAzimuthAngle = -Infinity;
                 controls.maxAzimuthAngle = Infinity;
+                controls.enableRotate = true;
+                renderer.domElement.style.touchAction = 'none';
 
                 // Toggle Auto-Rotate Button
                 const rotateBtn = document.createElement('button');
@@ -982,6 +984,8 @@
             controls.maxPolarAngle = Math.PI;
             controls.minAzimuthAngle = -Infinity;
             controls.maxAzimuthAngle = Infinity;
+            controls.enableRotate = true;
+            renderer.domElement.style.touchAction = 'none';
 
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
             scene.add(ambientLight);
