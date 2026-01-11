@@ -840,6 +840,12 @@
                 controls.autoRotate = false;
                 controls.autoRotateSpeed = 2.0;
 
+                // Allow full 360-degree rotation
+                controls.minPolarAngle = 0;
+                controls.maxPolarAngle = Math.PI;
+                controls.minAzimuthAngle = -Infinity;
+                controls.maxAzimuthAngle = Infinity;
+
                 // Toggle Auto-Rotate Button
                 const rotateBtn = document.createElement('button');
                 rotateBtn.innerHTML = '🔄 Auto-Rotate: OFF';
@@ -968,8 +974,14 @@
 
             const controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
-            controls.autoRotate = true;
+            controls.autoRotate = false; // Default OFF
             controls.autoRotateSpeed = 4;
+
+            // Allow full 360-degree rotation
+            controls.minPolarAngle = 0;
+            controls.maxPolarAngle = Math.PI;
+            controls.minAzimuthAngle = -Infinity;
+            controls.maxAzimuthAngle = Infinity;
 
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
             scene.add(ambientLight);
