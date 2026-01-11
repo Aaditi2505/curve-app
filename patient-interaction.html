@@ -797,6 +797,24 @@
             }
         }
 
+        /* 3D Compare Grid Styles */
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .compare-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 25px;
+                width: 100%;
+                padding-bottom: 40px;
+            }
+            @media (max-width: 768px) {
+                .compare-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
         function renderGrid(paths) {
             const viewer = document.getElementById('viewer');
             if (!paths.length) {
@@ -1112,12 +1130,9 @@
             // Grid Container - Forced 2 columns for better comparison
             // Grid Container - Forced 2 columns for better comparison
             // Pre-Op (Left) vs Post-Op (Right)
+            // Grid Container - Responsive
             const grid = document.createElement('div');
-            grid.style.display = 'grid';
-            grid.style.gridTemplateColumns = '1fr 1fr'; // Always 2 columns
-            grid.style.gap = '25px';
-            grid.style.width = '100%';
-            grid.style.paddingBottom = '40px';
+            grid.className = 'compare-grid';
             viewer.appendChild(grid);
 
             // Removed narrow screen check to force same layout everywhere
