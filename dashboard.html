@@ -432,16 +432,22 @@
       border-radius: 24px;
       overflow: hidden;
       position: relative;
-      height: 300px;
+      /* height: 300px; Removed fixed height to allow full image */
       background: #000;
       box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+      display: flex;
+      /* Centering */
+      align-items: center;
+      justify-content: center;
     }
 
     .video-player {
       width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0.8;
+      height: auto;
+      /* Allow height to adjust */
+      object-fit: contain;
+      /* Ensure full image is seen */
+      display: block;
     }
 
     .video-overlay {
@@ -628,7 +634,7 @@
 
       <!-- Middle Row -->
       <div class="card-about">
-        <h3 class="about-title">About Curve</h3>
+        <h3 class="about-title">What's New</h3>
         <p class="about-text">
           Experience the future of dental care with our advanced clear aligner technology.
           We combine precision engineering with personalized treatment plans to give you the smile you deserve.
@@ -651,12 +657,7 @@
 
       <!-- Bottom Row: AI Video -->
       <div class="card-video">
-        <video autoplay loop muted playsinline class="video-player">
-          <source src="assets/video3.mp4" type="video/mp4">
-        </video>
-        <div class="video-overlay">
-          <h3 class="video-title">AI Treatment Simulation</h3>
-        </div>
+        <img src="assets/scanning-interface.png" alt="Scanning Interface" class="video-player">
       </div>
 
     </div>
