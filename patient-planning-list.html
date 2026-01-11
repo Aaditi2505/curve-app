@@ -144,6 +144,109 @@
       letter-spacing: 0.5px;
     }
 
+    /* Search Section */
+    .search-section {
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      border-radius: var(--card-radius);
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: var(--glass-shadow);
+      border: var(--glass-border);
+    }
+
+    .search-grid {
+      display: grid;
+      grid-template-columns: 1fr 2fr auto;
+      gap: 20px;
+      align-items: end;
+    }
+
+    .search-group {
+      position: relative;
+    }
+
+    .search-label {
+      display: block;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 14px 20px;
+      border: 2px solid #e0e6ed;
+      border-radius: 12px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: white;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 4px rgba(20, 191, 206, 0.1);
+    }
+
+    .search-btn {
+      padding: 14px 30px;
+      background: linear-gradient(135deg, #14bfce, #0e9aa7);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+    }
+
+    .search-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(20, 191, 206, 0.3);
+    }
+
+    /* Autocomplete */
+    .autocomplete-results {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 2px solid var(--primary-color);
+      border-radius: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      margin-top: 5px;
+      display: none;
+    }
+
+    .autocomplete-item {
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .autocomplete-item:hover {
+      background: rgba(20, 191, 206, 0.1);
+    }
+
+    .autocomplete-item:last-child {
+      border-bottom: none;
+    }
+
+    @media (max-width: 768px) {
+      .search-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+    }
+
     /* Main Layout */
     .list-main {
       margin-top: 120px;
@@ -393,6 +496,24 @@
   <main class="list-main">
     <h1 class="page-title">Planning Phase <span style="font-weight:300; opacity:0.7;">| Patient List</span></h1>
 
+    <!-- Search Section -->
+    <div class="search-section">
+      <div class="search-grid">
+        <div class="search-group">
+          <label class="search-label">Date</label>
+          <input type="date" id="searchDate" class="search-input">
+        </div>
+
+        <div class="search-group">
+          <label class="search-label">Patient Name</label>
+          <input type="text" id="nameSearch" class="search-input" placeholder="Type patient name..." autocomplete="off">
+          <div id="nameSuggestions" class="autocomplete-results"></div>
+        </div>
+
+        <button class="search-btn" onclick="performSearch()">Search</button>
+      </div>
+    </div>
+
     <div class="list-container">
       <table class="list-table">
         <thead>
@@ -436,27 +557,98 @@
       }
 
       loadPlanningPatients();
+
+      const nameInput = document.getElementById('nameSearch');
+      const nameSuggestions = document.getElementById('nameSuggestions');
+
+      // Autocomplete for name search
+      nameInput.addEventListener('input', function () {
+        const query = nameInput.value.trim().toLowerCase();
+        if (query.length < 2) {
+          nameSuggestions.style.display = 'none';
+          nameSuggestions.innerHTML = '';
+          return;
+        }
+
+        const appts = getPlanningPatientsRaw();
+        const matches = appts
+          .filter(p => (p.name || '').toLowerCase().includes(query))
+          .slice(0, 8);
+
+        if (!matches.length) {
+          nameSuggestions.style.display = 'none';
+          nameSuggestions.innerHTML = '';
+          return;
+        }
+
+        nameSuggestions.innerHTML = matches.map(p => `
+          <div class="autocomplete-item" data-name="${p.name}">
+            ${p.name} (${p.age || 'N/A'}, ${p.sex || 'N/A'})
+          </div>
+        `).join('');
+        nameSuggestions.style.display = 'block';
+      });
+
+      // Click on autocomplete suggestion
+      nameSuggestions.addEventListener('click', function (e) {
+        const item = e.target.closest('.autocomplete-item');
+        if (!item) return;
+        const fullName = item.getAttribute('data-name');
+        nameInput.value = fullName;
+        nameSuggestions.style.display = 'none';
+        nameSuggestions.innerHTML = '';
+        performSearch();
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function (e) {
+        if (!nameSuggestions.contains(e.target) && e.target !== nameInput) {
+          nameSuggestions.style.display = 'none';
+        }
+      });
     });
 
-    function loadPlanningPatients() {
+    function getPlanningPatientsRaw() {
       const key = `appointments_${currentBranch}`;
       const appts = JSON.parse(localStorage.getItem(key) || '[]');
-      const tableBody = document.getElementById('patientTableBody');
-      const noResults = document.getElementById('noResults');
-
-      // Filter
-      const planningPatients = appts.filter(a => {
+      return appts.filter(a => {
         const phase = a.currentPhase || '';
         return phase.includes('Phase 1') && phase.includes('Completed') ||
           phase.includes('Phase 2');
       });
+    }
 
-      if (planningPatients.length === 0) {
+    function performSearch() {
+      const raw = getPlanningPatientsRaw();
+      const nameQuery = document.getElementById('nameSearch').value.trim().toLowerCase();
+      const dateValue = document.getElementById('searchDate').value;
+
+      const filtered = raw.filter(p => {
+        let matchName = true;
+        let matchDate = true;
+
+        if (nameQuery) {
+          matchName = (p.name || '').toLowerCase().includes(nameQuery); // Lenient match for search button
+        }
+        if (dateValue) {
+          matchDate = (p.date === dateValue);
+        }
+        return matchName && matchDate;
+      });
+
+      renderTable(filtered);
+    }
+
+    function renderTable(patients) {
+      const tableBody = document.getElementById('patientTableBody');
+      const noResults = document.getElementById('noResults');
+
+      if (patients.length === 0) {
         noResults.style.display = 'block';
         tableBody.innerHTML = '';
       } else {
         noResults.style.display = 'none';
-        tableBody.innerHTML = planningPatients.map(p => {
+        tableBody.innerHTML = patients.map(p => {
           const phase = p.currentPhase || 'Phase 2 (Planning)';
           const isCompleted = phase.includes('Completed');
           const badgeClass = isCompleted ? 'phase-badge phase-completed' : 'phase-badge';
@@ -473,6 +665,11 @@
                     `;
         }).join('');
       }
+    }
+
+    function loadPlanningPatients() {
+      // Wrapper to just call search with empty filters initially
+      performSearch();
     }
 
     function openPatient(id) {

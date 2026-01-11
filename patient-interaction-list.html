@@ -144,6 +144,109 @@
             letter-spacing: 0.5px;
         }
 
+        /* Search Section */
+        .search-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: var(--card-radius);
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--glass-shadow);
+            border: var(--glass-border);
+        }
+
+        .search-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr auto;
+            gap: 20px;
+            align-items: end;
+        }
+
+        .search-group {
+            position: relative;
+        }
+
+        .search-label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 14px 20px;
+            border: 2px solid #e0e6ed;
+            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(20, 191, 206, 0.1);
+        }
+
+        .search-btn {
+            padding: 14px 30px;
+            background: linear-gradient(135deg, #14bfce, #0e9aa7);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(20, 191, 206, 0.3);
+        }
+
+        /* Autocomplete */
+        .autocomplete-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid var(--primary-color);
+            border-radius: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-top: 5px;
+            display: none;
+        }
+
+        .autocomplete-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .autocomplete-item:hover {
+            background: rgba(20, 191, 206, 0.1);
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 768px) {
+            .search-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+
         /* Main Layout */
         .list-main {
             margin-top: 120px;
@@ -391,6 +494,25 @@
     <main class="list-main">
         <h1 class="page-title">Interaction Phase <span style="font-weight:300; opacity:0.7;">| Patient List</span></h1>
 
+        <!-- Search Section -->
+        <div class="search-section">
+            <div class="search-grid">
+                <div class="search-group">
+                    <label class="search-label">Date</label>
+                    <input type="date" id="searchDate" class="search-input">
+                </div>
+
+                <div class="search-group">
+                    <label class="search-label">Patient Name</label>
+                    <input type="text" id="nameSearch" class="search-input" placeholder="Type patient name..."
+                        autocomplete="off">
+                    <div id="nameSuggestions" class="autocomplete-results"></div>
+                </div>
+
+                <button class="search-btn" onclick="performSearch()">Search</button>
+            </div>
+        </div>
+
         <div class="list-container">
             <table class="list-table">
                 <thead>
@@ -432,19 +554,117 @@
 
             const key = `appointments_${branch}`;
             const list = JSON.parse(localStorage.getItem(key) || '[]');
-            const tbody = document.getElementById('listBody');
-            const noRes = document.getElementById('noResults');
 
-            // Filter for Interaction phases
-            const filtered = list.filter(p => {
+            // Expose list for helper functions
+            window.allPatientsRaw = list;
+
+            // Initial Load
+            performSearch();
+
+            // Setup Autocomplete
+            const nameInput = document.getElementById('nameSearch');
+            const nameSuggestions = document.getElementById('nameSuggestions');
+
+            nameInput.addEventListener('input', function () {
+                const query = nameInput.value.trim().toLowerCase();
+                if (query.length < 2) {
+                    nameSuggestions.style.display = 'none';
+                    nameSuggestions.innerHTML = '';
+                    return;
+                }
+
+                const interactionPatients = getInteractionPatientsRaw();
+                const matches = interactionPatients
+                    .filter(p => (p.name || '').toLowerCase().includes(query))
+                    .slice(0, 8);
+
+                if (!matches.length) {
+                    nameSuggestions.style.display = 'none';
+                    nameSuggestions.innerHTML = '';
+                    return;
+                }
+
+                nameSuggestions.innerHTML = matches.map(p => `
+                  <div class="autocomplete-item" data-name="${p.name}">
+                    ${p.name} (${p.age || 'N/A'}, ${p.sex || 'N/A'})
+                  </div>
+                `).join('');
+                nameSuggestions.style.display = 'block';
+            });
+
+            nameSuggestions.addEventListener('click', function (e) {
+                const item = e.target.closest('.autocomplete-item');
+                if (!item) return;
+                const fullName = item.getAttribute('data-name');
+                nameInput.value = fullName;
+                nameSuggestions.style.display = 'none';
+                nameSuggestions.innerHTML = '';
+                performSearch();
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!nameSuggestions.contains(e.target) && e.target !== nameInput) {
+                    nameSuggestions.style.display = 'none';
+                }
+            });
+
+            window.openPatient = function (id) {
+                const found = list.find(a => (a.bookingId || '') == id);
+                if (found) {
+                    localStorage.setItem('currentPatient', JSON.stringify(found));
+                    document.body.style.opacity = '0';
+                    document.body.style.transition = 'opacity 0.4s ease';
+                    setTimeout(() => {
+                        window.location.href = 'patient-interaction.html';
+                    }, 400);
+                }
+            };
+        });
+
+        // Helper Functions outside DOMContentLoaded or attached to window if needed for onclick
+        function getInteractionPatientsRaw() {
+            // Re-fetch or use window.allPatientsRaw
+            const branch = localStorage.getItem('branch') || 'General';
+            const key = `appointments_${branch}`;
+            const list = JSON.parse(localStorage.getItem(key) || '[]');
+
+            return list.filter(p => {
                 const ph = (p.currentPhase || '');
                 return ph.includes('Interaction') || ph.includes('Phase 3') || ph.includes('Phase 4') || ph.includes('Phase 5') || ph.includes('Completed');
             });
+        }
 
-            if (!filtered.length) {
+        window.performSearch = function () {
+            const raw = getInteractionPatientsRaw();
+            const nameQuery = document.getElementById('nameSearch').value.trim().toLowerCase();
+            const dateValue = document.getElementById('searchDate').value;
+
+            const filtered = raw.filter(p => {
+                let matchName = true;
+                let matchDate = true;
+
+                if (nameQuery) {
+                    matchName = (p.name || '').toLowerCase().includes(nameQuery);
+                }
+                if (dateValue) {
+                    matchDate = (p.date === dateValue);
+                }
+                return matchName && matchDate;
+            });
+
+            renderTable(filtered);
+        }
+
+        function renderTable(patients) {
+            const tbody = document.getElementById('listBody');
+            const noRes = document.getElementById('noResults');
+
+            if (patients.length === 0) {
                 noRes.style.display = 'block';
+                tbody.innerHTML = '';
             } else {
-                tbody.innerHTML = filtered.map(p => `
+                noRes.style.display = 'none';
+                tbody.innerHTML = patients.map(p => `
                     <tr onclick="openPatient('${p.bookingId}')">
                         <td class="id-cell">${p.bookingId}</td>
                         <td style="font-weight: 500;">${p.name}</td>
@@ -454,20 +674,7 @@
                     </tr>
                 `).join('');
             }
-
-            window.openPatient = function (id) {
-                const found = list.find(a => (a.bookingId || '') == id);
-                if (found) {
-                    localStorage.setItem('currentPatient', JSON.stringify(found));
-                    // Add smooth transition effect before navigating
-                    document.body.style.opacity = '0';
-                    document.body.style.transition = 'opacity 0.4s ease';
-                    setTimeout(() => {
-                        window.location.href = 'patient-interaction.html';
-                    }, 400);
-                }
-            };
-        });
+        }
     </script>
 </body>
 
