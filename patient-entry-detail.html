@@ -485,6 +485,131 @@
         height: 60px;
       }
     }
+
+    /* Share Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(5px);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .share-modal {
+      background: rgba(255, 255, 255, 0.95);
+      width: 500px;
+      max-width: 90%;
+      padding: 30px;
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #2c3e50;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #95a5a6;
+      transition: color 0.2s;
+    }
+
+    .close-btn:hover {
+      color: #2c3e50;
+    }
+
+    .link-container {
+      display: flex;
+      gap: 10px;
+      background: #f1f3f5;
+      padding: 10px;
+      border-radius: 12px;
+      border: 1px solid #e0e6ed;
+    }
+
+    .link-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+      color: #2c3e50;
+      outline: none;
+    }
+
+    .copy-btn-modal {
+      background: #14bfce;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .copy-btn-modal:hover {
+      background: #0e9aa7;
+    }
+
+    .share-actions {
+      display: flex;
+      gap: 15px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .action-chip {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #eee;
+      background: white;
+      text-align: center;
+      cursor: pointer;
+      font-weight: 600;
+      color: #2c3e50;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .action-chip:hover {
+      background: #f8f9fa;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
   </style>
 </head>
 
@@ -644,19 +769,50 @@
     let activeUploads = {};
     let buttonUploadCounts = new Map(); // Fix race conditions
 
-    // New Function to Generate Link
+    // Share Modal Functions
     function generateUploadLink() {
+      openShareModal();
+    }
+
+    function openShareModal() {
       if (!currentPatient || !currentPatient.bookingId) return;
-
       const baseUrl = window.location.protocol + '//' + window.location.host + window.location.pathname;
-      const link = `${baseUrl}?patientId=${currentPatient.bookingId}&mode=upload&branch=LIVIDUS ALIGN`;
+      // Ensure we use the correct branch in the link
+      const branch = localStorage.getItem('branch') || 'LIVIDUS ALIGN';
+      const link = `${baseUrl}?patientId=${currentPatient.bookingId}&mode=upload&branch=${encodeURIComponent(branch)}`;
 
-      navigator.clipboard.writeText(link).then(() => {
-        alert('Upload Link Copied to Clipboard!\n\nShare this link to allow uploading files specifically for this patient.');
-      }).catch(err => {
-        console.error('Failed to copy', err);
-        prompt('Copy this link:', link);
+      document.getElementById('shareLinkInput').value = link;
+      document.getElementById('sharePatientName').textContent = currentPatient.name || 'Patient';
+      document.getElementById('shareModal').style.display = 'flex';
+    }
+
+    function closeShareModal() {
+      document.getElementById('shareModal').style.display = 'none';
+    }
+
+    function copyFromModal() {
+      const input = document.getElementById('shareLinkInput');
+      input.select();
+      input.setSelectionRange(0, 99999);
+      navigator.clipboard.writeText(input.value).then(() => {
+        const btn = document.querySelector('.copy-btn-modal');
+        const old = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = old, 2000);
       });
+    }
+
+    function shareViaWhatsApp() {
+      const link = document.getElementById('shareLinkInput').value;
+      const text = `Please upload files for patient ${currentPatient.name || ''} here: ${link}`;
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    }
+
+    function shareViaEmail() {
+      const link = document.getElementById('shareLinkInput').value;
+      const subject = `Upload Request: ${currentPatient.name || ''}`;
+      const body = `Please upload the necessary files for patient ${currentPatient.name || ''} using this secure link:\n\n${link}`;
+      window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
     }
 
     document.addEventListener('DOMContentLoaded', async function () {
@@ -675,7 +831,17 @@
         // Hide Header and optimize UI for Upload Only
         document.querySelector('.page-header').style.display = 'none';
         document.querySelector('.main-container').style.marginTop = '20px'; // Reduce top margin
-        document.getElementById('saveNextContainer').style.display = 'none';
+
+        // Adjust Save Button for Submit (Don't hide it)
+        const saveContainer = document.getElementById('saveNextContainer');
+        if (saveContainer) {
+          saveContainer.style.display = 'block';
+          const saveBtn = saveContainer.querySelector('button');
+          if (saveBtn) saveBtn.innerHTML = '<svg width="35" height="35" viewBox="0 0 35 35"><polyline points="9 11 20 22 23 8" fill="none" stroke="white" stroke-width="3" /></svg>';
+          const label = saveContainer.querySelector('.btn-label');
+          if (label) label.textContent = 'Submit Uploads';
+        }
+
         document.querySelector('.btn-back').onclick = () => window.close(); // Changes back to close
         document.querySelector('.btn-back').nextElementSibling.textContent = 'Close';
 
@@ -1128,6 +1294,12 @@
             newPhase = currentStatus; // Keep more advanced status
           }
 
+          // FORCE PROGRESSION FOR SHARE LINK UPLOADS
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.get('mode') === 'upload') {
+            newPhase = 'Phase 2 (Planning) - Ready';
+          }
+
           updatedPatientData = {
             ...appt,
             chiefComplaint: document.getElementById('chiefComplaint').value,
@@ -1164,10 +1336,59 @@
         }
       }
 
-      alert('Phase 1 data saved successfully!\n\nYou can now proceed to Planning phase when ready.');
-      window.location.href = 'patient-entry.html';
+      // Check for upload mode to show success screen instead of redirect
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('mode') === 'upload') {
+        // Success Screen
+        document.body.innerHTML = `
+            <div style="height:100vh; display:flex; align-items:center; justify-content:center; flex-direction:column; background:#f4f7f6; font-family:'Montserrat'; text-align:center;">
+                <div style="font-size: 5rem; margin-bottom: 20px;">✅</div>
+                <h1 style="color: #2c3e50; margin-bottom: 10px;">Uploads Submitted Successfully!</h1>
+                <p style="color: #7f8c8d; font-size: 1.2rem; max-width: 600px;">The patient files have been securely saved and the case has been moved to the Planning Phase.</p>
+                <button onclick="window.close()" style="margin-top: 40px; padding: 15px 40px; background: #2c3e50; color: white; border: none; border-radius: 50px; font-weight: 600; cursor: pointer; font-size:1.1rem;">Close Window</button>
+            </div>
+          `;
+      } else {
+        alert('Phase 1 data saved successfully!\n\nYou can now proceed to Planning phase when ready.');
+        window.location.href = 'patient-entry.html';
+      }
     }
   </script>
+  <!-- Share Link Modal -->
+  <div id="shareModal" class="modal-overlay">
+    <div class="share-modal">
+      <div class="modal-header">
+        <div class="modal-title">Share Upload Link</div>
+        <button class="close-btn" onclick="closeShareModal()">&times;</button>
+      </div>
+
+      <div style="margin-bottom: 15px; text-align: center;">
+        <span
+          style="background: rgba(20, 191, 206, 0.1); color: #14bfce; padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">
+          🔗 Secure Upload Portal
+        </span>
+      </div>
+
+      <p style="font-size: 0.9rem; color: #7f8c8d; text-align: center; margin-bottom: 5px;">
+        Share this link with external doctors to allow them to upload files for <strong><span
+            id="sharePatientName"></span></strong>.
+      </p>
+
+      <div class="link-container">
+        <input type="text" id="shareLinkInput" class="link-input" readonly>
+        <button class="copy-btn-modal" onclick="copyFromModal()">Copy</button>
+      </div>
+
+      <div class="share-actions">
+        <button class="action-chip" onclick="shareViaWhatsApp()">
+          <span>💬</span> WhatsApp
+        </button>
+        <button class="action-chip" onclick="shareViaEmail()">
+          <span>✉️</span> Email
+        </button>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>
