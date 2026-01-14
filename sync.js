@@ -39,7 +39,7 @@ const SyncUtil = {
         this.isSyncing = true;
         console.log('Pushing data to cloud...');
 
-        const branches = ['X3DENTAL', 'BANGALORE', 'General', 'BRANCH']; // Common branch keys
+        const branches = ['X3DENTAL', 'BANGALORE', 'General', 'BRANCH', 'LIVIDUS ALIGN']; // Common branch keys
         const allLocalData = {};
 
         // Collect all appointments from all branches in localStorage
@@ -108,7 +108,7 @@ const SyncUtil = {
 
             // Update LocalStorage for EVERY branch (Strict Mirror)
             // If cloud is empty, local must be empty.
-            const knownKeys = ['appointments_X3DENTAL', 'appointments_BANGALORE', 'appointments_General', 'appointments_BRANCH'];
+            const knownKeys = ['appointments_X3DENTAL', 'appointments_BANGALORE', 'appointments_General', 'appointments_BRANCH', 'appointments_LIVIDUS ALIGN'];
 
             knownKeys.forEach(key => {
                 const data = cloudBranchGroups[key] || [];
@@ -201,7 +201,7 @@ const SyncUtil = {
      * Resets local data to start fresh (for new branch setup)
      */
     async resetLocal() {
-        const branches = ['X3DENTAL', 'BANGALORE', 'General', 'BRANCH'];
+        const branches = ['X3DENTAL', 'BANGALORE', 'General', 'BRANCH', 'LIVIDUS ALIGN'];
         branches.forEach(b => {
             localStorage.removeItem(`appointments_${b}`);
         });

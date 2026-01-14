@@ -880,8 +880,19 @@
         if (foundPatient) {
           currentPatient = foundPatient;
         } else {
-          alert('Patient data not found or access denied.');
-          //  return; // Allow to continue to see if something loads fallback
+          // FALLBACK: Try direct API fetch for isolated sharing scenarios
+          try {
+            const res = await fetch(`/api/patient/${paramPatientId}`);
+            if (res.ok) {
+              currentPatient = await res.json();
+              if (currentPatient.branch) branch = currentPatient.branch;
+            } else {
+              throw new Error('Not found');
+            }
+          } catch (err) {
+            alert('Patient data not found or access denied.');
+            return;
+          }
         }
 
       } else {
