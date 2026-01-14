@@ -776,7 +776,13 @@
 
     function openShareModal() {
       if (!currentPatient || !currentPatient.bookingId) return;
-      const baseUrl = window.location.protocol + '//' + window.location.host + window.location.pathname;
+
+      let baseUrl = window.location.protocol + '//' + window.location.host + window.location.pathname;
+      // Force Production URL if not already on it (fixes localhost sharing issue)
+      if (!window.location.hostname.includes('x3dmanagement.com')) {
+        baseUrl = 'http://x3dmanagement.com:3000' + window.location.pathname;
+      }
+
       // Ensure we use the correct branch in the link
       const branch = localStorage.getItem('branch') || 'LIVIDUS ALIGN';
       const link = `${baseUrl}?patientId=${currentPatient.bookingId}&mode=upload&branch=${encodeURIComponent(branch)}`;
