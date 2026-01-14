@@ -614,7 +614,19 @@
           <div class="btn-label">Cancel</div>
         </div>
 
-        <div style="text-align: center;">
+        <div style="text-align: center;" id="shareLinkContainer" style="display: none;">
+          <button type="button" class="action-btn btn-share" style="background: #9b59b6;"
+            onclick="generateUploadLink()">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+              <polyline points="16 6 12 2 8 6"></polyline>
+              <line x1="12" y1="2" x2="12" y2="15"></line>
+            </svg>
+          </button>
+          <div class="btn-label">Share Link</div>
+        </div>
+
+        <div style="text-align: center;" id="saveNextContainer">
           <button type="submit" class="action-btn btn-save-next">
             <svg width="35" height="35" viewBox="0 0 35 35">
               <polyline points="8,18 15,25 27,10" fill="none" stroke="white" stroke-width="3" />
@@ -632,30 +644,114 @@
     let activeUploads = {};
     let buttonUploadCounts = new Map(); // Fix race conditions
 
+    // New Function to Generate Link
+    function generateUploadLink() {
+      if (!currentPatient || !currentPatient.bookingId) return;
+
+      const baseUrl = window.location.protocol + '//' + window.location.host + window.location.pathname;
+      const link = `${baseUrl}?patientId=${currentPatient.bookingId}&mode=upload&branch=LIVIDUS ALIGN`;
+
+      navigator.clipboard.writeText(link).then(() => {
+        alert('Upload Link Copied to Clipboard!\n\nShare this link to allow uploading files specifically for this patient.');
+      }).catch(err => {
+        console.error('Failed to copy', err);
+        prompt('Copy this link:', link);
+      });
+    }
+
     document.addEventListener('DOMContentLoaded', async function () {
-      const branch = localStorage.getItem('branch') || 'BRANCH';
-      document.getElementById('branch-display').textContent = branch;
+      const urlParams = new URLSearchParams(window.location.search);
+      const mode = urlParams.get('mode');
+      const paramPatientId = urlParams.get('patientId');
+      const paramBranch = urlParams.get('branch');
 
-      // Pull from cloud to ensure latest data
-      await SyncUtil.pullAll();
+      let branch = localStorage.getItem('branch');
 
-      // Permission Check - Hide Book Appointment for non-admin users
+      // Handling Share Mode
+      if (mode === 'upload' && paramPatientId) {
+        // Enforce branch if provided
+        if (paramBranch) branch = paramBranch; // Override specific branch for this view
+
+        // Hide Header and optimize UI for Upload Only
+        document.querySelector('.page-header').style.display = 'none';
+        document.querySelector('.main-container').style.marginTop = '20px'; // Reduce top margin
+        document.getElementById('saveNextContainer').style.display = 'none';
+        document.querySelector('.btn-back').onclick = () => window.close(); // Changes back to close
+        document.querySelector('.btn-back').nextElementSibling.textContent = 'Close';
+
+        // Hide specific personal info if needed, but for now keeping it so uploader knows context
+
+        // Attempt to fetch patient data from Server since LocalStorage might be empty
+        // We'll rely on SyncUtil to pull data first
+        await SyncUtil.pullAll();
+
+        // Find patient in "appointments_BRANCH" or general pool
+        // Since we are in a "mode", we might not have the correct branch set in localStorage
+        // So we need to look through available data.
+
+        // Try to find patient from the synced data
+        let foundPatient = null;
+        const potentialBranches = [branch, 'LIVIDUS ALIGN', 'X3DENTAL', 'X3DENTALS'];
+
+        for (const b of potentialBranches) {
+          if (!b) continue;
+          const key = `appointments_${b}`;
+          const list = JSON.parse(localStorage.getItem(key) || '[]');
+          const p = list.find(x => x.bookingId === paramPatientId);
+          if (p) {
+            foundPatient = p;
+            localStorage.setItem('branch', b); // Set context
+            break;
+          }
+        }
+
+        if (foundPatient) {
+          currentPatient = foundPatient;
+        } else {
+          alert('Patient data not found or access denied.');
+          //  return; // Allow to continue to see if something loads fallback
+        }
+
+      } else {
+        // Normal Mode
+        branch = localStorage.getItem('branch') || 'BRANCH';
+
+        // Pull from cloud to ensure latest data
+        await SyncUtil.pullAll();
+
+        const raw = localStorage.getItem('currentPatient');
+        if (!raw) {
+          alert('No patient selected. Redirecting to Entry page.');
+          window.location.href = 'patient-entry.html';
+          return;
+        }
+        currentPatient = JSON.parse(raw);
+      }
+
+      document.getElementById('branch-display').textContent = branch || 'BRANCH';
+
+      // SHOW/HIDE Share Button Logic
+      const shareBtn = document.getElementById('shareLinkContainer');
+      if (branch === 'LIVIDUS ALIGN') {
+        shareBtn.style.display = 'block';
+      } else {
+        shareBtn.style.display = 'none';
+      }
+
+      // Permission Check - Hide Book Appointment for non-admin users if NOT in upload mode
       const role = localStorage.getItem('role') || 'User';
-      if (role !== 'ADMINISTRATOR') {
+      if (role !== 'ADMINISTRATOR' && mode !== 'upload') {
         const bookAppointmentLink = document.querySelector('a[href="book-appointment.html"]');
         if (bookAppointmentLink) {
           bookAppointmentLink.style.display = 'none';
         }
       }
 
-      const raw = localStorage.getItem('currentPatient');
-      if (!raw) {
-        alert('No patient selected. Redirecting to Entry page.');
-        window.location.href = 'patient-entry.html';
+      if (!currentPatient) {
+        // Fallback if still null
         return;
       }
 
-      currentPatient = JSON.parse(raw);
 
       // Fill patient info
       document.getElementById('uniqueId').textContent = currentPatient.bookingId || '-';

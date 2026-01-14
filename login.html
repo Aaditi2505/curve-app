@@ -140,6 +140,7 @@
             line-height: 1.2;
             text-align: center;
             background: linear-gradient(45deg, #2c3e50, #14bfce);
+            background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -418,6 +419,14 @@
                     role = 'ADMINISTRATOR';
                     isValid = true;
                 } else if (user.toLowerCase() === 'user' && (pass === 'x3dental123' || pass === 'x3dentals123')) {
+                    role = 'USER';
+                    isValid = true;
+                }
+            } else if (selectedBranch === 'LIVIDUS ALIGN') {
+                if (user.toLowerCase() === 'admin' && pass === 'lividus123') {
+                    role = 'ADMINISTRATOR';
+                    isValid = true;
+                } else if (user.toLowerCase() === 'user' && pass === 'lividus345') {
                     role = 'USER';
                     isValid = true;
                 }
