@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cleanup Duplicates | X3D DENTAL</title>
+    <title>Cleanup Duplicates | x3dental</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -82,7 +82,7 @@
 
     <script>
         function checkDuplicates() {
-            const branch = localStorage.getItem('branch') || 'X3DENTAL';
+            const branch = localStorage.getItem('branch') || 'x3dental';
             const key = `appointments_${branch}`;
             const appointments = JSON.parse(localStorage.getItem(key) || '[]');
 
@@ -120,7 +120,7 @@
                 return;
             }
 
-            const branch = localStorage.getItem('branch') || 'X3DENTAL';
+            const branch = localStorage.getItem('branch') || 'x3dental';
             const key = `appointments_${branch}`;
             const appointments = JSON.parse(localStorage.getItem(key) || '[]');
 
