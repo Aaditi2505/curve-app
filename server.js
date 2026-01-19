@@ -160,7 +160,7 @@ app.delete('/api/branch/:name', (req, res) => {
 
       // Flexible matching for X3D
       const isX3D = (targetBranch.includes('X3D') && apptBranch.includes('X3D')) ||
-        (targetBranch.includes('X3D') && apptBranch.includes('CHENNAI'));
+        (targetBranch.includes('X3D') && apptBranch.includes('CHENNAI') || apptBranch.includes('COIMBATORE'));
 
       const isExact = apptBranch === targetBranch;
 
@@ -179,6 +179,27 @@ app.delete('/api/branch/:name', (req, res) => {
     res.status(500).json({ error: 'Failed to wipe branch.' });
   }
 });
+
+// STARTUP CLEANER (One-time auto-wipe for specific ghost records)
+if (fs.existsSync(DB_FILE)) {
+  try {
+    let db = JSON.parse(fs.readFileSync(DB_FILE));
+    let changes = false;
+    Object.keys(db).forEach(k => {
+      const p = db[k];
+      // Kill specific names or old X3D records (IDs 0001, 0002 etc if they are old)
+      if (p.name && (p.name.toLowerCase().includes('previn') || p.name.toLowerCase().includes('unni') || p.name.toLowerCase().includes('unique'))) {
+        console.log(`[STARTUP CLEANER] Removing ghost record: ${p.name} (${k})`);
+        delete db[k];
+        changes = true;
+      }
+    });
+    if (changes) {
+      fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+      console.log('[STARTUP CLEANER] Ghost records removed successfully.');
+    }
+  } catch (e) { console.error('Startup clean failed', e); }
+}
 app.get('/api/config', (req, res) => {
   res.json({
     ip: getLocalIp(),
