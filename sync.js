@@ -281,7 +281,7 @@ window.addEventListener('load', () => {
  * UTILITY: Scrub specific ghost records client-side
  */
 SyncUtil.scrubGhosts = function () {
-    const ghosts = ['previn', 'unni', 'unique'];
+    const ghosts = ['previn', 'unni', 'unique', 'praveen'];
     let cleaned = false;
 
     for (let i = 0; i < localStorage.length; i++) {
