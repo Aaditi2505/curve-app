@@ -11,7 +11,19 @@ const SyncUtil = {
     init() {
         if (localStorage.getItem('DATA_VERSION') !== this.DATA_VERSION) {
             console.warn('Version Mismatch: Clearing Local Data to ensure clean slate.');
+
+            // PRESERVE SESSION KEYS
+            const role = localStorage.getItem('role');
+            const branch = localStorage.getItem('branch');
+            const loggedIn = localStorage.getItem('loggedIn');
+
             localStorage.clear();
+
+            // RESTORE SESSION KEYS
+            if (role) localStorage.setItem('role', role);
+            if (branch) localStorage.setItem('branch', branch);
+            if (loggedIn) localStorage.setItem('loggedIn', loggedIn);
+
             localStorage.setItem('DATA_VERSION', this.DATA_VERSION);
             if (!localStorage.getItem('branch')) {
                 localStorage.setItem('branch', 'X3D DENTAL');
@@ -241,11 +253,12 @@ const SyncUtil = {
 
 // Auto-Sync and Migration on load
 window.addEventListener('load', () => {
-    // 0. Check Version & Force Clear if needed
+    // 0. Check Version & Force Clear if needed (Preserving Session)
     SyncUtil.init();
 
-    // 1. Run local migration
+    // 1. Run local migration & Scrub Ghosts
     SyncUtil.migrateData();
+    SyncUtil.scrubGhosts(); // <--- NEW: Client-side killer for Previn/Unni
 
     // 2. Pull from cloud if on dashboard or other management pages
     const path = window.location.pathname;
@@ -253,10 +266,45 @@ window.addEventListener('load', () => {
         path.includes('check-appointment.html') ||
         path.includes('patient-entry.html') ||
         path.includes('patient-planning-list.html') ||
-        path.includes('patient-interaction-list.html')) {
+        path.includes('patient-interaction-list.html') ||
+        path.includes('book-appointment.html')) { // added book-appointment to ensure ID sync
 
         SyncUtil.pullAll().then(() => {
             if (typeof updateStats === 'function') updateStats();
+            // Re-run booking ID update if on booking page
+            if (typeof updateBookingId === 'function') updateBookingId();
         });
     }
 });
+
+/**
+ * UTILITY: Scrub specific ghost records client-side
+ */
+SyncUtil.scrubGhosts = function () {
+    const ghosts = ['previn', 'unni', 'unique'];
+    let cleaned = false;
+
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('appointments_')) {
+            let data = JSON.parse(localStorage.getItem(key) || '[]');
+            const initialLen = data.length;
+
+            // Filter out ghosts by name (case insensitive)
+            data = data.filter(item => {
+                const name = (item.name || '').toLowerCase();
+                return !ghosts.some(g => name.includes(g));
+            });
+
+            if (data.length !== initialLen) {
+                console.log(`[GhostBuster] Removed ${initialLen - data.length} records from ${key}`);
+                localStorage.setItem(key, JSON.stringify(data));
+                cleaned = true;
+            }
+        }
+    }
+
+    if (cleaned) {
+        console.log('Ghost records removed from local storage.');
+    }
+};
