@@ -6,7 +6,7 @@
 
 const SyncUtil = {
     // Force Clear Data Version - Change this to wipe all clients
-    DATA_VERSION: 'STABILIZE_2026_01_19_FIX',
+    DATA_VERSION: 'RESET_X3D_2026_START',
 
     init() {
         if (localStorage.getItem('DATA_VERSION') !== this.DATA_VERSION) {
@@ -215,6 +215,21 @@ const SyncUtil = {
         localStorage.removeItem('currentPatient');
         console.log('Local data reset complete.');
         return { success: true };
+    },
+
+    /**
+     * WINES entire branch data from server (Dangerous - Admin only)
+     */
+    async resetBranch(branchName) {
+        try {
+            const res = await fetch(`/api/branch/${encodeURIComponent(branchName)}`, {
+                method: 'DELETE'
+            });
+            return await res.json();
+        } catch (e) {
+            console.error('Reset branch failed:', e);
+            return { success: false, error: e.message };
+        }
     }
 };
 

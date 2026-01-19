@@ -138,6 +138,47 @@ app.delete('/api/patient/:id', (req, res) => {
     res.status(500).json({ error: 'Failed to delete patient on server.' });
   }
 });
+
+// Helper to delete ENTIRE BRANCH (Reset)
+app.delete('/api/branch/:name', (req, res) => {
+  const { name } = req.params;
+  if (!fs.existsSync(DB_FILE)) return res.json({ success: true, count: 0 });
+
+  try {
+    let db = JSON.parse(fs.readFileSync(DB_FILE));
+    const initialCount = Object.keys(db).length;
+
+    // Filter out entries belonging to this branch
+    // Check both exact branch name and normalized versions
+    const newDb = {};
+    let deletedCount = 0;
+
+    Object.keys(db).forEach(key => {
+      const appt = db[key];
+      const apptBranch = (appt.branch || '').toUpperCase();
+      const targetBranch = name.toUpperCase();
+
+      // Flexible matching for X3D
+      const isX3D = (targetBranch.includes('X3D') && apptBranch.includes('X3D')) ||
+        (targetBranch.includes('X3D') && apptBranch.includes('CHENNAI'));
+
+      const isExact = apptBranch === targetBranch;
+
+      if (isX3D || isExact) {
+        deletedCount++;
+      } else {
+        newDb[key] = appt;
+      }
+    });
+
+    fs.writeFileSync(DB_FILE, JSON.stringify(newDb, null, 2));
+    res.json({ success: true, deleted: deletedCount, remaining: Object.keys(newDb).length });
+
+  } catch (e) {
+    console.error('Error wiping branch:', e);
+    res.status(500).json({ error: 'Failed to wipe branch.' });
+  }
+});
 app.get('/api/config', (req, res) => {
   res.json({
     ip: getLocalIp(),
