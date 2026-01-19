@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Reset Tool</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: #f0f0f0;
+        }
+
+        button {
+            padding: 20px 40px;
+            font-size: 20px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #c0392b;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>⚠️ EMERGENCY RESET TOOL ⚠️</h1>
+    <p>This will delete ALL data for X3D DENTAL from the server.</p>
+    <p>Booking IDs will restart from 0001.</p>
+
+    <button onclick="resetBranch()">RESET X3D DATA NOW</button>
+
+    <div id="status"></div>
+
+    <script>
+        async function resetBranch() {
+            if (!confirm('ARE YOU SURE? This cannot be undone.')) return;
+
+            const btn = document.querySelector('button');
+            const status = document.getElementById('status');
+
+            btn.disabled = true;
+            btn.innerText = 'Wiping...';
+
+            try {
+                const res = await fetch('/api/branch/X3D%20DENTAL', { method: 'DELETE' });
+                const data = await res.json();
+
+                if (data.success) {
+                    status.innerText = `SUCCESS! Deleted ${data.deleted} records. Remaining: ${data.remaining}.`;
+                    status.style.color = 'green';
+                    alert('Reset Complete. You can now start booking from 0001.');
+                } else {
+                    status.innerText = 'Failed: ' + (data.error || 'Unknown error');
+                    status.style.color = 'red';
+                }
+            } catch (e) {
+                status.innerText = 'Error: ' + e.message;
+                status.style.color = 'red';
+            }
+
+            btn.disabled = false;
+            btn.innerText = 'RESET X3D DATA NOW';
+        }
+    </script>
+</body>
+
+</html>
