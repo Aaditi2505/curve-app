@@ -6,13 +6,12 @@
 
 const SyncUtil = {
     // Force Clear Data Version - Change this to wipe all clients
-    DATA_VERSION: 'RESET_X3D_2026_START',
+    DATA_VERSION: 'RESET_X3D_2026_FINAL_WIPE',
 
     init() {
         if (localStorage.getItem('DATA_VERSION') !== this.DATA_VERSION) {
             console.warn('Version Mismatch: Clearing Local Data to ensure clean slate.');
-            // Only clear if absolutely necessary. For now, let's just update version to avoid data loss.
-            // localStorage.clear(); 
+            localStorage.clear();
             localStorage.setItem('DATA_VERSION', this.DATA_VERSION);
             if (!localStorage.getItem('branch')) {
                 localStorage.setItem('branch', 'X3D DENTAL');
@@ -90,9 +89,16 @@ const SyncUtil = {
             const response = await fetch('/api/patients');
             const cloudData = await response.json();
 
+            // Handle empty cloud data - Reset local if cloud is explicitly empty
             if (!cloudData || typeof cloudData !== 'object' || Object.keys(cloudData).length === 0) {
                 this.isSyncing = false;
-                console.log('Cloud is empty or invalid. Keeping local data.');
+                console.log('Cloud is empty. Clearing relevant local branches to wrap up reset.');
+
+                // Clear the main branches if cloud is empty
+                ['X3D DENTAL', 'LIVIDUS ALIGN'].forEach(branch => {
+                    localStorage.removeItem(`appointments_${branch}`);
+                });
+
                 return { success: true, count: 0 };
             }
 
@@ -121,7 +127,7 @@ const SyncUtil = {
                 const key = `appointments_${branch}`;
                 const data = cloudBranchGroups[key] || [];
                 // Mirror logic: If we have data from cloud for this branch, we update local.
-                // We only do this if we actually received data for this branch or if we want to confirm it's empty.
+                // If cloud has 0 entries for this branch, this will effectively clear it (set to []), which is what we want.
                 localStorage.setItem(key, JSON.stringify(data));
             });
 
