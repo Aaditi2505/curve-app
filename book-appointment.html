@@ -827,7 +827,7 @@
       <!-- DELETE APPOINTMENT SECTION -->
       <div id="section-delete" class="section-content hidden">
         <h2 class="content-title">Delete Appointments</h2>
-        <p style="color: #7f8c8d; margin-bottom: 20px;">Showing appointments from the last 1 week</p>
+        <p style="color: #7f8c8d; margin-bottom: 20px;">Showing all patient records</p>
         <div class="appointments-list" id="deleteAppointmentsList"></div>
       </div>
     </div>
@@ -1231,16 +1231,7 @@
       const key = `appointments_${currentBranch}`;
       const allAppointments = JSON.parse(localStorage.getItem(key) || '[]');
 
-      // Filter last 1 week
-      const today = new Date();
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(today.getDate() - 7);
-
-      const filtered = allAppointments.filter(appt => {
-        if (!appt.date) return false;
-        const apptDate = new Date(appt.date);
-        return apptDate >= oneWeekAgo;
-      });
+      const filtered = allAppointments; // Show ALL appointments as requested by user
 
       renderAppointments(filtered, 'deleteAppointmentsList', true);
     }

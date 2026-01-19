@@ -16,7 +16,7 @@
     </header>
     <h2 class="appointment-title">DELETE APPOINTMENTS</h2>
     <div style="text-align: center; margin-top: -10px; color: #666; font-family: 'Montserrat', sans-serif;">
-        Showing appointments from the last 1 week
+        Showing all patient records
     </div>
     <main class="check-main">
         <!-- No Date Filter toolbar needed as per requirements (shows recent 1 week automatically) -->
@@ -26,28 +26,44 @@
         <button class="back-btn" onclick="window.location.href='book-appointment.html'">&#8592;</button>
     </main>
 
+    <script src="sync.js"></script>
     <script>
         // Define global function first
-        window.deleteAppt = function (id) {
+        window.deleteAppt = async function (id) {
             if (!confirm('Are you sure you want to delete this appointment?')) return;
 
-            const branch = localStorage.getItem('branch') || 'BRANCH';
-            const key = `appointments_${branch}`;
-            let allAppointments = JSON.parse(localStorage.getItem(key) || '[]');
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = 'Deleting...';
+            btn.disabled = true;
 
-            const initialLength = allAppointments.length;
-            // Filter using string comparison to be safe
-            allAppointments = allAppointments.filter(a => String(a.bookingId) !== String(id));
+            try {
+                // 1. Delete from Server first (Source of Truth)
+                const res = await SyncUtil.deletePatient(id);
 
-            if (allAppointments.length < initialLength) {
-                localStorage.setItem(key, JSON.stringify(allAppointments));
-                // Reload or re-render
-                // Since renderRecentAppointments is inside another scope, we might need to expose it or just reload page for simplicity
-                // Or dispatch an event. 
-                // Simplest: Reload the page to reflect changes.
-                window.location.reload();
-            } else {
-                alert("Could not find appointment to delete.");
+                if (res && (res.success || res.message)) {
+                    // 2. Delete from Local Storage
+                    const branch = localStorage.getItem('branch') || 'BRANCH';
+                    const key = `appointments_${branch}`;
+                    let allAppointments = JSON.parse(localStorage.getItem(key) || '[]');
+
+                    const initialLength = allAppointments.length;
+                    allAppointments = allAppointments.filter(a => String(a.bookingId) !== String(id));
+
+                    localStorage.setItem(key, JSON.stringify(allAppointments));
+
+                    // 3. Reload to refresh list
+                    window.location.reload();
+                } else {
+                    alert('Failed to delete from server. Please try again.');
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                }
+            } catch (e) {
+                console.error(e);
+                alert('An error due to connection. Please check internet.');
+                btn.innerText = originalText;
+                btn.disabled = false;
             }
         };
 
@@ -61,18 +77,7 @@
                 const key = `appointments_${branch}`;
                 const allAppointments = JSON.parse(localStorage.getItem(key) || '[]');
 
-                // Filter Last 1 Week
-                const today = new Date();
-                const oneWeekAgo = new Date();
-                oneWeekAgo.setDate(today.getDate() - 7);
-                oneWeekAgo.setHours(0, 0, 0, 0);
-
-                const filtered = allAppointments.filter(appt => {
-                    if (!appt.date) return false;
-                    const apptDate = new Date(appt.date);
-                    apptDate.setHours(0, 0, 0, 0);
-                    return apptDate >= oneWeekAgo;
-                });
+                const filtered = allAppointments; // Show ALL appointments as requested by user
 
                 filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
 

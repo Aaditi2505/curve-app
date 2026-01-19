@@ -6,15 +6,17 @@
 
 const SyncUtil = {
     // Force Clear Data Version - Change this to wipe all clients
-    DATA_VERSION: 'RESET_2026_01_04_V2',
+    DATA_VERSION: 'STABILIZE_2026_01_19_FIX',
 
     init() {
         if (localStorage.getItem('DATA_VERSION') !== this.DATA_VERSION) {
             console.warn('Version Mismatch: Clearing Local Data to ensure clean slate.');
-            localStorage.clear();
+            // Only clear if absolutely necessary. For now, let's just update version to avoid data loss.
+            // localStorage.clear(); 
             localStorage.setItem('DATA_VERSION', this.DATA_VERSION);
-            // Set default branch after clear
-            localStorage.setItem('branch', 'X3DENTAL');
+            if (!localStorage.getItem('branch')) {
+                localStorage.setItem('branch', 'X3D DENTAL');
+            }
         }
     },
 
@@ -39,7 +41,6 @@ const SyncUtil = {
         this.isSyncing = true;
         console.log('Pushing data to cloud...');
 
-        const branches = ['X3DENTAL', 'BANGALORE', 'General', 'BRANCH', 'LIVIDUS ALIGN']; // Common branch keys
         const allLocalData = {};
 
         // Collect all appointments from all branches in localStorage
@@ -89,29 +90,38 @@ const SyncUtil = {
             const response = await fetch('/api/patients');
             const cloudData = await response.json();
 
-            if (!cloudData || typeof cloudData !== 'object') {
+            if (!cloudData || typeof cloudData !== 'object' || Object.keys(cloudData).length === 0) {
                 this.isSyncing = false;
-                return;
+                console.log('Cloud is empty or invalid. Keeping local data.');
+                return { success: true, count: 0 };
             }
 
             // Group cloud data by branch
             const cloudBranchGroups = {};
             Object.values(cloudData).forEach(appt => {
                 let branch = appt.branch || 'General';
-                if (branch === 'CHENNAI' || branch === 'COIMBATORE' || branch === 'X3DENTALS') {
-                    branch = 'X3DENTAL';
+                // Standardize common branch names
+                const bUpper = branch.toUpperCase();
+                if (bUpper.includes('X3D') || bUpper.includes('CHENNAI') || bUpper.includes('COIMBATORE')) {
+                    branch = 'X3D DENTAL';
+                } else if (bUpper.includes('LIVIDUS')) {
+                    branch = 'LIVIDUS ALIGN';
                 }
+
                 const key = `appointments_${branch}`;
                 if (!cloudBranchGroups[key]) cloudBranchGroups[key] = [];
-                cloudBranchGroups[key].push({ ...appt, branch: branch }); // Ensure appt object also has updated branch
+                cloudBranchGroups[key].push({ ...appt, branch: branch });
             });
 
             // Update LocalStorage for EVERY branch (Strict Mirror)
-            // If cloud is empty, local must be empty.
-            const knownKeys = ['appointments_X3DENTAL', 'appointments_BANGALORE', 'appointments_General', 'appointments_BRANCH', 'appointments_LIVIDUS ALIGN'];
+            // Use the branches we care about
+            const branchesToSync = ['X3D DENTAL', 'LIVIDUS ALIGN', 'General'];
 
-            knownKeys.forEach(key => {
+            branchesToSync.forEach(branch => {
+                const key = `appointments_${branch}`;
                 const data = cloudBranchGroups[key] || [];
+                // Mirror logic: If we have data from cloud for this branch, we update local.
+                // We only do this if we actually received data for this branch or if we want to confirm it's empty.
                 localStorage.setItem(key, JSON.stringify(data));
             });
 
@@ -163,8 +173,8 @@ const SyncUtil = {
      * Migrates data from old branch names to X3DENTALS
      */
     migrateData() {
-        const branchesToMigrate = ['CHENNAI', 'COIMBATORE', 'X3DENTALS'];
-        const targetBranch = 'X3DENTAL';
+        const branchesToMigrate = ['CHENNAI', 'COIMBATORE', 'X3DENTALS', 'X3DENTAL', 'x3dental'];
+        const targetBranch = 'X3D DENTAL';
         const targetKey = `appointments_${targetBranch}`;
 
         let targetData = JSON.parse(localStorage.getItem(targetKey) || '[]');
@@ -185,15 +195,12 @@ const SyncUtil = {
                             migratedAny = true;
                         }
                     });
-                    // Optional: remove old key after migration
-                    // localStorage.removeItem(oldKey);
                 }
             }
         });
 
         if (migratedAny) {
             localStorage.setItem(targetKey, JSON.stringify(targetData));
-            // this.pushAll(); // Prevent auto-push of migrated data to avoid re-populating cleared server
         }
     },
 
@@ -201,7 +208,7 @@ const SyncUtil = {
      * Resets local data to start fresh (for new branch setup)
      */
     async resetLocal() {
-        const branches = ['X3DENTAL', 'BANGALORE', 'General', 'BRANCH', 'LIVIDUS ALIGN'];
+        const branches = ['X3D DENTAL', 'LIVIDUS ALIGN', 'General', 'X3DENTAL', 'BANGALORE', 'BRANCH'];
         branches.forEach(b => {
             localStorage.removeItem(`appointments_${b}`);
         });
