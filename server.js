@@ -207,13 +207,13 @@ app.delete('/api/branch/:name', (req, res) => {
 // --- Chat Logic ---
 const CHAT_FILE = path.join(__dirname, 'chat_history.json');
 
-app.get('/api/chat/:bookingId', (req, res) => {
-  const { bookingId } = req.params;
+app.get('/api/chat/:branch', (req, res) => {
+  const { branch } = req.params;
   if (!fs.existsSync(CHAT_FILE)) return res.json([]);
 
   try {
     const history = JSON.parse(fs.readFileSync(CHAT_FILE));
-    const messages = (history[bookingId] || []).map(msg => ({
+    const messages = (history[branch] || []).map(msg => ({
       ...msg,
       message: decrypt(msg.message)
     }));
@@ -224,8 +224,8 @@ app.get('/api/chat/:bookingId', (req, res) => {
 });
 
 app.post('/api/chat', (req, res) => {
-  const { bookingId, userType, message, timestamp } = req.body;
-  if (!bookingId || !message) return res.status(400).json({ error: 'Missing data' });
+  const { branch, userType, message, timestamp } = req.body;
+  if (!branch || !message) return res.status(400).json({ error: 'Missing data' });
 
   let history = {};
   if (fs.existsSync(CHAT_FILE)) {
@@ -234,7 +234,7 @@ app.post('/api/chat', (req, res) => {
     } catch (e) { }
   }
 
-  if (!history[bookingId]) history[bookingId] = [];
+  if (!history[branch]) history[branch] = [];
 
   const newMessage = {
     id: Date.now(),
@@ -243,7 +243,7 @@ app.post('/api/chat', (req, res) => {
     timestamp: timestamp || new Date().toISOString()
   };
 
-  history[bookingId].push(newMessage);
+  history[branch].push(newMessage);
 
   try {
     fs.writeFileSync(CHAT_FILE, JSON.stringify(history, null, 2));
@@ -253,18 +253,18 @@ app.post('/api/chat', (req, res) => {
   }
 });
 
-app.delete('/api/chat/:bookingId/:msgId', (req, res) => {
-  const { bookingId, msgId } = req.params;
+app.delete('/api/chat/:branch/:msgId', (req, res) => {
+  const { branch, msgId } = req.params;
   if (!fs.existsSync(CHAT_FILE)) return res.status(404).json({ error: 'No history' });
 
   try {
     let history = JSON.parse(fs.readFileSync(CHAT_FILE));
-    if (history[bookingId]) {
-      history[bookingId] = history[bookingId].filter(m => m.id != msgId);
+    if (history[branch]) {
+      history[branch] = history[branch].filter(m => m.id != msgId);
       fs.writeFileSync(CHAT_FILE, JSON.stringify(history, null, 2));
       res.json({ success: true });
     } else {
-      res.status(404).json({ error: 'Patient not found' });
+      res.status(404).json({ error: 'Branch not found' });
     }
   } catch (e) {
     res.status(500).json({ error: 'Failed to delete message' });

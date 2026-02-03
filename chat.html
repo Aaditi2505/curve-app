@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Chat | x3dental</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #14bfce;
+            --primary-dark: #0e8a95;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+            --bg-gradient: radial-gradient(circle at 10% 20%, rgb(239, 246, 249) 0%, rgb(215, 240, 252) 90%);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-gradient);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .page-header {
+            height: 80px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo-img {
+            height: 45px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-item {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 8px 15px;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(20, 191, 206, 0.1);
+            color: var(--primary-color);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .branch-badge {
+            background: rgba(20, 191, 206, 0.1);
+            color: var(--primary-color);
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        /* Chat Layout */
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 1000px;
+            margin: 20px auto;
+            width: calc(100% - 40px);
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .chat-header {
+            padding: 20px 30px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h2 {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: #f8fbff;
+        }
+
+        .message {
+            max-width: 75%;
+            padding: 14px 20px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            position: relative;
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-own {
+            align-self: flex-end;
+            background: var(--primary-color);
+            color: white;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 15px rgba(20, 191, 206, 0.2);
+        }
+
+        .message-other {
+            align-self: flex-start;
+            background: white;
+            color: var(--text-dark);
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .message-role {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            letter-spacing: 0.5px;
+            opacity: 0.8;
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            opacity: 0.6;
+            margin-top: 6px;
+            align-self: flex-end;
+        }
+
+        .chat-input-area {
+            padding: 25px 30px;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 15px 25px;
+            border-radius: 35px;
+            border: 2px solid #f1f3f5;
+            outline: none;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: #f8fbff;
+        }
+
+        .chat-input:focus {
+            border-color: var(--primary-color);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(20, 191, 206, 0.1);
+        }
+
+        .send-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(20, 191, 206, 0.3);
+            font-size: 1.2rem;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.1) rotate(-10deg);
+            background: var(--primary-dark);
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(231, 76, 60, 0.15);
+            color: #e74c3c;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-size: 14px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .delete-btn:hover {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .message:hover .delete-btn {
+            display: flex;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .page-header {
+                padding: 0 15px;
+            }
+
+            .nav-item {
+                font-size: 0.8rem;
+                padding: 6px 10px;
+            }
+
+            .header-right {
+                display: none;
+            }
+
+            .chat-main {
+                margin: 10px;
+                height: calc(100vh - 100px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="page-header">
+        <div class="header-left">
+            <img src="assets/logo-transparent.png" alt="x3dental" class="logo-img">
+            <nav class="nav-links">
+                <a href="dashboard.html" class="nav-item">Dashboard</a>
+                <a href="patient-interaction-list.html" class="nav-item">Interaction</a>
+                <a href="chat.html" class="nav-item active">Chat</a>
+            </nav>
+        </div>
+        <div class="header-right">
+            <div class="branch-badge" id="branchName">Branch Name</div>
+            <div style="font-weight: 600; font-size: 0.9rem;" id="userName">User</div>
+        </div>
+    </header>
+
+    <main class="chat-main">
+        <div class="chat-header">
+            <h2>Branch Staff Chat</h2>
+            <div id="connectionStatus" style="font-size: 0.8rem; opacity: 0.8;">● Connected</div>
+        </div>
+        <div id="chatMessages" class="chat-messages">
+            <!-- Messages load here -->
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chatInput" class="chat-input" placeholder="Type a message for colleagues..."
+                onkeypress="if(event.key==='Enter') sendMessage()">
+            <button class="send-btn" onclick="sendMessage()">➤</button>
+        </div>
+    </main>
+
+    <script>
+        const branch = localStorage.getItem('branch') || 'General';
+        const role = localStorage.getItem('role') || 'USER';
+
+        document.getElementById('branchName').textContent = branch;
+        document.getElementById('userName').textContent = role === 'ADMINISTRATOR' ? 'Admin' : 'User';
+
+        async function loadChat() {
+            const container = document.getElementById('chatMessages');
+
+            try {
+                const res = await fetch(`/api/chat/${encodeURIComponent(branch)}`);
+                const messages = await res.json();
+
+                container.innerHTML = '';
+                if (messages.length === 0) {
+                    container.innerHTML = '<div style="text-align:center; padding: 40px; opacity: 0.3;">Welcome to the staff room. Start chatting!</div>';
+                    return;
+                }
+
+                messages.forEach(msg => {
+                    const isOwn = msg.userType === role;
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = `message ${isOwn ? 'message-own' : 'message-other'}`;
+
+                    const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                    let delBtn = '';
+                    if (role === 'ADMINISTRATOR') {
+                        delBtn = `<button class="delete-btn" onclick="deleteMessage(${msg.id})">×</button>`;
+                    }
+
+                    msgDiv.innerHTML = `
+                        ${delBtn}
+                        <span class="message-role">${msg.userType}</span>
+                        <div class="message-text">${msg.message}</div>
+                        <span class="message-time">${time}</span>
+                    `;
+                    container.appendChild(msgDiv);
+                });
+
+                container.scrollTop = container.scrollHeight;
+            } catch (e) {
+                container.innerHTML = '<div style="text-align:center; color:#e74c3c; padding:20px;">Connection failed.</div>';
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        branch: branch,
+                        userType: role,
+                        message: text
+                    })
+                });
+
+                if (res.ok) {
+                    input.value = '';
+                    loadChat();
+                }
+            } catch (e) {
+                alert('Send failed.');
+            }
+        }
+
+        async function deleteMessage(id) {
+            if (!confirm('Delete message?')) return;
+            try {
+                const res = await fetch(`/api/chat/${encodeURIComponent(branch)}/${id}`, {
+                    method: 'DELETE'
+                });
+                if (res.ok) loadChat();
+            } catch (e) {
+                alert('Delete failed.');
+            }
+        }
+
+        // Auto reload
+        setInterval(loadChat, 5000);
+        loadChat();
+    </script>
+</body>
+
+</html>
