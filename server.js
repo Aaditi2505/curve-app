@@ -224,38 +224,44 @@ app.get('/api/chat/:branch', (req, res) => {
 });
 
 app.post('/api/chat', (req, res) => {
-  const { branch, userType, message, timestamp } = req.body;
-  console.log(`[CHAT] New message in branch: ${branch}, from: ${userType}`);
-  if (!branch || !message) {
-    console.error('[CHAT] Missing branch or message body');
-    return res.status(400).json({ error: 'Missing data' });
-  }
-
-  let history = {};
-  if (fs.existsSync(CHAT_FILE)) {
-    try {
-      history = JSON.parse(fs.readFileSync(CHAT_FILE));
-    } catch (e) {
-      console.error('[CHAT] Error reading history:', e);
-    }
-  }
-
-  if (!history[branch]) history[branch] = [];
-
-  const newMessage = {
-    id: Date.now(),
-    userType,
-    message: encrypt(message),
-    timestamp: timestamp || new Date().toISOString()
-  };
-
-  history[branch].push(newMessage);
-
   try {
+    const { branch, userType, message, timestamp } = req.body || {};
+    console.log(`[CHAT] Request received. Branch: ${branch}, User: ${userType}`);
+
+    if (!branch || !message) {
+      console.error('[CHAT] Validations failed:', { branch, message: !!message });
+      return res.status(400).json({ error: 'Missing branch or message' });
+    }
+
+    let history = {};
+    if (fs.existsSync(CHAT_FILE)) {
+      try {
+        const fileContent = fs.readFileSync(CHAT_FILE, 'utf8');
+        history = JSON.parse(fileContent);
+      } catch (e) {
+        console.error('[CHAT] History parse error:', e.message);
+        history = {}; // Recovery
+      }
+    }
+
+    if (!history[branch]) history[branch] = [];
+
+    const newMessage = {
+      id: Date.now(),
+      userType: userType || 'Unknown',
+      message: encrypt(message),
+      timestamp: timestamp || new Date().toISOString()
+    };
+
+    history[branch].push(newMessage);
     fs.writeFileSync(CHAT_FILE, JSON.stringify(history, null, 2));
+
+    console.log(`[CHAT] Message saved in ${branch}`);
     res.json({ success: true, message: { ...newMessage, message: message } });
-  } catch (e) {
-    res.status(500).json({ error: 'Failed to save message' });
+
+  } catch (err) {
+    console.error('[CHAT] Critical error:', err);
+    res.status(500).json({ error: 'Internal server error: ' + err.message });
   }
 });
 
