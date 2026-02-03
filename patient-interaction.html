@@ -607,6 +607,143 @@
                 width: 100%;
             }
         }
+
+        /* Chat Feature Styles */
+        .chat-container {
+            display: none;
+            flex-direction: column;
+            height: calc(100vh - 140px);
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            overflow: hidden;
+            margin-right: 20px;
+        }
+
+        .chat-header {
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            position: relative;
+            line-height: 1.4;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message-user {
+            align-self: flex-end;
+            background: var(--primary-color);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-admin {
+            align-self: flex-start;
+            background: white;
+            color: var(--text-dark);
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .message-role {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            opacity: 0.8;
+        }
+
+        .message-time {
+            font-size: 0.65rem;
+            opacity: 0.6;
+            margin-top: 5px;
+            align-self: flex-end;
+        }
+
+        .chat-input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 12px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 20px;
+            border-radius: 30px;
+            border: 2px solid #f1f3f5;
+            outline: none;
+            font-family: 'Outfit', sans-serif;
+            transition: border-color 0.3s;
+        }
+
+        .chat-input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .chat-send-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+
+        .chat-send-btn:hover {
+            transform: scale(1.1);
+            background: var(--primary-dark);
+        }
+
+        .delete-msg-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+            border: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 12px;
+            cursor: pointer;
+            display: none;
+            /* Shown on hover for admins */
+            align-items: center;
+            justify-content: center;
+        }
+
+        .message:hover .delete-msg-btn {
+            display: flex;
+        }
     </style>
     <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
     <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
@@ -661,6 +798,9 @@
             <button class="nav-btn" onclick="showTab('compare', this)">
                 <span class="nav-icon">🧊</span> 3d Compare
             </button>
+            <button class="nav-btn" onclick="showTab('chat', this)">
+                <span class="nav-icon">💬</span> Chat
+            </button>
 
             <div style="margin-top: 10px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 10px;">
                 <button class="nav-btn" onclick="generateLink()" style="color: var(--primary-color);">
@@ -674,9 +814,28 @@
 
         <!-- Main Viewer Area -->
         <main class="main-content">
-            <h2 id="viewTitle">Images</h2>
-            <div id="viewer" class="viewer-container">
-                <!-- Dynamic Content -->
+            <div id="content-viewer" style="display: flex; flex-direction: column; flex: 1;">
+                <h2 id="viewTitle">Images</h2>
+                <div id="viewer" class="viewer-container">
+                    <!-- Dynamic Content -->
+                </div>
+            </div>
+
+            <!-- Chat Area -->
+            <div id="chat-viewer" class="chat-container">
+                <div class="chat-header">
+                    <span>Patient Community Chat</span>
+                    <span id="chat-role-badge"
+                        style="font-size: 0.8rem; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px;">User</span>
+                </div>
+                <div id="chatMessages" class="chat-messages">
+                    <!-- Messages here -->
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="chatInput" class="chat-input" placeholder="Type a message..."
+                        onkeypress="if(event.key==='Enter') sendMessage()">
+                    <button class="chat-send-btn" onclick="sendMessage()">➤</button>
+                </div>
             </div>
         </main>
     </div>
@@ -783,6 +942,8 @@
             } else if (type === 'compare') {
                 title.textContent = '3D Comparison';
                 render3DCompare(p);
+            } else if (type === 'chat') {
+                showChat();
             } else if (type === 'preop') {
                 title.textContent = 'Pre-Op Clinicals';
                 paths = Array.from(new Set([
@@ -798,6 +959,111 @@
         }
 
         /* 3D Compare Grid Styles */
+
+        function showChat() {
+            document.getElementById('content-viewer').style.display = 'none';
+            document.getElementById('chat-viewer').style.display = 'flex';
+            document.getElementById('viewTitle').parentElement.style.display = 'none'; // Hide H2 container
+
+            const role = localStorage.getItem('role') || 'USER';
+            document.getElementById('chat-role-badge').textContent = role;
+
+            loadChat();
+        }
+
+        // Standard showTab logic needs to hide chat
+        const originalShowTab = showTab;
+        showTab = function (type, btn) {
+            document.getElementById('chat-viewer').style.display = 'none';
+            document.getElementById('content-viewer').style.display = 'flex';
+            document.getElementById('viewTitle').parentElement.style.display = 'flex';
+            originalShowTab(type, btn);
+        }
+
+        async function loadChat() {
+            const messagesDiv = document.getElementById('chatMessages');
+            messagesDiv.innerHTML = '<div style="text-align:center; padding: 20px; opacity: 0.5;">Loading messages...</div>';
+
+            try {
+                const res = await fetch(`/api/chat/${p.bookingId}`);
+                const messages = await res.json();
+
+                messagesDiv.innerHTML = '';
+                if (messages.length === 0) {
+                    messagesDiv.innerHTML = '<div style="text-align:center; padding: 40px; opacity: 0.3;">No messages yet. Start the conversation!</div>';
+                    return;
+                }
+
+                const currentRole = localStorage.getItem('role') || 'USER';
+
+                messages.forEach(msg => {
+                    const msgDiv = document.createElement('div');
+                    const isOwn = msg.userType === currentRole;
+                    const isAdminMsg = msg.userType === 'ADMINISTRATOR';
+
+                    msgDiv.className = `message ${isAdminMsg ? 'message-admin' : 'message-user'}`;
+
+                    const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                    let deleteBtn = '';
+                    if (currentRole === 'ADMINISTRATOR') {
+                        deleteBtn = `<button class="delete-msg-btn" onclick="deleteMessage(${msg.id})">×</button>`;
+                    }
+
+                    msgDiv.innerHTML = `
+                        ${deleteBtn}
+                        <span class="message-role">${msg.userType}</span>
+                        <div class="message-content">${msg.message}</div>
+                        <span class="message-time">${time}</span>
+                    `;
+                    messagesDiv.appendChild(msgDiv);
+                });
+
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            } catch (e) {
+                messagesDiv.innerHTML = '<div style="text-align:center; color: #e74c3c; padding: 20px;">Failed to load messages.</div>';
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const role = localStorage.getItem('role') || 'USER';
+
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        bookingId: p.bookingId,
+                        userType: role,
+                        message: text
+                    })
+                });
+
+                if (res.ok) {
+                    input.value = '';
+                    loadChat();
+                }
+            } catch (e) {
+                alert('Failed to send message.');
+            }
+        }
+
+        async function deleteMessage(msgId) {
+            if (!confirm('Delete this message?')) return;
+
+            try {
+                const res = await fetch(`/api/chat/${p.bookingId}/${msgId}`, {
+                    method: 'DELETE'
+                });
+                if (res.ok) loadChat();
+            } catch (e) {
+                alert('Delete failed.');
+            }
+        }
         const style = document.createElement('style');
         style.innerHTML = `
             .compare-grid {

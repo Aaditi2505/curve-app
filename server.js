@@ -5,6 +5,29 @@ const path = require('path');
 const fs = require('fs');
 const compression = require('compression');
 const os = require('os');
+const crypto = require('crypto');
+
+// Encryption Config
+const ENCRYPTION_KEY = Buffer.from('4e616d6549734a6f686e446f653132333435363738393031323334353637383930', 'hex'); // 32 bytes
+const IV_LENGTH = 16;
+
+function encrypt(text) {
+  let iv = crypto.randomBytes(IV_LENGTH);
+  let cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
+  let encrypted = cipher.update(text);
+  encrypted = Buffer.concat([encrypted, cipher.final()]);
+  return iv.toString('hex') + ':' + encrypted.toString('hex');
+}
+
+function decrypt(text) {
+  let textParts = text.split(':');
+  let iv = Buffer.from(textParts.shift(), 'hex');
+  let encryptedText = Buffer.from(textParts.join(':'), 'hex');
+  let decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
+  let decrypted = decipher.update(encryptedText);
+  decrypted = Buffer.concat([decrypted, decipher.final()]);
+  return decrypted.toString();
+}
 
 const app = express();
 const PORT = 3000;
@@ -180,6 +203,73 @@ app.delete('/api/branch/:name', (req, res) => {
   }
 });
 
+
+// --- Chat Logic ---
+const CHAT_FILE = path.join(__dirname, 'chat_history.json');
+
+app.get('/api/chat/:bookingId', (req, res) => {
+  const { bookingId } = req.params;
+  if (!fs.existsSync(CHAT_FILE)) return res.json([]);
+
+  try {
+    const history = JSON.parse(fs.readFileSync(CHAT_FILE));
+    const messages = (history[bookingId] || []).map(msg => ({
+      ...msg,
+      message: decrypt(msg.message)
+    }));
+    res.json(messages);
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to read chat history' });
+  }
+});
+
+app.post('/api/chat', (req, res) => {
+  const { bookingId, userType, message, timestamp } = req.body;
+  if (!bookingId || !message) return res.status(400).json({ error: 'Missing data' });
+
+  let history = {};
+  if (fs.existsSync(CHAT_FILE)) {
+    try {
+      history = JSON.parse(fs.readFileSync(CHAT_FILE));
+    } catch (e) { }
+  }
+
+  if (!history[bookingId]) history[bookingId] = [];
+
+  const newMessage = {
+    id: Date.now(),
+    userType,
+    message: encrypt(message),
+    timestamp: timestamp || new Date().toISOString()
+  };
+
+  history[bookingId].push(newMessage);
+
+  try {
+    fs.writeFileSync(CHAT_FILE, JSON.stringify(history, null, 2));
+    res.json({ success: true, message: { ...newMessage, message: message } });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to save message' });
+  }
+});
+
+app.delete('/api/chat/:bookingId/:msgId', (req, res) => {
+  const { bookingId, msgId } = req.params;
+  if (!fs.existsSync(CHAT_FILE)) return res.status(404).json({ error: 'No history' });
+
+  try {
+    let history = JSON.parse(fs.readFileSync(CHAT_FILE));
+    if (history[bookingId]) {
+      history[bookingId] = history[bookingId].filter(m => m.id != msgId);
+      fs.writeFileSync(CHAT_FILE, JSON.stringify(history, null, 2));
+      res.json({ success: true });
+    } else {
+      res.status(404).json({ error: 'Patient not found' });
+    }
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to delete message' });
+  }
+});
 
 app.get('/api/config', (req, res) => {
   res.json({
