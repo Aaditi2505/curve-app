@@ -1,7 +1,7 @@
 {
   "scripts": {
     "start": "node server.js",
-    "deploy": "git add . && git commit -m \"Update\" && git push origin master && ssh root@145.223.23.204 \"cd /root/curve-app && git pull && pm2 restart curve-app\""
+    "deploy": "git add . && (git diff-index --quiet HEAD || git commit -m \"Update\") && git push origin master && ssh root@145.223.23.204 \"cd /root/curve-app && git pull && pm2 restart curve-app\""
   },
   "dependencies": {
     "compression": "^1.8.1",
