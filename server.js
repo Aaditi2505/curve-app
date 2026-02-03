@@ -225,13 +225,19 @@ app.get('/api/chat/:branch', (req, res) => {
 
 app.post('/api/chat', (req, res) => {
   const { branch, userType, message, timestamp } = req.body;
-  if (!branch || !message) return res.status(400).json({ error: 'Missing data' });
+  console.log(`[CHAT] New message in branch: ${branch}, from: ${userType}`);
+  if (!branch || !message) {
+    console.error('[CHAT] Missing branch or message body');
+    return res.status(400).json({ error: 'Missing data' });
+  }
 
   let history = {};
   if (fs.existsSync(CHAT_FILE)) {
     try {
       history = JSON.parse(fs.readFileSync(CHAT_FILE));
-    } catch (e) { }
+    } catch (e) {
+      console.error('[CHAT] Error reading history:', e);
+    }
   }
 
   if (!history[branch]) history[branch] = [];

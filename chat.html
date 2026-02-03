@@ -288,6 +288,10 @@
             <img src="assets/logo-transparent.png" alt="x3dental" class="logo-img">
             <nav class="nav-links">
                 <a href="dashboard.html" class="nav-item">Dashboard</a>
+                <a href="book-appointment.html" class="nav-item" id="navBook">Book Appointment</a>
+                <a href="check-appointment.html" class="nav-item">Check Appointment</a>
+                <a href="patient-entry.html" class="nav-item">Entry</a>
+                <a href="patient-planning-list.html" class="nav-item">Planning</a>
                 <a href="patient-interaction-list.html" class="nav-item">Interaction</a>
                 <a href="chat.html" class="nav-item active">Chat</a>
             </nav>
@@ -319,6 +323,11 @@
 
         document.getElementById('branchName').textContent = branch;
         document.getElementById('userName').textContent = role === 'ADMINISTRATOR' ? 'Admin' : 'User';
+
+        if (role !== 'ADMINISTRATOR') {
+            const navBook = document.getElementById('navBook');
+            if (navBook) navBook.style.display = 'none';
+        }
 
         async function loadChat() {
             const container = document.getElementById('chatMessages');
@@ -379,9 +388,12 @@
                 if (res.ok) {
                     input.value = '';
                     loadChat();
+                } else {
+                    const err = await res.json();
+                    alert('Send failed: ' + (err.error || 'Unknown error'));
                 }
             } catch (e) {
-                alert('Send failed.');
+                alert('Send failed: Connection error.');
             }
         }
 
