@@ -180,39 +180,7 @@ app.delete('/api/branch/:name', (req, res) => {
   }
 });
 
-// STARTUP CLEANER (One-time auto-wipe for specific ghost records)
-if (fs.existsSync(DB_FILE)) {
-  try {
-    let db = JSON.parse(fs.readFileSync(DB_FILE));
-    let changes = false;
 
-    // 1. Delete specific blocked IDs to force counter reset
-    ['0001', '0002', '0003', '0004'].forEach(badId => {
-      if (db[badId]) {
-        console.log(`[STARTUP CLEANER] Hard deleting ID: ${badId}`);
-        delete db[badId];
-        changes = true;
-      }
-    });
-
-    Object.keys(db).forEach(k => {
-      const p = db[k];
-      // Kill specific names or old X3D records (IDs 0001, 0002 etc if they are old)
-      if (p.name && (p.name.toLowerCase().includes('previn') ||
-        p.name.toLowerCase().includes('unni') ||
-        p.name.toLowerCase().includes('unique') ||
-        p.name.toLowerCase().includes('praveen'))) {
-        console.log(`[STARTUP CLEANER] Removing ghost record: ${p.name} (${k})`);
-        delete db[k];
-        changes = true;
-      }
-    });
-    if (changes) {
-      fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
-      console.log('[STARTUP CLEANER] Ghost records removed successfully.');
-    }
-  } catch (e) { console.error('Startup clean failed', e); }
-}
 app.get('/api/config', (req, res) => {
   res.json({
     ip: getLocalIp(),
