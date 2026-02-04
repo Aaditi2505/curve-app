@@ -736,6 +736,18 @@
 
             // Initial Tab
             showTab('images', document.querySelector('.nav-btn'));
+
+            // Conditional Face 3D Display
+            const face3dBtn = Array.from(document.querySelectorAll('.nav-btn')).find(b => b.textContent.includes('Face 3d'));
+            if (face3dBtn) {
+                const hasFace3d = (p.planningFace3dPaths && p.planningFace3dPaths.length > 0) ||
+                    (p.face3dPathsPhase2 && p.face3dPathsPhase2.length > 0) ||
+                    (p.planningFace3dPaths2 && p.planningFace3dPaths2.length > 0);
+
+                if (!hasFace3d) {
+                    face3dBtn.style.display = 'none';
+                }
+            }
         });
 
         function showTab(type, btn) {
