@@ -16,7 +16,16 @@ const ChatWidget = {
                         <h3>Team Chat</h3>
                         <span class="status-dot"></span>
                     </div>
-                    <button class="minimize-btn">−</button>
+                    <div class="header-actions">
+                        ${this.role.toUpperCase().includes('ADMIN') ? `
+                            <button class="icon-btn-header" onclick="event.stopPropagation(); ChatWidget.toggleHeaderMenu()">⋮</button>
+                            <div id="widget-header-menu" class="header-menu-dropdown">
+                                <div onclick="ChatWidget.clearAll()">Clear Chat</div>
+                                <div onclick="ChatWidget.refreshManual()">Refresh</div>
+                            </div>
+                        ` : ''}
+                        <button class="minimize-btn">−</button>
+                    </div>
                 </div>
                 <div class="chat-widget-body" id="chat-messages">
                     <!-- Messages go here -->
@@ -186,9 +195,30 @@ const ChatWidget = {
         }
     },
 
+    toggleHeaderMenu() {
+        const menu = document.getElementById('widget-header-menu');
+        if (menu) menu.classList.toggle('show');
+    },
+
+    async clearAll() {
+        if (!confirm('Are you sure you want to CLEAR ALL messages for this branch?')) return;
+        try {
+            await fetch(`/api/chat/${encodeURIComponent(this.branch)}`, { method: 'DELETE' });
+            this.toggleHeaderMenu();
+            this.loadMessages();
+        } catch (e) {
+            alert('Clear failed');
+        }
+    },
+
+    refreshManual() {
+        this.loadMessages();
+        this.toggleHeaderMenu();
+    },
+
     scrollToBottom() {
         const c = document.getElementById('chat-messages');
-        c.scrollTop = c.scrollHeight;
+        if (c) c.scrollTop = c.scrollHeight;
     }
 };
 

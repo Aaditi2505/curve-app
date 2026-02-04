@@ -287,6 +287,23 @@ app.delete('/api/chat/:branch/:msgId', (req, res) => {
   }
 });
 
+// Wipe entire chat history for a branch
+app.delete('/api/chat/:branch', (req, res) => {
+  const { branch } = req.params;
+  if (!fs.existsSync(CHAT_FILE)) return res.json({ success: true });
+
+  try {
+    let history = JSON.parse(fs.readFileSync(CHAT_FILE));
+    if (history[branch]) {
+      delete history[branch];
+      fs.writeFileSync(CHAT_FILE, JSON.stringify(history, null, 2));
+    }
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to clear chat' });
+  }
+});
+
 app.get('/api/config', (req, res) => {
   res.json({
     ip: getLocalIp(),
