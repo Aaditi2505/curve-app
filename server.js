@@ -8,7 +8,8 @@ const os = require('os');
 const crypto = require('crypto');
 
 // Encryption Config
-const ENCRYPTION_KEY = Buffer.from('4e616d6549734a6f686e446f653132333435363738393031323334353637383930', 'hex'); // 32 bytes
+const ENCRYPTION_KEY = Buffer.from('4e616d6549734a6f686e446f6531323334353637383930313233343536373839', 'hex'); // 32 bytes
+console.log('DEBUG: ENCRYPTION_KEY length:', ENCRYPTION_KEY.length);
 const IV_LENGTH = 16;
 
 function encrypt(text) {
